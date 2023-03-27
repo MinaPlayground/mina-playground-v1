@@ -1,7 +1,51 @@
+// @ts-nocheck
 import Head from "next/head";
 import styles from "@/styles/Home.module.css";
+import { files } from "../../files";
+import { useEffect, useRef, useState } from "react";
+import Loader from "@/components/Loader";
 
 const Home = () => {
+  const webcontainerInstance = useRef();
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [url, setUrl] = useState("");
+
+  const installDependencies = async () => {
+    const installProcess = await webcontainerInstance.current.spawn("npm", [
+      "install",
+    ]);
+    installProcess.output.pipeTo(
+      new WritableStream({
+        write(data) {
+          console.log(data);
+        },
+      })
+    );
+    return installProcess.exit;
+  };
+
+  const startDevServer = async () => {
+    await webcontainerInstance.current.spawn("npm", ["run", "dev"]);
+    webcontainerInstance.current.on("server-ready", (port, url) => {
+      setUrl(url);
+      setIsInitializing(false);
+    });
+  };
+
+  useEffect(() => {
+    (async () => {
+      const { WebContainer } = await import("@webcontainer/api");
+      webcontainerInstance.current = await WebContainer.boot();
+      await webcontainerInstance.current.mount(files);
+
+      const exitCode = await installDependencies();
+      if (exitCode !== 0) {
+        throw new Error("Installation failed");
+      }
+
+      startDevServer();
+    })();
+  }, []);
   return (
     <>
       <Head>
@@ -12,6 +56,8 @@ const Home = () => {
       </Head>
       <main className={styles.main}>
         <h1>Mina Playground</h1>
+        {isInitializing && <Loader text="Initializing zkApp" />}
+        <iframe src={url} allow="cross-origin-isolated" />
       </main>
     </>
   );
