@@ -1,14 +1,26 @@
-// @ts-nocheck
 import Head from "next/head";
 import styles from "@/styles/Home.module.css";
 import { files } from "../../files";
-import { useEffect, useRef, useState } from "react";
-import Loader from "@/components/Loader";
+import { useCallback, useEffect, useRef, useState } from "react";
+import Editor from "@monaco-editor/react";
+import Header from "@/components/Header";
+import {
+  getWorker,
+  MonacoJsxSyntaxHighlight,
+} from "monaco-jsx-syntax-highlight";
 
 const Home = () => {
   const webcontainerInstance = useRef();
   const [isInitializing, setIsInitializing] = useState(true);
   const [url, setUrl] = useState("");
+  const [code, setCode] = useState(
+    files.pages.directory["_app.page.tsx"].file.contents
+  );
+
+  const setCodeChange = async (code) => {
+    setCode(code);
+    webcontainerInstance.current.fs.writeFile("/pages/_app.page.tsx", code);
+  };
 
   const installDependencies = async () => {
     const installProcess = await webcontainerInstance.current.spawn("npm", [
@@ -46,6 +58,41 @@ const Home = () => {
       startDevServer();
     })();
   }, []);
+
+  const iframeStyle = isInitializing
+    ? {
+        backgroundImage: "url('http://localhost:3000/loader.gif')",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "fit",
+        backgroundPosition: "center center",
+      }
+    : {};
+
+  const handleEditorDidMount = useCallback((editor: any, monaco: any) => {
+    monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+      jsx: monaco.languages.typescript.JsxEmit.Preserve,
+      target: monaco.languages.typescript.ScriptTarget.ES2020,
+      esModuleInterop: true,
+    });
+
+    const monacoJsxSyntaxHighlight = new MonacoJsxSyntaxHighlight(
+      getWorker(),
+      monaco
+    );
+
+    const { highlighter, dispose } =
+      monacoJsxSyntaxHighlight.highlighterBuilder({
+        editor: editor,
+      });
+    highlighter();
+
+    editor.onDidChangeModelContent(() => {
+      highlighter();
+    });
+
+    return dispose;
+  }, []);
+
   return (
     <>
       <Head>
@@ -54,10 +101,34 @@ const Home = () => {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+      <Header />
       <main className={styles.main}>
-        <h1>Mina Playground</h1>
-        {isInitializing && <Loader text="Initializing zkApp" />}
-        <iframe src={url} allow="cross-origin-isolated" />
+        <div className="flex">
+          <Editor
+            className="editor"
+            height="80vh"
+            // theme={"vs-dark"}
+            path={"file:///index.tsx"}
+            defaultLanguage="typescript"
+            defaultValue={code}
+            onChange={setCodeChange}
+            onMount={handleEditorDidMount}
+            options={{
+              fontSize: 16,
+              lineHeight: 28,
+              automaticLayout: true,
+            }}
+          />
+          <div className="flex-1 ml-2">
+            <h1>{isInitializing ? "Initializing zkApp..." : `${url}`}</h1>
+            <iframe
+              src={url}
+              className="h-full border-2 border-black"
+              style={iframeStyle}
+              allow="cross-origin-isolated"
+            />
+          </div>
+        </div>
       </main>
     </>
   );
