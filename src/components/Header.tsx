@@ -2,7 +2,10 @@ import { Disclosure } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import { FC } from "react";
 
-export const navigation = [{ name: "Playground", href: "#", current: true }];
+export const navigation = [
+  { name: "Tutorials", href: "#", current: true },
+  { name: "Playground", href: "#", current: false },
+];
 
 export const classNames = (...classes: string[]) => {
   return classes.filter(Boolean).join(" ");
@@ -41,7 +44,7 @@ const Header: FC = () => {
                         className={classNames(
                           item.current
                             ? "bg-zinc-100"
-                            : "text-zinc-200 hover:bg-zinc-200 hover:text-black",
+                            : "text-white hover:bg-zinc-200 hover:text-black",
                           "px-3 py-2 rounded-md text-sm font-medium"
                         )}
                         aria-current={item.current ? "page" : undefined}
