@@ -4,7 +4,7 @@ import { UserCircleIcon } from "@heroicons/react/24/outline";
 const Header: FC = () => {
   return (
     <nav className="bg-gradient-to-br from-pink-500 to-orange-400 border-gray-200">
-      <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
+      <div className="flex flex-wrap items-center justify-between mx-auto p-4">
         <a href="/" className="flex items-center">
           <span className="self-center text-2xl text-white font-semibold whitespace-nowrap">
             Mina Playground
@@ -81,7 +81,7 @@ const Header: FC = () => {
           <ul className="flex flex-col font-medium p-4 md:p-0 mt-4 border border-gray-100 rounded-lg md:flex-row md:space-x-8 md:mt-0 md:border-0">
             <li>
               <a
-                href="#"
+                href="/"
                 className="block py-2 pl-3 pr-4 text-white font-bold bg-gray-600 rounded md:bg-transparent md:text-white md:p-0 underline underline-offset-4"
                 aria-current="page"
               >
@@ -90,7 +90,7 @@ const Header: FC = () => {
             </li>
             <li>
               <a
-                href="#"
+                href="/login"
                 className="block py-2 pl-3 pr-4 text-white rounded hover:bg-gray-100 hover:text-gray-600 md:hover:bg-transparent md:hover:text-gray-700 md:p-0"
               >
                 Tutorials
@@ -98,7 +98,7 @@ const Header: FC = () => {
             </li>
             <li>
               <a
-                href="#"
+                href="/projects"
                 className="block py-2 pl-3 pr-4 text-white rounded hover:bg-gray-100 hover:text-gray-600 md:hover:bg-transparent md:hover:text-gray-700 md:p-0"
               >
                 Projects
