@@ -26,7 +26,7 @@ const FileIcon = () => (
   </svg>
 );
 
-const TreeNode: FC<TreeNodeProps> = ({ node }) => {
+const TreeNode: FC<TreeNodeProps> = ({ node, onBlur }) => {
   const [key, value] = node;
   const [showChildren, setShowChildren] = useState(false);
 
@@ -43,11 +43,19 @@ const TreeNode: FC<TreeNodeProps> = ({ node }) => {
         className="flex flex-row items-center mb-2 cursor-pointer"
       >
         {isDirectory ? <DirectoryIcon /> : <FileIcon />}
-        <span>{key}</span>
+        {key === "" ? (
+          <input
+            autoFocus
+            onBlur={onBlur}
+            className="pl-2 border border-gray-300 rounded-md bg-gray-50"
+          />
+        ) : (
+          <span>{key}</span>
+        )}
       </div>
       {isDirectory && (
         <ul className="pl-2">
-          {showChildren && <Tree data={value["directory"]} />}
+          {showChildren && <Tree data={value["directory"]} onBlur={onBlur} />}
         </ul>
       )}
     </>
@@ -56,6 +64,7 @@ const TreeNode: FC<TreeNodeProps> = ({ node }) => {
 
 interface TreeNodeProps {
   node: [string, DirectoryNode | FileNode];
+  onBlur(): void;
 }
 
 export default TreeNode;
