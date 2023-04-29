@@ -53,6 +53,19 @@ const Home = () => {
   const [fileData, setFileData] = useState(data);
   const [currentDirectory, setCurrentDirectory] = useState<string[]>([]);
 
+  const immutable = (callback: any) => {
+    return produce((fileData) => {
+      currentDirectory.forEach((location, index) => {
+        const isLastElement = index === currentDirectory.length - 1;
+        if (isLastElement) {
+          callback(fileData, location);
+          return;
+        }
+        fileData = fileData[location].directory;
+      });
+    });
+  };
+
   const createNewFile = () => {
     const newFile = {
       file: {
@@ -68,26 +81,31 @@ const Home = () => {
     };
 
     setFileData(
-      produce((fileData) => {
-        currentDirectory.forEach((loc, index) => {
-          const isLastElement = index === currentDirectory.length - 1;
-          if (isLastElement) {
-            fileData[loc].directory = {
-              ...fileData[loc].directory,
-              "": newFolder,
-            };
-            return;
-          }
-          fileData = fileData[loc].directory;
-        });
+      immutable((fileData: any, location: any) => {
+        fileData[location].directory = {
+          ...fileData[location].directory,
+          "": newFolder,
+        };
       })
     );
   };
 
-  const onBlur = () => {
-    const newFileData = { ...fileData };
-    delete newFileData[""];
-    setFileData(newFileData);
+  const onBlur = (value: string) => {
+    const newFolder = {
+      directory: {},
+    };
+
+    setFileData(
+      immutable((fileData: any, location: any) => {
+        if (value) {
+          fileData[location].directory = {
+            ...fileData[location].directory,
+            [value]: newFolder,
+          };
+        }
+        delete fileData[location].directory[""];
+      })
+    );
   };
 
   return (

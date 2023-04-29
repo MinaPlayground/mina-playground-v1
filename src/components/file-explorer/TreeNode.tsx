@@ -36,6 +36,8 @@ const TreeNode: FC<TreeNodeProps> = ({
 }) => {
   const [key, value] = node;
   const [showChildren, setShowChildren] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+
   const isDirectory = "directory" in value;
   const isSelected = isEqual([...directory, key], currentDirectory);
   const isSelectedStyle = isSelected ? "bg-blue-100" : "";
@@ -56,7 +58,9 @@ const TreeNode: FC<TreeNodeProps> = ({
         {key === "" ? (
           <input
             autoFocus
-            onBlur={onBlur}
+            value={inputValue}
+            onChange={(event) => setInputValue(event.target.value)}
+            onBlur={() => onBlur(inputValue)}
             className="pl-2 border border-gray-300 rounded-md bg-gray-50"
           />
         ) : (
