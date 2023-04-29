@@ -1,6 +1,7 @@
 import { FC, useState } from "react";
 import Tree from "@/components/file-explorer/Tree";
 import { DirectoryNode, FileNode } from "@webcontainer/api";
+import { isEqual } from "lodash";
 
 const DirectoryIcon = () => (
   <svg
@@ -26,21 +27,30 @@ const FileIcon = () => (
   </svg>
 );
 
-const TreeNode: FC<TreeNodeProps> = ({ node, onBlur }) => {
+const TreeNode: FC<TreeNodeProps> = ({
+  node,
+  onBlur,
+  setCurrentDirectory,
+  directory,
+  currentDirectory,
+}) => {
   const [key, value] = node;
   const [showChildren, setShowChildren] = useState(false);
+  const isDirectory = "directory" in value;
+  const isSelected = isEqual([...directory, key], currentDirectory);
+  const isSelectedStyle = isSelected ? "bg-blue-100" : "";
 
   const handleClick = () => {
+    if (isDirectory) {
+      setCurrentDirectory([...directory, key]);
+    }
     setShowChildren(!showChildren);
   };
-
-  const isDirectory = "directory" in value;
-
   return (
     <>
       <div
         onClick={handleClick}
-        className="flex flex-row items-center mb-2 cursor-pointer"
+        className={`flex flex-row items-center mb-2 cursor-pointer ${isSelectedStyle}`}
       >
         {isDirectory ? <DirectoryIcon /> : <FileIcon />}
         {key === "" ? (
@@ -55,7 +65,15 @@ const TreeNode: FC<TreeNodeProps> = ({ node, onBlur }) => {
       </div>
       {isDirectory && (
         <ul className="pl-2">
-          {showChildren && <Tree data={value["directory"]} onBlur={onBlur} />}
+          {showChildren && (
+            <Tree
+              data={value["directory"]}
+              onBlur={onBlur}
+              directory={[...directory, key]}
+              currentDirectory={currentDirectory}
+              setCurrentDirectory={setCurrentDirectory}
+            />
+          )}
         </ul>
       )}
     </>
@@ -65,6 +83,9 @@ const TreeNode: FC<TreeNodeProps> = ({ node, onBlur }) => {
 interface TreeNodeProps {
   node: [string, DirectoryNode | FileNode];
   onBlur(): void;
+  setCurrentDirectory(directory: string[]): void;
+  directory: string[];
+  currentDirectory: string[];
 }
 
 export default TreeNode;
