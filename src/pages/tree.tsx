@@ -4,6 +4,7 @@ import Tree from "@/components/file-explorer/Tree";
 import type { FileSystemTree } from "@webcontainer/api";
 import { useState } from "react";
 import { produce } from "immer";
+import { get } from "lodash";
 
 const data: FileSystemTree = {
   src: {
@@ -51,18 +52,12 @@ const data: FileSystemTree = {
 
 const Home = () => {
   const [fileData, setFileData] = useState(data);
-  const [currentDirectory, setCurrentDirectory] = useState<string[]>([]);
+  const [currentDirectory, setCurrentDirectory] = useState<string>("");
 
   const immutable = (callback: any) => {
     return produce((fileData) => {
-      currentDirectory.forEach((location, index) => {
-        const isLastElement = index === currentDirectory.length - 1;
-        if (isLastElement) {
-          callback(fileData, location);
-          return;
-        }
-        fileData = fileData[location].directory;
-      });
+      const data = get(fileData, currentDirectory);
+      callback(data);
     });
   };
 
@@ -81,9 +76,9 @@ const Home = () => {
     };
 
     setFileData(
-      immutable((fileData: any, location: any) => {
-        fileData[location].directory = {
-          ...fileData[location].directory,
+      immutable((fileData: any) => {
+        fileData.directory = {
+          ...fileData.directory,
           "": newFolder,
         };
       })
@@ -96,14 +91,14 @@ const Home = () => {
     };
 
     setFileData(
-      immutable((fileData: any, location: any) => {
+      immutable((fileData: any) => {
         if (value) {
-          fileData[location].directory = {
-            ...fileData[location].directory,
+          fileData.directory = {
+            ...fileData.directory,
             [value]: newFolder,
           };
         }
-        delete fileData[location].directory[""];
+        delete fileData.directory[""];
       })
     );
   };

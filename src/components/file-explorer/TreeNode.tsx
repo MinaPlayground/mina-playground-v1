@@ -1,7 +1,6 @@
 import { FC, useState } from "react";
 import Tree from "@/components/file-explorer/Tree";
 import { DirectoryNode, FileNode } from "@webcontainer/api";
-import { isEqual } from "lodash";
 
 const DirectoryIcon = () => (
   <svg
@@ -38,13 +37,14 @@ const TreeNode: FC<TreeNodeProps> = ({
   const [showChildren, setShowChildren] = useState(false);
   const [inputValue, setInputValue] = useState("");
 
+  const dir = directory ? `${directory}.directory.${key}` : `${key}`;
   const isDirectory = "directory" in value;
-  const isSelected = isEqual([...directory, key], currentDirectory);
+  const isSelected = dir === currentDirectory;
   const isSelectedStyle = isSelected ? "bg-blue-100" : "";
 
   const handleClick = () => {
     if (isDirectory) {
-      setCurrentDirectory([...directory, key]);
+      setCurrentDirectory(dir);
     }
     setShowChildren(!showChildren);
   };
@@ -71,9 +71,9 @@ const TreeNode: FC<TreeNodeProps> = ({
         <ul className="pl-2">
           {showChildren && (
             <Tree
-              data={value["directory"]}
+              data={value.directory}
               onBlur={onBlur}
-              directory={[...directory, key]}
+              directory={dir}
               currentDirectory={currentDirectory}
               setCurrentDirectory={setCurrentDirectory}
             />
@@ -87,9 +87,9 @@ const TreeNode: FC<TreeNodeProps> = ({
 interface TreeNodeProps {
   node: [string, DirectoryNode | FileNode];
   onBlur(): void;
-  setCurrentDirectory(directory: string[]): void;
-  directory: string[];
-  currentDirectory: string[];
+  setCurrentDirectory(directory: string): void;
+  directory: string;
+  currentDirectory: string;
 }
 
 export default TreeNode;

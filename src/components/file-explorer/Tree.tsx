@@ -6,7 +6,7 @@ const Tree: FC<TreeProps> = ({
   data,
   onBlur,
   setCurrentDirectory,
-  directory = [],
+  directory = "",
   currentDirectory,
 }) => {
   return (
@@ -15,7 +15,6 @@ const Tree: FC<TreeProps> = ({
         <TreeNode
           node={node}
           key={index}
-          index={index}
           onBlur={onBlur}
           directory={directory}
           currentDirectory={currentDirectory}
@@ -29,9 +28,9 @@ const Tree: FC<TreeProps> = ({
 interface TreeProps {
   data: FileSystemTree;
   onBlur(): void;
-  setCurrentDirectory(directory: string[]): void;
-  directory?: string[];
-  currentDirectory: string[];
+  setCurrentDirectory(directory: string): void;
+  directory?: string;
+  currentDirectory: string;
 }
 
 export default Tree;
