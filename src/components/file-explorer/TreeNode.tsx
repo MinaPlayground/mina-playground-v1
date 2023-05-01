@@ -1,6 +1,7 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import Tree from "@/components/file-explorer/Tree";
 import { DirectoryNode, FileNode } from "@webcontainer/api";
+import { FileSystemType } from "@/types";
 
 const DirectoryIcon = () => (
   <svg
@@ -26,28 +27,67 @@ const FileIcon = () => (
   </svg>
 );
 
-const TreeNode: FC<TreeNodeProps> = ({ node }) => {
+const TreeNode: FC<TreeNodeProps> = ({
+  node,
+  onBlur,
+  setCurrentDirectory,
+  directory,
+  currentDirectory,
+}) => {
   const [key, value] = node;
   const [showChildren, setShowChildren] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+
+  const dir = directory ? `${directory}.directory.${key}` : `${key}`;
+  const isDirectory = "directory" in value;
+  const isSelected = currentDirectory && dir === currentDirectory;
+  const isSelectedStyle = isSelected ? "bg-blue-100" : "";
 
   const handleClick = () => {
+    if (isDirectory) {
+      setCurrentDirectory(dir);
+    }
     setShowChildren(!showChildren);
   };
 
-  const isDirectory = "directory" in value;
+  // TODO re-do this logic to open the directory when you try to create a new file/folder
+  // useEffect(() => {
+  //   if (!isSelected) return;
+  //   setShowChildren(true);
+  // }, [node]);
 
   return (
     <>
       <div
         onClick={handleClick}
-        className="flex flex-row items-center mb-2 cursor-pointer"
+        className={`flex flex-row items-center mb-2 cursor-pointer ${isSelectedStyle}`}
       >
         {isDirectory ? <DirectoryIcon /> : <FileIcon />}
-        <span>{key}</span>
+        {key === "" ? (
+          <input
+            autoFocus
+            value={inputValue}
+            onChange={(event) => setInputValue(event.target.value)}
+            onBlur={() =>
+              onBlur(inputValue, isDirectory ? "directory" : "file")
+            }
+            className="pl-2 border border-gray-300 rounded-md bg-gray-50"
+          />
+        ) : (
+          <span>{key}</span>
+        )}
       </div>
       {isDirectory && (
         <ul className="pl-2">
-          {showChildren && <Tree data={value["directory"]} />}
+          {showChildren && (
+            <Tree
+              data={value.directory}
+              onBlur={onBlur}
+              directory={dir}
+              currentDirectory={currentDirectory}
+              setCurrentDirectory={setCurrentDirectory}
+            />
+          )}
         </ul>
       )}
     </>
@@ -56,6 +96,10 @@ const TreeNode: FC<TreeNodeProps> = ({ node }) => {
 
 interface TreeNodeProps {
   node: [string, DirectoryNode | FileNode];
+  onBlur(value: string, type: FileSystemType): void;
+  setCurrentDirectory(directory: string): void;
+  directory: string;
+  currentDirectory: string;
 }
 
 export default TreeNode;

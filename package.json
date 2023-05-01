@@ -25,6 +25,8 @@
     "eslint": "8.35.0",
     "eslint-config-next": "13.2.1",
     "flowbite": "^1.6.4",
+    "immer": "^10.0.1",
+    "lodash": "^4.17.21",
     "monaco-jsx-syntax-highlight": "^1.2.0",
     "next": "13.2.1",
     "react": "18.2.0",
@@ -34,6 +36,7 @@
     "typescript": "4.9.5"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.194",
     "autoprefixer": "^10.4.13",
     "postcss": "^8.4.21",
     "prettier": "^2.8.4",
