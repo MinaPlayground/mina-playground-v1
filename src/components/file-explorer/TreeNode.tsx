@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import Tree from "@/components/file-explorer/Tree";
 import { DirectoryNode, FileNode } from "@webcontainer/api";
 
@@ -48,6 +48,13 @@ const TreeNode: FC<TreeNodeProps> = ({
     }
     setShowChildren(!showChildren);
   };
+
+  // TODO re-do this logic
+  useEffect(() => {
+    if (!isSelected) return;
+    setShowChildren(true);
+  }, [node]);
+
   return (
     <>
       <div
@@ -86,7 +93,7 @@ const TreeNode: FC<TreeNodeProps> = ({
 
 interface TreeNodeProps {
   node: [string, DirectoryNode | FileNode];
-  onBlur(): void;
+  onBlur(value: string): void;
   setCurrentDirectory(directory: string): void;
   directory: string;
   currentDirectory: string;

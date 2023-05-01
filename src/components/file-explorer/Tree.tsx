@@ -27,7 +27,7 @@ const Tree: FC<TreeProps> = ({
 
 interface TreeProps {
   data: FileSystemTree;
-  onBlur(): void;
+  onBlur(value: string): void;
   setCurrentDirectory(directory: string): void;
   directory?: string;
   currentDirectory: string;
