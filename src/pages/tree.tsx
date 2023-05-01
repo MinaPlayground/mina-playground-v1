@@ -1,7 +1,11 @@
 import Head from "next/head";
 import styles from "@/styles/Home.module.css";
 import Tree from "@/components/file-explorer/Tree";
-import type { FileSystemTree } from "@webcontainer/api";
+import type {
+  DirectoryNode,
+  FileNode,
+  FileSystemTree,
+} from "@webcontainer/api";
 import { useState } from "react";
 import { produce } from "immer";
 import { get } from "lodash";
@@ -62,10 +66,15 @@ const Home = () => {
   const [fileData, setFileData] = useState(data);
   const [currentDirectory, setCurrentDirectory] = useState<string>("");
 
-  const immutable = (callback: any) => {
-    return produce((fileData) => {
+  const immutable = (
+    callback: (
+      data: FileSystemTree | (DirectoryNode | FileNode),
+      hasDirectory: boolean
+    ) => void
+  ) => {
+    return produce((fileData: FileSystemTree) => {
       const data = get(fileData, currentDirectory);
-      callback(data);
+      callback(currentDirectory ? data : fileData, !!currentDirectory);
     });
   };
 
@@ -77,9 +86,14 @@ const Home = () => {
     };
 
     setFileData(
-      immutable((fileData: any) => {
-        fileData.directory = {
-          ...fileData.directory,
+      immutable((fileData, hasDirectory) => {
+        if (!hasDirectory) {
+          (fileData as FileSystemTree)[""] = newFile;
+          return;
+        }
+        const newFileData = fileData as DirectoryNode;
+        newFileData.directory = {
+          ...newFileData.directory,
           "": newFile,
         };
       })
@@ -92,9 +106,14 @@ const Home = () => {
     };
 
     setFileData(
-      immutable((fileData: any) => {
-        fileData.directory = {
-          ...fileData.directory,
+      immutable((fileData, hasDirectory) => {
+        if (!hasDirectory) {
+          (fileData as FileSystemTree)[""] = newFolder;
+          return;
+        }
+        const newFileData = fileData as DirectoryNode;
+        newFileData.directory = {
+          ...newFileData.directory,
           "": newFolder,
         };
       })
@@ -115,14 +134,23 @@ const Home = () => {
     const newValue = type === "directory" ? newFolder : newFile;
 
     setFileData(
-      immutable((fileData: any) => {
+      immutable((fileData, hasDirectory) => {
         if (value) {
-          fileData.directory = {
-            ...fileData.directory,
-            [value]: newValue,
-          };
+          if (!hasDirectory) {
+            (fileData as FileSystemTree)[value] = newValue;
+          } else {
+            const newFileData = fileData as DirectoryNode;
+            newFileData.directory = {
+              ...newFileData.directory,
+              [value]: newValue,
+            };
+          }
         }
-        delete fileData.directory[""];
+        if (!hasDirectory) {
+          delete (fileData as FileSystemTree)[""];
+        } else {
+          delete (fileData as DirectoryNode).directory[""];
+        }
       })
     );
   };

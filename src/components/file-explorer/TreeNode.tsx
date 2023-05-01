@@ -40,7 +40,7 @@ const TreeNode: FC<TreeNodeProps> = ({
 
   const dir = directory ? `${directory}.directory.${key}` : `${key}`;
   const isDirectory = "directory" in value;
-  const isSelected = dir === currentDirectory;
+  const isSelected = currentDirectory && dir === currentDirectory;
   const isSelectedStyle = isSelected ? "bg-blue-100" : "";
 
   const handleClick = () => {
@@ -50,11 +50,11 @@ const TreeNode: FC<TreeNodeProps> = ({
     setShowChildren(!showChildren);
   };
 
-  // TODO re-do this logic
-  useEffect(() => {
-    if (!isSelected) return;
-    setShowChildren(true);
-  }, [node]);
+  // TODO re-do this logic to open the directory when you try to create a new file/folder
+  // useEffect(() => {
+  //   if (!isSelected) return;
+  //   setShowChildren(true);
+  // }, [node]);
 
   return (
     <>
