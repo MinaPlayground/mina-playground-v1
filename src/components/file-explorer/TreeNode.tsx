@@ -1,6 +1,7 @@
 import { FC, useEffect, useState } from "react";
 import Tree from "@/components/file-explorer/Tree";
 import { DirectoryNode, FileNode } from "@webcontainer/api";
+import { FileSystemType } from "@/types";
 
 const DirectoryIcon = () => (
   <svg
@@ -67,7 +68,9 @@ const TreeNode: FC<TreeNodeProps> = ({
             autoFocus
             value={inputValue}
             onChange={(event) => setInputValue(event.target.value)}
-            onBlur={() => onBlur(inputValue)}
+            onBlur={() =>
+              onBlur(inputValue, isDirectory ? "directory" : "file")
+            }
             className="pl-2 border border-gray-300 rounded-md bg-gray-50"
           />
         ) : (
@@ -93,7 +96,7 @@ const TreeNode: FC<TreeNodeProps> = ({
 
 interface TreeNodeProps {
   node: [string, DirectoryNode | FileNode];
-  onBlur(value: string): void;
+  onBlur(value: string, type: FileSystemType): void;
   setCurrentDirectory(directory: string): void;
   directory: string;
   currentDirectory: string;

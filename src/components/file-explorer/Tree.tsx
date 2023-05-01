@@ -1,6 +1,7 @@
 import { FC } from "react";
 import TreeNode from "@/components/file-explorer/TreeNode";
 import type { FileSystemTree } from "@webcontainer/api";
+import { FileSystemType } from "@/types";
 
 const Tree: FC<TreeProps> = ({
   data,
@@ -27,7 +28,7 @@ const Tree: FC<TreeProps> = ({
 
 interface TreeProps {
   data: FileSystemTree;
-  onBlur(value: string): void;
+  onBlur(value: string, type: FileSystemType): void;
   setCurrentDirectory(directory: string): void;
   directory?: string;
   currentDirectory: string;

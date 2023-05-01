@@ -5,11 +5,19 @@ import type { FileSystemTree } from "@webcontainer/api";
 import { useState } from "react";
 import { produce } from "immer";
 import { get } from "lodash";
+import { FileSystemType } from "@/types";
 
 const data: FileSystemTree = {
   src: {
     directory: {
       "main.js": {
+        file: {
+          contents: `
+            console.log('Hello')
+          `,
+        },
+      },
+      "main2.js": {
         file: {
           contents: `
             console.log('Hello')
@@ -67,7 +75,15 @@ const Home = () => {
         contents: "",
       },
     };
-    setFileData({ ...fileData, "": newFile });
+
+    setFileData(
+      immutable((fileData: any) => {
+        fileData.directory = {
+          ...fileData.directory,
+          "": newFile,
+        };
+      })
+    );
   };
 
   const createNewFolder = () => {
@@ -85,17 +101,25 @@ const Home = () => {
     );
   };
 
-  const onBlur = (value: string) => {
+  const onBlur = (value: string, type: FileSystemType) => {
     const newFolder = {
       directory: {},
     };
+
+    const newFile = {
+      file: {
+        contents: "",
+      },
+    };
+
+    const newValue = type === "directory" ? newFolder : newFile;
 
     setFileData(
       immutable((fileData: any) => {
         if (value) {
           fileData.directory = {
             ...fileData.directory,
-            [value]: newFolder,
+            [value]: newValue,
           };
         }
         delete fileData.directory[""];
