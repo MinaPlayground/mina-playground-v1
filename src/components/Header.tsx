@@ -6,6 +6,13 @@ const Header: FC = () => {
     <nav className="bg-gradient-to-br from-pink-500 to-orange-400 border-gray-200">
       <div className="flex flex-wrap items-center justify-between mx-auto p-4">
         <a href="/" className="flex items-center">
+          <img
+            alt={"icon"}
+            src="./icon.svg"
+            height={32}
+            width={32}
+            className="mr-2 border-2 rounded"
+          />
           <span className="self-center text-2xl text-white font-semibold whitespace-nowrap">
             Mina Playground
           </span>
