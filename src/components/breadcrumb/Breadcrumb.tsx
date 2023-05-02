@@ -1,4 +1,5 @@
 import { FC } from "react";
+import BreadcrumbButton from "@/components/breadcrumb/BreadcrumbButton";
 
 const Breadcrumb: FC<BreadCrumbProps> = ({
   activeItemIndex,
@@ -13,28 +14,13 @@ const Breadcrumb: FC<BreadCrumbProps> = ({
       <ol className="inline-flex items-center mb-3 sm:mb-0">
         <li>
           <div className="flex items-center">
-            <button
-              id="dropdownProject"
-              data-dropdown-toggle="dropdown-project"
-              className="inline-flex items-center px-3 py-2 text-sm font-normal text-center text-gray-900  rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-100"
-            >
-              {chapter}
-              <svg
-                className="w-5 h-5 ml-1"
-                aria-hidden="true"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
+            <BreadcrumbButton
+              name={chapter}
+              id={"dropdown-primary"}
+              type={"primary"}
+            />
             <div
-              id="dropdown-project"
+              id="dropdown-primary"
               className="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44"
             >
               <ul
@@ -62,28 +48,9 @@ const Breadcrumb: FC<BreadCrumbProps> = ({
         <span className="mx-2 text-gray-400">/</span>
         <li aria-current="page">
           <div className="flex items-center">
-            <button
-              id="dropdownDatabase"
-              data-dropdown-toggle="dropdown-database"
-              className="inline-flex items-center px-3 py-2 text-sm font-normal text-center text-gray-600 rounded-lg hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-100"
-            >
-              {activeSection}
-              <svg
-                className="w-5 h-5 ml-1"
-                aria-hidden="true"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
+            <BreadcrumbButton name={activeSection} id={"dropdown-secondary"} />
             <div
-              id="dropdown-database"
+              id="dropdown-secondary"
               className="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44"
             >
               <ul
