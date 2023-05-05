@@ -130,8 +130,8 @@ const Home = () => {
       </Head>
       <main className={styles.main}>
         <Header />
-        <div className="flex flex-1">
-          <div className="flex-1 bg-[#eee]">
+        <div className="grid md:grid-cols-2">
+          <div className="bg-[#eee]">
             <div className="p-4">
               <h1 className="mb-4 px-2 rounded-md py-1 text-4xl font-bold leading-none tracking-tight md:text-5xl lg:text-2xl text-white bg-gradient-to-br from-pink-500 to-orange-400">
                 Smart Contracts
@@ -212,29 +212,25 @@ const Home = () => {
               </div>
             </div>
           </div>
-          <div className="flex flex-1">
-            <div className="flex flex-1 flex-col">
-              <div className="flex-1 border-b-2">
-                <Editor
-                  className="editor"
-                  path={"file:///index.tsx"}
-                  defaultLanguage="typescript"
-                  defaultValue={code}
-                  onChange={setCodeChange}
-                  onMount={handleEditorDidMount}
-                  options={{
-                    fontSize: 16,
-                    lineHeight: 28,
-                    automaticLayout: true,
-                  }}
-                />
-              </div>
-              <div className="flex-1 bg-gray-100 p-2">
-                <div className="terminal" />
-                {isInitializing && (
-                  <Loader text="Initializing Smart contract" />
-                )}
-              </div>
+          <div className="flex flex-col">
+            <div className="flex-1 border-b-2">
+              <Editor
+                className="editor"
+                path={"file:///index.tsx"}
+                defaultLanguage="typescript"
+                defaultValue={code}
+                onChange={setCodeChange}
+                onMount={handleEditorDidMount}
+                options={{
+                  fontSize: 16,
+                  lineHeight: 28,
+                  automaticLayout: true,
+                }}
+              />
+            </div>
+            <div className="flex-1 bg-gray-100 p-2">
+              <div className="terminal" />
+              {isInitializing && <Loader text="Initializing Smart contract" />}
             </div>
           </div>
         </div>
