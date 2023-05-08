@@ -21,6 +21,34 @@ const codeBlock2 = `class HelloWorld extends SmartContract {
   }
 }`;
 
+const finalCodeBlock = `
+import { Field, SmartContract, state, State, method } from "snarkyjs";
+
+/**
+ * Basic Example
+ * See https://docs.minaprotocol.com/zkapps for more info.
+ *
+ * The Add contract initializes the state variable 'num' to be a Field(1) value by default when deployed.
+ * When the 'update' method is called, the Add contract adds Field(2) to its 'num' contract state.
+ *
+ * This file is safe to delete and replace with your own contract.
+ */
+export class Add extends SmartContract {
+  @state(Field) num = State<Field>();
+
+  init() {
+    super.init();
+    this.num.set(Field(1));
+  }
+
+  @method update() {
+    const currentState = this.num.getAndAssertEquals();
+    const newState = currentState.add(2);
+    this.num.set(newState);
+  }
+}
+`;
+
 const Home = () => {
   const [isInitializing, setIsInitializing] = useState(true);
   const [code, setCode] = useState(files.src.directory["Add.ts"].file.contents);
@@ -61,6 +89,10 @@ const Home = () => {
   const runTest = async () => {
     setIsRunning(true);
     inputRef.current.write("npm run test \r");
+  };
+
+  const showMe = () => {
+    setCodeChange(finalCodeBlock);
   };
 
   const initializeTerminal = async () => {
@@ -132,6 +164,26 @@ const Home = () => {
 
   useEffect(() => {
     void initialize();
+    let keysPressed: Record<string, any> = {};
+
+    const onKeydown = (event: KeyboardEvent) => {
+      keysPressed[event.key] = true;
+
+      if (keysPressed["Control"] && event.key == "s") {
+        runTest();
+      }
+    };
+
+    const onKeyup = (event: KeyboardEvent) => {
+      delete keysPressed[event.key];
+    };
+
+    document.addEventListener("keydown", onKeydown);
+    document.addEventListener("keyup", onKeyup);
+    return () => {
+      document.removeEventListener("keydown", onKeydown);
+      document.removeEventListener("keyup", onKeyup);
+    };
   }, []);
 
   useEffect(() => {
@@ -188,7 +240,7 @@ const Home = () => {
               </h1>
               <h1 className="text-black mb-2">
                 Smart contracts are written by extending the base class{" "}
-                <span className="bg-red-100 text-red-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">
+                <span className="bg-red-100 text-red-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded">
                   SmartContract
                 </span>
                 :
@@ -200,7 +252,7 @@ const Home = () => {
               <h1 className="text-black mb-2">
                 Interaction with a smart contract happens by calling one or more
                 of its methods. You declare methods using the{" "}
-                <span className="bg-red-100 text-red-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">
+                <span className="bg-red-100 text-red-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded">
                   @method
                 </span>
                 decorator:
@@ -235,6 +287,7 @@ const Home = () => {
               </Prism>
               <div className="flex justify-between">
                 <button
+                  onClick={showMe}
                   type="button"
                   className="mt-4 text-white bg-gradient-to-br from-pink-500 to-orange-400 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2"
                 >
@@ -268,7 +321,7 @@ const Home = () => {
                 className="editor max-lg:h-[300px]"
                 path={"file:///index.tsx"}
                 defaultLanguage="typescript"
-                defaultValue={code}
+                value={code}
                 onChange={setCodeChange}
                 onMount={handleEditorDidMount}
                 options={{
@@ -341,6 +394,12 @@ const Home = () => {
                       )}
                       {isRunning ? "Abort tests" : "Run tests"}
                     </button>
+                    <div className="inline-flex pl-2">
+                      <span>or</span>
+                      <span className="bg-green-100 text-green-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded">
+                        CTRL + S
+                      </span>
+                    </div>
                   </>
                 )}
               </div>
