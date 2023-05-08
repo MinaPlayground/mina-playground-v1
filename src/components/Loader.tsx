@@ -1,11 +1,11 @@
 import { FC } from "react";
 
-const Loader: FC<LoaderProps> = ({ text }) => {
+const Loader: FC<LoaderProps> = ({ text, circleColor, spinnerColor }) => {
   return (
-    <div role="status">
+    <div className="flex flex-row items-center" role="status">
       <svg
         aria-hidden="true"
-        className="w-8 h-8 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
+        className={`w-8 h-8 mr-2 ${circleColor} animate-spin ${spinnerColor}`}
         viewBox="0 0 100 101"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -19,13 +19,15 @@ const Loader: FC<LoaderProps> = ({ text }) => {
           fill="currentFill"
         />
       </svg>
-      <span className="sr-only">{text ? text : "Loading"}...</span>
+      <span className={`${circleColor}`}>{text ? text : "Loading"}...</span>
     </div>
   );
 };
 
 interface LoaderProps {
   text?: string;
+  circleColor: string;
+  spinnerColor: string;
 }
 
 export default Loader;
