@@ -9,12 +9,14 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@emotion/react": "^11.10.6",
+    "@emotion/react": "^11.11.0",
+    "@emotion/server": "^11.11.0",
     "@headlessui/react": "^1.7.13",
     "@heroicons/react": "^2.0.16",
-    "@mantine/core": "^6.0.5",
-    "@mantine/hooks": "^6.0.5",
-    "@mantine/prism": "^6.0.5",
+    "@mantine/core": "^6.0.10",
+    "@mantine/hooks": "^6.0.10",
+    "@mantine/next": "^6.0.10",
+    "@mantine/prism": "^6.0.10",
     "@monaco-editor/react": "^4.4.6",
     "@reduxjs/toolkit": "^1.9.3",
     "@types/node": "18.14.2",

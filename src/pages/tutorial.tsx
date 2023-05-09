@@ -406,7 +406,7 @@ const Home = () => {
                   </>
                 )}
               </div>
-              <div className="terminal h-[250px]"></div>
+              <div className="terminal h-[250px] max-w-[100vw]"></div>
             </div>
           </div>
         </div>
