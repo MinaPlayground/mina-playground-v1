@@ -7,19 +7,10 @@ import {
   getWorker,
   MonacoJsxSyntaxHighlight,
 } from "monaco-jsx-syntax-highlight";
-import { Prism } from "@mantine/prism";
 import { files } from "../../files";
 import Loader from "@/components/Loader";
 import { WebContainer } from "@webcontainer/api";
-
-const codeBlock = `class HelloWorld extends SmartContract {}
-`;
-
-const codeBlock2 = `class HelloWorld extends SmartContract {
-  @method myMethod(x: Field) {
-    x.mul(2).assertEquals(5);
-  }
-}`;
+import IntroductionSmartContracts from "../tutorials/introduction-smart-contracts.mdx";
 
 const finalCodeBlock = `
 import { Field, SmartContract, state, State, method } from "snarkyjs";
@@ -237,57 +228,8 @@ const Home = () => {
         <Header />
         <div className="flex flex-1 grid lg:grid-cols-2">
           <div className="bg-[#eee]">
-            <div className="p-4">
-              <h1 className="mb-4 px-2 rounded-md py-1 text-4xl font-bold leading-none tracking-tight md:text-5xl lg:text-2xl text-white bg-gradient-to-br from-pink-500 to-orange-400">
-                Smart Contracts
-              </h1>
-              <h1 className="text-black mb-2">
-                Smart contracts are written by extending the base class{" "}
-                <span className="bg-red-100 text-red-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded">
-                  SmartContract
-                </span>
-                :
-              </h1>
-              <Prism className="bg-white rounded mb-2" language="typescript">
-                {codeBlock}
-              </Prism>
-
-              <h1 className="text-black mb-2">
-                Interaction with a smart contract happens by calling one or more
-                of its methods. You declare methods using the{" "}
-                <span className="bg-red-100 text-red-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded">
-                  @method
-                </span>
-                decorator:
-              </h1>
-              <Prism className="bg-white rounded" language="typescript">
-                {codeBlock2}
-              </Prism>
-              <h1 className="mb-4 px-2 rounded-md py-1 mt-8 text-4xl font-bold leading-none tracking-tight md:text-5xl lg:text-2xl text-white bg-gradient-to-br from-pink-500 to-orange-400">
-                Update the state
-              </h1>
-              <h1 className="text-black">
-                Our goal is when the 'update' method is called, the Add contract
-                adds Field(2) to its 'num' contract state.
-              </h1>
-              <h1 className="text-black mt-4 mb-2">
-                We can update our current state using the{" "}
-                <span className="bg-red-100 text-red-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">
-                  add
-                </span>
-                method :
-              </h1>
-              <Prism className="bg-white rounded mb-2" language="tsx">
-                {`const newState = currentState.add(2);`}
-              </Prism>
-
-              <h1 className="text-black mb-2">
-                And update the state of <span className="font-bold">num</span>{" "}
-                with our new state:
-              </h1>
-              <Prism className="bg-white rounded" language="tsx">
-                {`this.num.set(newState);`}
-              </Prism>
+            <div className="px-4">
+              <IntroductionSmartContracts />
               <div className="flex justify-between">
                 <button
                   onClick={showMe}
