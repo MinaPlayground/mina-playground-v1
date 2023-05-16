@@ -23,15 +23,16 @@ for (const [key, item] of projectDir.entries()) {
     const fileContent = await fs.readFile(sectionMetaFilePath, {
       encoding: "utf-8",
     });
-
-    data[key].sections.push({
-      name: JSON.parse(fileContent).name,
-    });
-
     const sectionSrcFilesPath = path.join(sectionPath, "src");
     const sectionTestsPath = path.join(sectionPath, "tests");
     const baseSrcFilesPath = path.join("./src/tutorials", item, "base", "src");
     const baseTestsPath = path.join("./src/tutorials", item, "base", "tests");
+
+    const tests = await fs.readdir(sectionTestsPath);
+    data[key].sections.push({
+      name: JSON.parse(fileContent).name,
+      tests,
+    });
 
     await fs.cp(
       sectionSrcFilesPath,
