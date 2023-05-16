@@ -1,5 +1,5 @@
-import { Add } from './Add';
-import { Field, Mina, PrivateKey, PublicKey, AccountUpdate } from 'snarkyjs';
+import { Add } from "./Add";
+import { Field, Mina, PrivateKey, PublicKey, AccountUpdate } from "snarkyjs";
 
 /*
  * This file specifies how to test the `Add` example smart contract. It is safe to delete this file and replace
@@ -10,7 +10,7 @@ import { Field, Mina, PrivateKey, PublicKey, AccountUpdate } from 'snarkyjs';
 
 let proofsEnabled = false;
 
-describe('Add', () => {
+describe("Add", () => {
   let deployerAccount: PublicKey,
     deployerKey: PrivateKey,
     senderAccount: PublicKey,
@@ -45,13 +45,13 @@ describe('Add', () => {
     await txn.sign([deployerKey, zkAppPrivateKey]).send();
   }
 
-  it('generates and deploys the `Add` smart contract', async () => {
+  it("generates and deploys the `Add` smart contract", async () => {
     await localDeploy();
     const num = zkApp.num.get();
     expect(num).toEqual(Field(1));
   });
 
-  it('correctly updates the num state on the `Add` smart contract', async () => {
+  it("correctly updates the num state on the `Add` smart contract", async () => {
     await localDeploy();
 
     // update transaction
