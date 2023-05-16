@@ -5,11 +5,15 @@ const data = [];
 const excluded = ["base", "meta.json"];
 const projectDir = await fs.readdir("./src/tutorials");
 for (const [key, item] of projectDir.entries()) {
+  const currentPath = path.join("./src/tutorials", item);
+  const chapterMetaFilePath = path.join(currentPath, "meta.json");
+  const fileContent = await fs.readFile(chapterMetaFilePath, {
+    encoding: "utf-8",
+  });
   data.push({
-    chapter: item,
+    chapter: [JSON.parse(fileContent).name],
     sections: [],
   });
-  const currentPath = path.join("./src/tutorials", item);
   const sections = (await fs.readdir(currentPath)).filter(
     (item) => !excluded.includes(item)
   );
@@ -37,3 +41,5 @@ for (const [key, item] of projectDir.entries()) {
     });
   }
 }
+
+console.log(data);
