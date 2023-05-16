@@ -11,7 +11,7 @@ for (const [key, item] of projectDir.entries()) {
     encoding: "utf-8",
   });
   data.push({
-    chapter: [JSON.parse(fileContent).name],
+    chapter: JSON.parse(fileContent).name,
     sections: [],
   });
   const sections = (await fs.readdir(currentPath)).filter(
@@ -19,6 +19,15 @@ for (const [key, item] of projectDir.entries()) {
   );
   for (const section of sections) {
     const sectionPath = path.join("./src/tutorials", item, section);
+    const sectionMetaFilePath = path.join(sectionPath, "meta.json");
+    const fileContent = await fs.readFile(sectionMetaFilePath, {
+      encoding: "utf-8",
+    });
+
+    data[key].sections.push({
+      name: JSON.parse(fileContent).name,
+    });
+
     const sectionSrcFilesPath = path.join(sectionPath, "src");
     const sectionTestsPath = path.join(sectionPath, "tests");
     const baseSrcFilesPath = path.join("./src/tutorials", item, "base", "src");
@@ -42,4 +51,4 @@ for (const [key, item] of projectDir.entries()) {
   }
 }
 
-console.log(data);
+console.log(JSON.stringify(data));
