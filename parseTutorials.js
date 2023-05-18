@@ -20,7 +20,11 @@ for (const [key, item] of projectDir.entries()) {
   for (const section of sections) {
     const sectionPath = path.join("./src/tutorials", item, section);
     const sectionMetaFilePath = path.join(sectionPath, "meta.json");
-    const fileContent = await fs.readFile(sectionMetaFilePath, {
+    const sectionTutorialPath = path.join(sectionPath, "tutorial.mdx");
+    const metaFileContent = await fs.readFile(sectionMetaFilePath, {
+      encoding: "utf-8",
+    });
+    const tutorialFileContent = await fs.readFile(sectionTutorialPath, {
       encoding: "utf-8",
     });
     const sectionSrcFilesPath = path.join(sectionPath, "src");
@@ -30,8 +34,9 @@ for (const [key, item] of projectDir.entries()) {
 
     const tests = await fs.readdir(sectionTestsPath);
     data[key].sections.push({
-      name: JSON.parse(fileContent).name,
+      name: JSON.parse(metaFileContent).name,
       tests,
+      tutorial: tutorialFileContent,
     });
 
     await fs.cp(
