@@ -2,12 +2,14 @@ import { FC } from "react";
 import BreadcrumbButton from "@/components/breadcrumb/BreadcrumbButton";
 
 const Breadcrumb: FC<BreadCrumbProps> = ({
-  activeItemIndex,
-  activeSectionIndex,
+  chapterIndex,
+  sectionIndex,
+  setChapter,
+  setSection,
   items,
 }) => {
-  const { chapter, sections } = items[activeItemIndex];
-  const activeSection = sections[activeSectionIndex];
+  const { chapter, sections } = items[chapterIndex];
+  const activeSection = sections[sectionIndex];
 
   return (
     <nav className="flex justify-between" aria-label="Breadcrumb">
@@ -28,13 +30,13 @@ const Breadcrumb: FC<BreadCrumbProps> = ({
                 aria-labelledby="dropdownDefault"
               >
                 {items.map(({ chapter }, index) => {
-                  const isSelected = index === activeItemIndex;
+                  const isSelected = index === chapterIndex;
                   const isSelectedStyle = isSelected ? "bg-gray-100" : "";
                   return (
                     <li>
                       <a
-                        href="#"
-                        className={`${isSelectedStyle} block px-4 py-2 hover:bg-gray-100`}
+                        onClick={() => setChapter(index)}
+                        className={`${isSelectedStyle} block px-4 py-2 hover:bg-gray-100 cursor-pointer`}
                       >
                         {chapter}
                       </a>
@@ -48,7 +50,10 @@ const Breadcrumb: FC<BreadCrumbProps> = ({
         <span className="mx-2 text-gray-400">/</span>
         <li aria-current="page">
           <div className="flex items-center">
-            <BreadcrumbButton name={activeSection} id={"dropdown-secondary"} />
+            <BreadcrumbButton
+              name={activeSection.name}
+              id={"dropdown-secondary"}
+            />
             <div
               id="dropdown-secondary"
               className="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44"
@@ -58,15 +63,15 @@ const Breadcrumb: FC<BreadCrumbProps> = ({
                 aria-labelledby="dropdownDefault"
               >
                 {sections.map((section, index) => {
-                  const isSelected = index === activeSectionIndex;
+                  const isSelected = index === sectionIndex;
                   const isSelectedStyle = isSelected ? "bg-gray-100" : "";
                   return (
                     <li>
                       <a
-                        href="#"
-                        className={`${isSelectedStyle} block px-4 py-2 hover:bg-gray-100`}
+                        onClick={() => setSection(index)}
+                        className={`${isSelectedStyle} block px-4 py-2 hover:bg-gray-100 cursor-pointer`}
                       >
-                        {section}
+                        {section.name}
                       </a>
                     </li>
                   );
@@ -81,9 +86,14 @@ const Breadcrumb: FC<BreadCrumbProps> = ({
 };
 
 interface BreadCrumbProps {
-  activeItemIndex: number;
-  activeSectionIndex: number;
-  items: { chapter: string; sections: string[] }[];
+  chapterIndex: number;
+  sectionIndex: number;
+  items: {
+    chapter: string;
+    sections: { name: string; tests: string[] }[];
+  }[];
+  setChapter(chapter: number): void;
+  setSection(section: number): void;
 }
 
 export default Breadcrumb;
