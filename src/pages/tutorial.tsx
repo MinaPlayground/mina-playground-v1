@@ -13,6 +13,7 @@ import { WebContainer } from "@webcontainer/api";
 import Breadcrumb from "@/components/breadcrumb/Breadcrumb";
 import DynamicTutorial from "@/components/DynamicTutorial";
 import type { GetServerSideProps } from "next";
+import { dynamicComponents } from "@/tutorials";
 
 const finalCodeBlock = `
 import { Field, SmartContract, state, State, method } from "snarkyjs";
@@ -44,22 +45,19 @@ export class Add extends SmartContract {
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { c, s } = query;
-  if (typeof c === "string" && typeof s === "string") {
-    const chapter = parseInt(c);
-    const section = parseInt(s);
-    if (Number.isInteger(chapter) && Number.isInteger(section)) {
-      return {
-        props: {
-          c: chapter,
-          s: section,
-        },
-      };
-    }
+  const dynamicComponentKey = `C${c}S${s}`;
+  if (!(dynamicComponentKey in dynamicComponents)) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
   }
   return {
-    redirect: {
-      destination: "/",
-      permanent: false,
+    props: {
+      c: parseInt(c as string),
+      s: parseInt(s as string),
     },
   };
 };
