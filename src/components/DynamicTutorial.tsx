@@ -12,8 +12,8 @@ const DynamicTutorial: FC<DynamicTutorialProps> = ({ chapter, section }) => {
 };
 
 interface DynamicTutorialProps {
-  chapter: string | string[] | undefined;
-  section: string | string[] | undefined;
+  chapter: number;
+  section: number;
 }
 
 export default DynamicTutorial;

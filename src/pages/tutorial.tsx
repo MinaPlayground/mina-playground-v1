@@ -10,7 +10,9 @@ import {
 import { files } from "../../files";
 import Loader from "@/components/Loader";
 import { WebContainer } from "@webcontainer/api";
-import IntroductionSmartContracts from "../tutorials/introduction-smart-contracts.mdx";
+import Breadcrumb from "@/components/breadcrumb/Breadcrumb";
+import DynamicTutorial from "@/components/DynamicTutorial";
+import type { GetServerSideProps } from "next";
 
 const finalCodeBlock = `
 import { Field, SmartContract, state, State, method } from "snarkyjs";
@@ -40,7 +42,29 @@ export class Add extends SmartContract {
 }
 `;
 
-const Home = () => {
+export const getServerSideProps: GetServerSideProps = async ({ query }) => {
+  const { c, s } = query;
+  if (typeof c === "string" && typeof s === "string") {
+    const chapter = parseInt(c);
+    const section = parseInt(s);
+    if (Number.isInteger(chapter) && Number.isInteger(section)) {
+      return {
+        props: {
+          c: chapter,
+          s: section,
+        },
+      };
+    }
+  }
+  return {
+    redirect: {
+      destination: "/",
+      permanent: false,
+    },
+  };
+};
+
+const Home = ({ c, s }: { c: number; s: number }) => {
   const [isInitializing, setIsInitializing] = useState(true);
   const [code, setCode] = useState(files.src.directory["Add.ts"].file.contents);
   const [isRunning, setIsRunning] = useState(false);
@@ -49,6 +73,9 @@ const Home = () => {
   const terminalInstance = useRef<any>(null);
   const inputRef = useRef<any>(null);
   const shellRef = useRef<any>(null);
+
+  const [chapter, setChapter] = useState(c);
+  const [section, setSection] = useState(s);
 
   const setCodeChange = (code: string | undefined) => {
     if (!code) return;
@@ -150,7 +177,7 @@ const Home = () => {
   const initialize = async () => {
     setIsInitializing(true);
     await initializeTerminal();
-    await startWebContainer();
+    // await startWebContainer();
   };
 
   useEffect(() => {
@@ -213,6 +240,26 @@ const Home = () => {
     return dispose;
   }, []);
 
+  const tutorials = [
+    {
+      chapter: "Introduction",
+      sections: [
+        {
+          name: "Smart Contracts",
+          tests: ["Add.test.ts"],
+        },
+        {
+          name: "Private Inputs",
+          tests: ["Private.test.ts"],
+        },
+        {
+          name: "Private Output",
+          tests: ["PrivateOutput.test.ts"],
+        },
+      ],
+    },
+  ];
+
   return (
     <>
       <Head>
@@ -228,8 +275,15 @@ const Home = () => {
         <Header />
         <div className="flex flex-1 grid lg:grid-cols-2">
           <div className="bg-[#eee]">
+            <Breadcrumb
+              chapterIndex={chapter}
+              sectionIndex={section}
+              setChapter={setChapter}
+              setSection={setSection}
+              items={tutorials}
+            />
             <div className="px-4">
-              <IntroductionSmartContracts />
+              <DynamicTutorial chapter={chapter} section={section} />
               <div className="flex justify-between">
                 <button
                   onClick={showMe}
@@ -348,7 +402,7 @@ const Home = () => {
                   </>
                 )}
               </div>
-              <div className="terminal h-[250px] max-w-[100vw]"></div>
+              <div className="terminal h-[250px] max-w-[100vw]" />
             </div>
           </div>
         </div>
