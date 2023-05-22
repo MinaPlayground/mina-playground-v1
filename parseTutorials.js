@@ -47,7 +47,7 @@ const parseTutorials = (async () => {
         encoding: "utf-8",
       });
 
-      imports += `C${key}S${sectionKey}: {tutorial: dynamic(() => import(\"${sectionTutorialPath}\"), {loading}), test: "${test}", src: ${JSON.stringify(
+      imports += `C${key}S${sectionKey}: {tutorial: dynamic(() => import(\"${sectionTutorialPath}\"), {loading}), test: "${test}", srcFileName: "${sectionSrcFile.toString()}", src: ${JSON.stringify(
         scrFile
       )}},`;
 

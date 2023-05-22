@@ -90,7 +90,7 @@ interface BreadCrumbProps {
   sectionIndex: number;
   items: {
     chapter: string;
-    sections: { name: string; tests: string[] }[];
+    sections: { name: string }[];
   }[];
   setChapter(chapter: number): void;
   setSection(section: number): void;
