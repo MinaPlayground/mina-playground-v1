@@ -1,22 +1,22 @@
-import fs from "fs";
+import fs from "fs/promises";
 import path from "path";
 
-export const transformToWebcontainerFiles = (
+export const transformToWebcontainerFiles = async (
   dir: string,
   files: Record<string, any> = {}
 ) => {
-  const projectDir = fs.readdirSync(dir);
+  const projectDir = await fs.readdir(dir);
   for (const item of projectDir) {
     const itemPath = path.join(dir, item);
-    const stats = fs.statSync(itemPath);
+    const stats = await fs.stat(itemPath);
     if (stats.isDirectory()) {
       files[item] = {
         directory: {},
       };
-      transformToWebcontainerFiles(itemPath, files[item].directory);
+      await transformToWebcontainerFiles(itemPath, files[item].directory);
     } else {
       const fileName = path.basename(item);
-      const fileContent = fs.readFileSync(itemPath, { encoding: "utf-8" });
+      const fileContent = await fs.readFile(itemPath, { encoding: "utf-8" });
       files[fileName] = {
         file: {
           contents: fileContent,

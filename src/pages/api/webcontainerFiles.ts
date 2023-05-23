@@ -9,14 +9,18 @@ type Data = {
   files: Record<string, any>;
 };
 
-export default function handler(
+const handler = async (
   req: NextApiRequest,
   res: NextApiResponse<Error | Data>
-) {
+) => {
   if (req.method !== "POST") {
     res.status(405).send({ message: "Only POST requests allowed" });
     return;
   }
-  const files = transformToWebcontainerFiles(req.body.path);
+  const files = await transformToWebcontainerFiles(
+    `./src/tutorials/${req.body.chapter}/base`
+  );
   res.status(200).json({ files });
-}
+};
+
+export default handler;
