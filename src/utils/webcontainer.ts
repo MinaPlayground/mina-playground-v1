@@ -27,15 +27,12 @@ export const transformToWebcontainerFiles = async (
   return files;
 };
 
-const dirs = [
-  "src/tutorials/01-introduction/01-smart-contracts/src/Add.ts",
-  "src/tutorials/01-introduction/01-smart-contracts/src/test/Test2.ts",
-];
-
 export const transformToWebcontainerFilesWithFocus = async (
   dir: string,
+  focus: string[],
   files: Record<string, any> = {},
-  focusedFiles: Record<string, any> = {}
+  focusedFiles: Record<string, any> = {},
+  basePath = dir
 ) => {
   const projectDir = await fs.readdir(dir);
   for (const item of projectDir) {
@@ -50,13 +47,15 @@ export const transformToWebcontainerFilesWithFocus = async (
       };
       await transformToWebcontainerFilesWithFocus(
         itemPath,
+        focus,
         files[item].directory,
-        focusedFiles[item].directory
+        focusedFiles[item].directory,
+        basePath
       );
     } else {
       const fileName = path.basename(item);
       const fileContent = await fs.readFile(itemPath, { encoding: "utf-8" });
-      if (dirs.includes(itemPath)) {
+      if (focus.includes(itemPath.replace(basePath, ""))) {
         focusedFiles[fileName] = {
           file: {
             contents: fileContent,
