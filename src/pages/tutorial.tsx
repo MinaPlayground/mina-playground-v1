@@ -7,13 +7,14 @@ import {
   getWorker,
   MonacoJsxSyntaxHighlight,
 } from "monaco-jsx-syntax-highlight";
-import { files } from "../../files";
 import Loader from "@/components/Loader";
 import { WebContainer } from "@webcontainer/api";
 import Breadcrumb from "@/components/breadcrumb/Breadcrumb";
-import DynamicTutorial from "@/components/DynamicTutorial";
 import type { GetServerSideProps } from "next";
-import { dynamicComponents } from "@/tutorials";
+import { MDXRemote } from "next-mdx-remote";
+import axios from "axios";
+import Tree from "@/components/file-explorer/Tree";
+import { getCombinedFiles } from "@/utils/objects";
 
 const finalCodeBlock = `
 import { Field, SmartContract, state, State, method } from "snarkyjs";
@@ -43,42 +44,97 @@ export class Add extends SmartContract {
 }
 `;
 
-export const getServerSideProps: GetServerSideProps = async ({ query }) => {
-  const { c, s } = query;
-  const dynamicComponentKey = `C${c}S${s}`;
-  if (!(dynamicComponentKey in dynamicComponents)) {
-    return {
-      redirect: {
-        destination: "/",
-        permanent: false,
+// TODO generate this
+const tutorials = {
+  "01-introduction": {
+    name: "Introduction",
+    sections: {
+      "01-smart-contracts": {
+        name: "Smart Contracts",
       },
-    };
-  }
+      "02-private-inputs": {
+        name: "Private Inputs",
+      },
+      "03-private-output": {
+        name: "Private Output",
+      },
+    },
+  },
+};
+
+export const getServerSideProps: GetServerSideProps = async ({
+  query,
+  req,
+}) => {
+  const { c, s } = query;
+  const { name, test, tutorial, files, focusedFiles, testFiles } = (
+    await axios.post(
+      "http://localhost:3000/api/sectionFiles",
+      { chapter: c, section: s },
+      { headers: { "Content-Type": "application/json" } }
+    )
+  ).data;
+
+  const webContainerFiles = await axios.post(
+    "http://localhost:3000/api/webcontainerFiles",
+    { chapter: c },
+    { headers: { "Content-Type": "application/json" } }
+  );
+
   return {
     props: {
-      c: parseInt(c as string),
-      s: parseInt(s as string),
+      c,
+      s,
+      item: {
+        tutorial,
+        test,
+        srcFiles: webContainerFiles.data.files,
+        focusedFiles,
+        testFiles,
+        files,
+      },
     },
   };
 };
 
-const Home = ({ c, s }: { c: number; s: number }) => {
+const Home = ({ c, s, item }: { c: string; s: string; item: any }) => {
+  const [tutorialItem, setTutorialItem] = useState<{
+    tutorial: any;
+    test: string;
+    srcFiles: any;
+    focusedFiles: any;
+    files: any;
+    testFiles: any;
+  }>(item);
+
+  const { tutorial, test, srcFiles, focusedFiles, files, testFiles } =
+    tutorialItem;
+
   const [isInitializing, setIsInitializing] = useState(true);
-  const [code, setCode] = useState(files.src.directory["Add.ts"].file.contents);
+  const [code, setCode] = useState<string | undefined>("");
   const [isRunning, setIsRunning] = useState(false);
   const [isAborting, setIsAborting] = useState(false);
   const webcontainerInstance = useRef<WebContainer | null>(null);
   const terminalInstance = useRef<any>(null);
   const inputRef = useRef<any>(null);
   const shellRef = useRef<any>(null);
-
   const [chapter, setChapter] = useState(c);
   const [section, setSection] = useState(s);
+  const [currentDirectory, setCurrentDirectory] = useState("");
 
-  const setCodeChange = (code: string | undefined) => {
+  const onClick = (code: string, dir: string) => {
+    setCodeChange(code, dir);
+  };
+
+  useEffect(() => {});
+
+  const setCodeChange = (code: string | undefined, dir?: string) => {
     if (!code) return;
     setCode(code);
-    webcontainerInstance.current?.fs.writeFile("/src/Add.ts", code);
+    webcontainerInstance.current?.fs.writeFile(
+      `/src/${dir ?? currentDirectory}`,
+      code
+    );
   };
 
   const installDependencies = async () => {
@@ -104,7 +160,9 @@ const Home = ({ c, s }: { c: number; s: number }) => {
 
   const runTest = async () => {
     setIsRunning(true);
-    inputRef.current.write("npm run test \r");
+    inputRef.current.write(
+      `node --experimental-vm-modules --experimental-wasm-threads node_modules/jest/bin/jest.js ${test} \r`
+    );
   };
 
   const showMe = () => {
@@ -158,10 +216,43 @@ const Home = ({ c, s }: { c: number; s: number }) => {
     };
   };
 
+  const requestSection = async (chapter: string, section: string) => {
+    try {
+      const response = await axios.post(
+        "/api/sectionFiles",
+        { chapter, section },
+        { headers: { "Content-Type": "application/json" } }
+      );
+      const { files, tutorial, focusedFiles, testFiles, test } = response.data;
+      setTutorialItem({
+        ...tutorialItem,
+        tutorial,
+        focusedFiles,
+        test,
+      });
+      const mountFiles = getCombinedFiles(
+        srcFiles,
+        files,
+        focusedFiles,
+        testFiles
+      );
+      await webcontainerInstance.current?.mount(mountFiles);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const startWebContainer = async () => {
     const { WebContainer } = await import("@webcontainer/api");
+    if (webcontainerInstance.current) return;
     webcontainerInstance.current = await WebContainer.boot();
-    await webcontainerInstance.current.mount(files);
+    const mountFiles = getCombinedFiles(
+      srcFiles,
+      files,
+      focusedFiles,
+      testFiles
+    );
+    await webcontainerInstance.current.mount(mountFiles);
 
     const exitCode = await installDependencies();
     if (exitCode !== 0) {
@@ -175,7 +266,7 @@ const Home = ({ c, s }: { c: number; s: number }) => {
   const initialize = async () => {
     setIsInitializing(true);
     await initializeTerminal();
-    // await startWebContainer();
+    await startWebContainer();
   };
 
   useEffect(() => {
@@ -238,25 +329,10 @@ const Home = ({ c, s }: { c: number; s: number }) => {
     return dispose;
   }, []);
 
-  const tutorials = [
-    {
-      chapter: "Introduction",
-      sections: [
-        {
-          name: "Smart Contracts",
-          tests: ["Add.test.ts"],
-        },
-        {
-          name: "Private Inputs",
-          tests: ["Private.test.ts"],
-        },
-        {
-          name: "Private Output",
-          tests: ["PrivateOutput.test.ts"],
-        },
-      ],
-    },
-  ];
+  const onSetSection = (section: string) => {
+    setSection(section);
+    void requestSection(chapter, section);
+  };
 
   return (
     <>
@@ -277,11 +353,20 @@ const Home = ({ c, s }: { c: number; s: number }) => {
               chapterIndex={chapter}
               sectionIndex={section}
               setChapter={setChapter}
-              setSection={setSection}
+              setSection={onSetSection}
               items={tutorials}
             />
+            <Tree
+              data={focusedFiles}
+              onBlur={() => null}
+              onClick={onClick}
+              setCurrentDirectory={setCurrentDirectory}
+              currentDirectory={currentDirectory}
+            />
             <div className="px-4">
-              <DynamicTutorial chapter={chapter} section={section} />
+              <div id="tutorial">
+                <MDXRemote {...tutorial} />
+              </div>
               <div className="flex justify-between">
                 <button
                   onClick={showMe}
@@ -319,7 +404,7 @@ const Home = ({ c, s }: { c: number; s: number }) => {
                 path={"file:///index.tsx"}
                 defaultLanguage="typescript"
                 value={code}
-                onChange={setCodeChange}
+                onChange={(value) => setCodeChange(value)}
                 onMount={handleEditorDidMount}
                 options={{
                   fontSize: 14,
