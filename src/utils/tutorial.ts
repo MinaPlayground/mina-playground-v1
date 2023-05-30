@@ -16,18 +16,18 @@ export const getTutorialByChapterAndSection = async (c: string, s: string) => {
   const testFiles = await transformToWebcontainerFiles(
     `src/tutorials/${c}/${s}/tests/`
   );
-  const testFileName = await fs.readdir(`src/tutorials/${c}/${s}/tests`);
+  const test = (await fs.readdir(`src/tutorials/${c}/${s}/tests`)).toString();
 
-  const tutorial = await fs.readFile(
+  const tutorialFileContent = await fs.readFile(
     `src/tutorials/${c}/${s}/tutorial.mdx`,
     "utf-8"
   );
-  const mdxSource = await serialize(tutorial);
+  const tutorial = await serialize(tutorialFileContent);
 
   return {
     name,
-    testFileName,
-    mdxSource,
+    test,
+    tutorial,
     files,
     focusedFiles,
     testFiles,
