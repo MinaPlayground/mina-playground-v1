@@ -7,19 +7,14 @@ import {
   getWorker,
   MonacoJsxSyntaxHighlight,
 } from "monaco-jsx-syntax-highlight";
-import { Prism } from "@mantine/prism";
-import { files } from "../../files";
 import Loader from "@/components/Loader";
 import { WebContainer } from "@webcontainer/api";
-
-const codeBlock = `class HelloWorld extends SmartContract {}
-`;
-
-const codeBlock2 = `class HelloWorld extends SmartContract {
-  @method myMethod(x: Field) {
-    x.mul(2).assertEquals(5);
-  }
-}`;
+import Breadcrumb from "@/components/breadcrumb/Breadcrumb";
+import type { GetServerSideProps } from "next";
+import { MDXRemote } from "next-mdx-remote";
+import axios from "axios";
+import Tree from "@/components/file-explorer/Tree";
+import { getCombinedFiles } from "@/utils/objects";
 
 const finalCodeBlock = `
 import { Field, SmartContract, state, State, method } from "snarkyjs";
@@ -49,20 +44,97 @@ export class Add extends SmartContract {
 }
 `;
 
-const Home = () => {
+// TODO generate this
+const tutorials = {
+  "01-introduction": {
+    name: "Introduction",
+    sections: {
+      "01-smart-contracts": {
+        name: "Smart Contracts",
+      },
+      "02-private-inputs": {
+        name: "Private Inputs",
+      },
+      "03-private-output": {
+        name: "Private Output",
+      },
+    },
+  },
+};
+
+export const getServerSideProps: GetServerSideProps = async ({
+  query,
+  req,
+}) => {
+  const { c, s } = query;
+  const { name, test, tutorial, files, focusedFiles, testFiles } = (
+    await axios.post(
+      "https://www.minaplayground.com/api/sectionFiles",
+      { chapter: c, section: s },
+      { headers: { "Content-Type": "application/json" } }
+    )
+  ).data;
+
+  const webContainerFiles = await axios.post(
+    "https://www.minaplayground.com/api/webcontainerFiles",
+    { chapter: c },
+    { headers: { "Content-Type": "application/json" } }
+  );
+
+  return {
+    props: {
+      c,
+      s,
+      item: {
+        tutorial,
+        test,
+        srcFiles: webContainerFiles.data.files,
+        focusedFiles,
+        testFiles,
+        files,
+      },
+    },
+  };
+};
+
+const Home = ({ c, s, item }: { c: string; s: string; item: any }) => {
+  const [tutorialItem, setTutorialItem] = useState<{
+    tutorial: any;
+    test: string;
+    srcFiles: any;
+    focusedFiles: any;
+    files: any;
+    testFiles: any;
+  }>(item);
+
+  const { tutorial, test, srcFiles, focusedFiles, files, testFiles } =
+    tutorialItem;
+
   const [isInitializing, setIsInitializing] = useState(true);
-  const [code, setCode] = useState(files.src.directory["Add.ts"].file.contents);
+  const [code, setCode] = useState<string | undefined>("");
   const [isRunning, setIsRunning] = useState(false);
   const [isAborting, setIsAborting] = useState(false);
   const webcontainerInstance = useRef<WebContainer | null>(null);
   const terminalInstance = useRef<any>(null);
   const inputRef = useRef<any>(null);
   const shellRef = useRef<any>(null);
+  const [chapter, setChapter] = useState(c);
+  const [section, setSection] = useState(s);
+  const [currentDirectory, setCurrentDirectory] = useState("");
 
-  const setCodeChange = (code: string | undefined) => {
+  const onClick = (code: string, dir: string) => {
+    setCodeChange(code, dir);
+  };
+
+  useEffect(() => {});
+
+  const setCodeChange = (code: string | undefined, dir?: string) => {
     if (!code) return;
     setCode(code);
-    webcontainerInstance.current?.fs.writeFile("/src/Add.ts", code);
+    webcontainerInstance.current?.fs.writeFile(
+      `/src/${dir ?? currentDirectory}`,
+      code
+    );
   };
 
   const installDependencies = async () => {
@@ -88,7 +160,9 @@ const Home = () => {
 
   const runTest = async () => {
     setIsRunning(true);
-    inputRef.current.write("npm run test \r");
+    inputRef.current.write(
+      `node --experimental-vm-modules --experimental-wasm-threads node_modules/jest/bin/jest.js ${test} \r`
+    );
   };
 
   const showMe = () => {
@@ -142,10 +216,43 @@ const Home = () => {
     };
   };
 
+  const requestSection = async (chapter: string, section: string) => {
+    try {
+      const response = await axios.post(
+        "/api/sectionFiles",
+        { chapter, section },
+        { headers: { "Content-Type": "application/json" } }
+      );
+      const { files, tutorial, focusedFiles, testFiles, test } = response.data;
+      setTutorialItem({
+        ...tutorialItem,
+        tutorial,
+        focusedFiles,
+        test,
+      });
+      const mountFiles = getCombinedFiles(
+        srcFiles,
+        files,
+        focusedFiles,
+        testFiles
+      );
+      await webcontainerInstance.current?.mount(mountFiles);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const startWebContainer = async () => {
     const { WebContainer } = await import("@webcontainer/api");
+    if (webcontainerInstance.current) return;
     webcontainerInstance.current = await WebContainer.boot();
-    await webcontainerInstance.current.mount(files);
+    const mountFiles = getCombinedFiles(
+      srcFiles,
+      files,
+      focusedFiles,
+      testFiles
+    );
+    await webcontainerInstance.current.mount(mountFiles);
 
     const exitCode = await installDependencies();
     if (exitCode !== 0) {
@@ -222,69 +329,44 @@ const Home = () => {
     return dispose;
   }, []);
 
+  const onSetSection = (section: string) => {
+    setSection(section);
+    void requestSection(chapter, section);
+  };
+
   return (
     <>
       <Head>
         <title>Mina Playground</title>
-        <meta name="description" content="Generated by create next app" />
+        <meta
+          name="description"
+          content="Interactive Smart Contracts tutorial"
+        />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/icon.svg" />
       </Head>
       <main className={styles.main}>
         <Header />
         <div className="flex flex-1 grid lg:grid-cols-2">
           <div className="bg-[#eee]">
-            <div className="p-4">
-              <h1 className="mb-4 px-2 rounded-md py-1 text-4xl font-bold leading-none tracking-tight md:text-5xl lg:text-2xl text-white bg-gradient-to-br from-pink-500 to-orange-400">
-                Smart Contracts
-              </h1>
-              <h1 className="text-black mb-2">
-                Smart contracts are written by extending the base class{" "}
-                <span className="bg-red-100 text-red-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded">
-                  SmartContract
-                </span>
-                :
-              </h1>
-              <Prism className="bg-white rounded mb-2" language="typescript">
-                {codeBlock}
-              </Prism>
-
-              <h1 className="text-black mb-2">
-                Interaction with a smart contract happens by calling one or more
-                of its methods. You declare methods using the{" "}
-                <span className="bg-red-100 text-red-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded">
-                  @method
-                </span>
-                decorator:
-              </h1>
-              <Prism className="bg-white rounded" language="typescript">
-                {codeBlock2}
-              </Prism>
-              <h1 className="mb-4 px-2 rounded-md py-1 mt-8 text-4xl font-bold leading-none tracking-tight md:text-5xl lg:text-2xl text-white bg-gradient-to-br from-pink-500 to-orange-400">
-                Update the state
-              </h1>
-              <h1 className="text-black">
-                Our goal is when the 'update' method is called, the Add contract
-                adds Field(2) to its 'num' contract state.
-              </h1>
-              <h1 className="text-black mt-4 mb-2">
-                We can update our current state using the{" "}
-                <span className="bg-red-100 text-red-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">
-                  add
-                </span>
-                method :
-              </h1>
-              <Prism className="bg-white rounded mb-2" language="tsx">
-                {`const newState = currentState.add(2);`}
-              </Prism>
-
-              <h1 className="text-black mb-2">
-                And update the state of <span className="font-bold">num</span>{" "}
-                with our new state:
-              </h1>
-              <Prism className="bg-white rounded" language="tsx">
-                {`this.num.set(newState);`}
-              </Prism>
+            <Breadcrumb
+              chapterIndex={chapter}
+              sectionIndex={section}
+              setChapter={setChapter}
+              setSection={onSetSection}
+              items={tutorials}
+            />
+            <Tree
+              data={focusedFiles}
+              onBlur={() => null}
+              onClick={onClick}
+              setCurrentDirectory={setCurrentDirectory}
+              currentDirectory={currentDirectory}
+            />
+            <div className="px-4">
+              <div id="tutorial">
+                <MDXRemote {...tutorial} />
+              </div>
               <div className="flex justify-between">
                 <button
                   onClick={showMe}
@@ -322,7 +404,7 @@ const Home = () => {
                 path={"file:///index.tsx"}
                 defaultLanguage="typescript"
                 value={code}
-                onChange={setCodeChange}
+                onChange={(value) => setCodeChange(value)}
                 onMount={handleEditorDidMount}
                 options={{
                   fontSize: 14,
@@ -403,7 +485,7 @@ const Home = () => {
                   </>
                 )}
               </div>
-              <div className="terminal h-[250px]"></div>
+              <div className="terminal h-[250px] max-w-[100vw]" />
             </div>
           </div>
         </div>

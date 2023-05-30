@@ -6,6 +6,7 @@ import { FileSystemType } from "@/types";
 const Tree: FC<TreeProps> = ({
   data,
   onBlur,
+  onClick,
   setCurrentDirectory,
   directory = "",
   currentDirectory,
@@ -17,6 +18,7 @@ const Tree: FC<TreeProps> = ({
           node={node}
           key={index}
           onBlur={onBlur}
+          onClick={onClick}
           directory={directory}
           currentDirectory={currentDirectory}
           setCurrentDirectory={setCurrentDirectory}
@@ -29,6 +31,7 @@ const Tree: FC<TreeProps> = ({
 interface TreeProps {
   data: FileSystemTree;
   onBlur(value: string, type: FileSystemType): void;
+  onClick(code: string, dir: string): void;
   setCurrentDirectory(directory: string): void;
   directory?: string;
   currentDirectory: string;
