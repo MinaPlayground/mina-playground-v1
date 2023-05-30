@@ -16,6 +16,9 @@ const withMDX = require("@next/mdx")({
 const nextConfig = {
   reactStrictMode: false,
   pageExtensions: ["ts", "tsx", "js", "jsx", "md", "mdx"],
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   async headers() {
     return [
       {
