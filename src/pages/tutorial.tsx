@@ -69,14 +69,14 @@ export const getServerSideProps: GetServerSideProps = async ({
   const { c, s } = query;
   const { name, test, tutorial, files, focusedFiles, testFiles } = (
     await axios.post(
-      "http://localhost:3000/api/sectionFiles",
+      "https://www.minaplayground.com/api/sectionFiles",
       { chapter: c, section: s },
       { headers: { "Content-Type": "application/json" } }
     )
   ).data;
 
   const webContainerFiles = await axios.post(
-    "http://localhost:3000/api/webcontainerFiles",
+    "https://www.minaplayground.com/api/webcontainerFiles",
     { chapter: c },
     { headers: { "Content-Type": "application/json" } }
   );
