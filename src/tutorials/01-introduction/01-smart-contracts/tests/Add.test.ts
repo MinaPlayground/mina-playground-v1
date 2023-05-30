@@ -1,4 +1,4 @@
-import { Add } from "./Add";
+import { Add } from "../src/Add";
 import { Field, Mina, PrivateKey, PublicKey, AccountUpdate } from "snarkyjs";
 
 /*
