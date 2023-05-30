@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import Tree from "@/components/file-explorer/Tree";
 import { DirectoryNode, FileNode } from "@webcontainer/api";
 import { FileSystemType } from "@/types";
@@ -30,6 +30,7 @@ const FileIcon = () => (
 const TreeNode: FC<TreeNodeProps> = ({
   node,
   onBlur,
+  onClick,
   setCurrentDirectory,
   directory,
   currentDirectory,
@@ -38,14 +39,16 @@ const TreeNode: FC<TreeNodeProps> = ({
   const [showChildren, setShowChildren] = useState(false);
   const [inputValue, setInputValue] = useState("");
 
-  const dir = directory ? `${directory}.directory.${key}` : `${key}`;
+  const dir = directory ? `${directory}/${key}` : `${key}`;
   const isDirectory = "directory" in value;
   const isSelected = currentDirectory && dir === currentDirectory;
   const isSelectedStyle = isSelected ? "bg-blue-100" : "";
 
   const handleClick = () => {
-    if (isDirectory) {
-      setCurrentDirectory(dir);
+    setCurrentDirectory(dir);
+    if (!isDirectory) {
+      const code = (value as FileNode).file.contents;
+      onClick(code as string, dir);
     }
     setShowChildren(!showChildren);
   };
@@ -83,6 +86,7 @@ const TreeNode: FC<TreeNodeProps> = ({
             <Tree
               data={value.directory}
               onBlur={onBlur}
+              onClick={onClick}
               directory={dir}
               currentDirectory={currentDirectory}
               setCurrentDirectory={setCurrentDirectory}
@@ -97,6 +101,7 @@ const TreeNode: FC<TreeNodeProps> = ({
 interface TreeNodeProps {
   node: [string, DirectoryNode | FileNode];
   onBlur(value: string, type: FileSystemType): void;
+  onClick(code: string, dir: string): void;
   setCurrentDirectory(directory: string): void;
   directory: string;
   currentDirectory: string;
