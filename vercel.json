@@ -1,7 +1,0 @@
-{
-  "functions": {
-    "src/pages/tutorial":  {
-      "includeFiles": "tutorials/**"
-    }
-  }
-}
