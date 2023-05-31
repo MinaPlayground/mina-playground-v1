@@ -16,6 +16,8 @@ import axios from "axios";
 import Tree from "@/components/file-explorer/Tree";
 import { getCombinedFiles } from "@/utils/objects";
 import tutorials from "@/tutorials.json";
+import { getTutorialByChapterAndSection } from "@/utils/tutorial";
+import { transformToWebcontainerFiles } from "@/utils/webcontainer";
 
 const finalCodeBlock = `
 import { Field, SmartContract, state, State, method } from "snarkyjs";
@@ -50,18 +52,11 @@ export const getServerSideProps: GetServerSideProps = async ({
   req,
 }) => {
   const { c, s } = query;
-  const { name, test, tutorial, files, focusedFiles, testFiles } = (
-    await axios.post(
-      "http://localhost:3000/api/sectionFiles",
-      { chapter: c, section: s },
-      { headers: { "Content-Type": "application/json" } }
-    )
-  ).data;
+  const { name, test, tutorial, files, focusedFiles, testFiles } =
+    await getTutorialByChapterAndSection(c as string, s as string);
 
-  const webContainerFiles = await axios.post(
-    "http://localhost:3000/api/webcontainerFiles",
-    { chapter: c },
-    { headers: { "Content-Type": "application/json" } }
+  const webContainerFiles = await transformToWebcontainerFiles(
+    `./src/tutorials/${c}/base`
   );
 
   return {
@@ -71,7 +66,7 @@ export const getServerSideProps: GetServerSideProps = async ({
       item: {
         tutorial,
         test,
-        srcFiles: webContainerFiles.data.files,
+        srcFiles: webContainerFiles,
         focusedFiles,
         testFiles,
         files,
