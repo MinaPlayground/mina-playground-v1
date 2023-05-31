@@ -1,6 +1,6 @@
 {
   "functions": {
-    "tutorial":  {
+    "pages/tutorial":  {
       "includeFiles": "tutorials/**"
     }
   }
