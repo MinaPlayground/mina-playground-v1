@@ -19,6 +19,11 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  experimental: {
+    outputFileTracingIncludes: {
+      "/api/sectionFiles": ["./tutorials/**"],
+    },
+  },
   async headers() {
     return [
       {
