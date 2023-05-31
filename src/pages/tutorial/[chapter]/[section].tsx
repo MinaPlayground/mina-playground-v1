@@ -10,7 +10,12 @@ import {
 import Loader from "@/components/Loader";
 import { WebContainer } from "@webcontainer/api";
 import Breadcrumb from "@/components/breadcrumb/Breadcrumb";
-import type { GetServerSideProps } from "next";
+import type {
+  GetServerSideProps,
+  GetStaticPaths,
+  GetStaticProps,
+  NextPage,
+} from "next";
 import { MDXRemote } from "next-mdx-remote";
 import axios from "axios";
 import Tree from "@/components/file-explorer/Tree";
@@ -19,6 +24,7 @@ import tutorials from "@/tutorials.json";
 import { getTutorialByChapterAndSection } from "@/utils/tutorial";
 import { transformToWebcontainerFiles } from "@/utils/webcontainer";
 import { isValidChapterAndSection } from "@/utils/validation";
+import { useRouter } from "next/router";
 
 const finalCodeBlock = `
 import { Field, SmartContract, state, State, method } from "snarkyjs";
@@ -48,11 +54,23 @@ export class Add extends SmartContract {
 }
 `;
 
-export const getServerSideProps: GetServerSideProps = async ({
-  query,
-  req,
-}) => {
-  const { c, s } = query;
+export const getStaticPaths: GetStaticPaths = async () => {
+  return {
+    paths: [
+      {
+        params: {
+          chapter: "01-introduction",
+          section: "01-smart-contracts",
+        },
+      }, // See the "paths" section below
+    ],
+    fallback: true, // false or "blocking"
+  };
+};
+
+export const getStaticProps: GetStaticProps<any> = async ({ params }) => {
+  // @ts-ignore
+  const { chapter: c, section: s } = params;
   const isValid = isValidChapterAndSection(c as string, s as string);
   if (!isValid) {
     return {
@@ -62,6 +80,7 @@ export const getServerSideProps: GetServerSideProps = async ({
       },
     };
   }
+
   const { name, test, tutorial, files, focusedFiles, testFiles } =
     await getTutorialByChapterAndSection(c as string, s as string);
 
@@ -85,7 +104,25 @@ export const getServerSideProps: GetServerSideProps = async ({
   };
 };
 
-const Home = ({ c, s, item }: { c: string; s: string; item: any }) => {
+interface IHomeProps {
+  c: string;
+  s: string;
+  item: {
+    tutorial: string;
+    test: string;
+    srcFiles: object;
+    focusedFiles: object;
+    testFiles: object;
+    files: object;
+  }; // import from react if needed
+}
+
+const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
+  const router = useRouter();
+
+  if (router.isFallback) {
+    return <div>Loading...</div>;
+  }
   const [tutorialItem, setTutorialItem] = useState<{
     tutorial: any;
     test: string;
@@ -95,8 +132,7 @@ const Home = ({ c, s, item }: { c: string; s: string; item: any }) => {
     testFiles: any;
   }>(item);
 
-  const { tutorial, test, srcFiles, focusedFiles, files, testFiles } =
-    tutorialItem;
+  const { tutorial, test, srcFiles, focusedFiles, files, testFiles } = item;
 
   const [isInitializing, setIsInitializing] = useState(true);
   const [code, setCode] = useState<string | undefined>("");
@@ -252,7 +288,7 @@ const Home = ({ c, s, item }: { c: string; s: string; item: any }) => {
   const initialize = async () => {
     setIsInitializing(true);
     await initializeTerminal();
-    await startWebContainer();
+    // await startWebContainer();
   };
 
   useEffect(() => {

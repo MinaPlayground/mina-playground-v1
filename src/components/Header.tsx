@@ -8,7 +8,7 @@ const Header: FC = () => {
         <a href="/" className="flex items-center">
           <img
             alt={"icon"}
-            src="./icon.svg"
+            src="/icon.svg"
             height={32}
             width={32}
             className="mr-2 border-2 rounded"
