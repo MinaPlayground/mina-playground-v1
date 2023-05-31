@@ -22,6 +22,8 @@ const nextConfig = {
   experimental: {
     outputFileTracingIncludes: {
       "/api/sectionFiles": ["./tutorials/**"],
+      "/src/pages/tutorial": ["./tutorials/**"],
+      "/pages/tutorial": ["./tutorials/**"],
     },
   },
   async headers() {
