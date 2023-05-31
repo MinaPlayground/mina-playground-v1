@@ -81,11 +81,22 @@ export const getServerSideProps: GetServerSideProps = async ({
         testFiles,
         files,
       },
+      path: process.cwd(),
     },
   };
 };
 
-const Home = ({ c, s, item }: { c: string; s: string; item: any }) => {
+const Home = ({
+  c,
+  s,
+  item,
+  path,
+}: {
+  c: string;
+  s: string;
+  item: any;
+  path: string;
+}) => {
   const [tutorialItem, setTutorialItem] = useState<{
     tutorial: any;
     test: string;
@@ -94,6 +105,8 @@ const Home = ({ c, s, item }: { c: string; s: string; item: any }) => {
     files: any;
     testFiles: any;
   }>(item);
+
+  console.log(path);
 
   const { tutorial, test, srcFiles, focusedFiles, files, testFiles } =
     tutorialItem;
