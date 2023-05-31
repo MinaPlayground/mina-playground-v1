@@ -15,6 +15,7 @@ import { MDXRemote } from "next-mdx-remote";
 import axios from "axios";
 import Tree from "@/components/file-explorer/Tree";
 import { getCombinedFiles } from "@/utils/objects";
+import tutorials from "@/tutorials.json";
 
 const finalCodeBlock = `
 import { Field, SmartContract, state, State, method } from "snarkyjs";
@@ -44,24 +45,6 @@ export class Add extends SmartContract {
 }
 `;
 
-// TODO generate this
-const tutorials = {
-  "01-introduction": {
-    name: "Introduction",
-    sections: {
-      "01-smart-contracts": {
-        name: "Smart Contracts",
-      },
-      "02-private-inputs": {
-        name: "Private Inputs",
-      },
-      "03-private-output": {
-        name: "Private Output",
-      },
-    },
-  },
-};
-
 export const getServerSideProps: GetServerSideProps = async ({
   query,
   req,
@@ -69,14 +52,14 @@ export const getServerSideProps: GetServerSideProps = async ({
   const { c, s } = query;
   const { name, test, tutorial, files, focusedFiles, testFiles } = (
     await axios.post(
-      "https://www.minaplayground.com/api/sectionFiles",
+      "http://localhost:3000/api/sectionFiles",
       { chapter: c, section: s },
       { headers: { "Content-Type": "application/json" } }
     )
   ).data;
 
   const webContainerFiles = await axios.post(
-    "https://www.minaplayground.com/api/webcontainerFiles",
+    "http://localhost:3000/api/webcontainerFiles",
     { chapter: c },
     { headers: { "Content-Type": "application/json" } }
   );
@@ -125,8 +108,6 @@ const Home = ({ c, s, item }: { c: string; s: string; item: any }) => {
   const onClick = (code: string, dir: string) => {
     setCodeChange(code, dir);
   };
-
-  useEffect(() => {});
 
   const setCodeChange = (code: string | undefined, dir?: string) => {
     if (!code) return;
@@ -331,6 +312,8 @@ const Home = ({ c, s, item }: { c: string; s: string; item: any }) => {
 
   const onSetSection = (section: string) => {
     setSection(section);
+    setCode("");
+    setCurrentDirectory("");
     void requestSection(chapter, section);
   };
 
@@ -355,13 +338,6 @@ const Home = ({ c, s, item }: { c: string; s: string; item: any }) => {
               setChapter={setChapter}
               setSection={onSetSection}
               items={tutorials}
-            />
-            <Tree
-              data={focusedFiles}
-              onBlur={() => null}
-              onClick={onClick}
-              setCurrentDirectory={setCurrentDirectory}
-              currentDirectory={currentDirectory}
             />
             <div className="px-4">
               <div id="tutorial">
@@ -398,7 +374,14 @@ const Home = ({ c, s, item }: { c: string; s: string; item: any }) => {
             </div>
           </div>
           <div className="flex flex-col">
-            <div className="flex-1 border-b-2">
+            <div className="flex flex-1 border-b-2 flex-row">
+              <Tree
+                data={focusedFiles}
+                onBlur={() => null}
+                onClick={onClick}
+                setCurrentDirectory={setCurrentDirectory}
+                currentDirectory={currentDirectory}
+              />
               <Editor
                 className="editor max-lg:h-[300px]"
                 path={"file:///index.tsx"}
