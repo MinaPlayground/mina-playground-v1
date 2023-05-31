@@ -16,7 +16,7 @@ export const getTutorialByChapterAndSection = async (c: string, s: string) => {
     process.cwd(),
     "tutorials",
     "01-introduction",
-    s,
+    "01-smart-contracts",
     "src"
   );
   const { files, focusedFiles } = await transformToWebcontainerFilesWithFocus(
