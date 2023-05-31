@@ -8,11 +8,12 @@ export const getServerSideProps: GetServerSideProps = async ({
   query,
   req,
 }) => {
+  const { s } = query;
   const dir = path.join(
     process.cwd(),
     "tutorials",
     "01-introduction",
-    "01-smart-contracts"
+    s as string
   );
   const fileContents = await fs.readFile(dir + "/meta.json", "utf8");
   return {
