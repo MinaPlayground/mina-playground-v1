@@ -4,10 +4,11 @@ const { readdirSync, readFileSync, writeFileSync } = require("fs");
 const excluded = ["base", "meta.json"];
 
 let data = {};
-const projectDir = readdirSync("./src/tutorials");
+const dir = process.cwd();
+const projectDir = readdirSync(`${dir}/tutorials`);
 for (const item of projectDir) {
   const name = JSON.parse(
-    readFileSync(`./src/tutorials/${item}/meta.json`, {
+    readFileSync(`${dir}/tutorials/${item}/meta.json`, {
       encoding: "utf-8",
     })
   ).name;
@@ -15,14 +16,14 @@ for (const item of projectDir) {
     name,
     sections: {},
   };
-  const currentPath = path.join("./src/tutorials", item);
+  const currentPath = path.join(`${dir}/tutorials/${item}`);
   const sections = readdirSync(currentPath).filter(
     (item) => !excluded.includes(item)
   );
 
   for (const section of sections) {
     const name = JSON.parse(
-      readFileSync(`./src/tutorials/${item}/${section}/meta.json`, {
+      readFileSync(`${dir}/tutorials/${item}/${section}/meta.json`, {
         encoding: "utf-8",
       })
     ).name;
@@ -31,4 +32,4 @@ for (const item of projectDir) {
     };
   }
 }
-writeFileSync("./src/tutorials.json", JSON.stringify(data));
+writeFileSync(`${dir}/src/tutorials.json`, JSON.stringify(data));

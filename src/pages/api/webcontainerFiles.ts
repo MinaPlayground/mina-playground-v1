@@ -24,7 +24,7 @@ const handler = async (
     return;
   }
   const files = await transformToWebcontainerFiles(
-    `./src/tutorials/${req.body.chapter}/base`
+    `${process.cwd()}/tutorials/${req.body.chapter}/base`
   );
   res.status(200).json({ files });
 };

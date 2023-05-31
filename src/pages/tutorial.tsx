@@ -66,7 +66,7 @@ export const getServerSideProps: GetServerSideProps = async ({
     await getTutorialByChapterAndSection(c as string, s as string);
 
   const webContainerFiles = await transformToWebcontainerFiles(
-    `./src/tutorials/${c}/base`
+    `${process.cwd()}/tutorials/${c}/base`
   );
 
   return {
