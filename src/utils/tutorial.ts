@@ -10,12 +10,12 @@ export const getTutorialByChapterAndSection = async (c: string, s: string) => {
   const dir = process.cwd();
   const { name, focus } = await json(`${dir}/tutorials/${c}/${s}/meta.json`);
   const { files, focusedFiles } = await transformToWebcontainerFilesWithFocus(
-    `${dir}/tutorials/${c}/${s}/src/`,
+    `${dir}/tutorials/${c}/${s}/src`,
     focus
   );
 
   const testFiles = await transformToWebcontainerFiles(
-    `${dir}/tutorials/${c}/${s}/tests/`
+    `${dir}/tutorials/${c}/${s}/tests`
   );
   const test = (
     await fs.readdir(`${dir}/tutorials/${c}/${s}/tests`)
