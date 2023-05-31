@@ -9,8 +9,9 @@ export const getServerSideProps: GetServerSideProps = async ({
   req,
 }) => {
   const { s } = query;
+  const dir = process.cwd();
   const fileContents = await fs.readFile(
-    `${process.cwd()}/tutorials/01-introduction/${s}` + "/meta.json",
+    `${dir}/tutorials/01-introduction/${s}` + "/meta.json",
     "utf8"
   );
   return {
