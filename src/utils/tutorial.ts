@@ -7,22 +7,23 @@ import {
 } from "@/utils/webcontainer";
 
 export const getTutorialByChapterAndSection = async (c: string, s: string) => {
-  const dir = process.cwd();
-  const { name, focus } = await json(`${dir}/tutorials/${c}/${s}/meta.json`);
+  const { name, focus } = await json(
+    `${process.cwd()}/tutorials/${c}/${s}/meta.json`
+  );
   const { files, focusedFiles } = await transformToWebcontainerFilesWithFocus(
-    `${dir}/tutorials/${c}/${s}/src/`,
+    `${process.cwd()}/tutorials/${c}/${s}/src/`,
     focus
   );
 
   const testFiles = await transformToWebcontainerFiles(
-    `${dir}/tutorials/${c}/${s}/tests/`
+    `${process.cwd()}/tutorials/${c}/${s}/tests/`
   );
   const test = (
-    await fs.readdir(`${dir}/tutorials/${c}/${s}/tests`)
+    await fs.readdir(`${process.cwd()}/tutorials/${c}/${s}/tests`)
   ).toString();
 
   const tutorialFileContent = await fs.readFile(
-    `${dir}/tutorials/${c}/${s}/tutorial.mdx`,
+    `${process.cwd()}/tutorials/${c}/${s}/tutorial.mdx`,
     "utf-8"
   );
   const tutorial = await serialize(tutorialFileContent);
