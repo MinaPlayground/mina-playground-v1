@@ -12,7 +12,13 @@ export const getTutorialByChapterAndSection = async (c: string, s: string) => {
     `${process.cwd()}/tutorials/${c}/${s}/meta.json`
   );
 
-  const dir = path.join(process.cwd(), "tutorials", c, s, "src");
+  const dir = path.join(
+    process.cwd(),
+    "tutorials",
+    "01-introduction",
+    s,
+    "src"
+  );
   const { files, focusedFiles } = await transformToWebcontainerFilesWithFocus(
     dir,
     focus
