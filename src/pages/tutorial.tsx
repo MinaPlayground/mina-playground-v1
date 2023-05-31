@@ -18,6 +18,7 @@ import { getCombinedFiles } from "@/utils/objects";
 import tutorials from "@/tutorials.json";
 import { getTutorialByChapterAndSection } from "@/utils/tutorial";
 import { transformToWebcontainerFiles } from "@/utils/webcontainer";
+import { isValidChapterAndSection } from "@/utils/validation";
 
 const finalCodeBlock = `
 import { Field, SmartContract, state, State, method } from "snarkyjs";
@@ -52,6 +53,15 @@ export const getServerSideProps: GetServerSideProps = async ({
   req,
 }) => {
   const { c, s } = query;
+  const isValid = isValidChapterAndSection(c as string, s as string);
+  if (!isValid) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
   const { name, test, tutorial, files, focusedFiles, testFiles } =
     await getTutorialByChapterAndSection(c as string, s as string);
 
