@@ -31,12 +31,12 @@ const Breadcrumb: FC<BreadCrumbProps> = ({
                 className="py-2 text-sm text-gray-700"
                 aria-labelledby="dropdownDefault"
               >
-                {Object.entries(items).map(([key, value]) => {
+                {Object.entries(items).map(([key, value], index) => {
                   const { name } = value;
                   const isSelected = key === chapterIndex;
                   const isSelectedStyle = isSelected ? "bg-gray-100" : "";
                   return (
-                    <li>
+                    <li key={index}>
                       <a
                         onClick={() => {
                           // router.push(`/tutorial?c=${chapter});
@@ -71,7 +71,7 @@ const Breadcrumb: FC<BreadCrumbProps> = ({
                   const isSelected = key === sectionIndex;
                   const isSelectedStyle = isSelected ? "bg-gray-100" : "";
                   return (
-                    <li>
+                    <li key={index}>
                       <a
                         onClick={() => {
                           setSection(key);

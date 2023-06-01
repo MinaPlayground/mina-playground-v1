@@ -19,7 +19,7 @@ import tutorials from "@/tutorials.json";
 import { getTutorialByChapterAndSection } from "@/utils/tutorial";
 import { transformToWebcontainerFiles } from "@/utils/webcontainer";
 import { isValidChapterAndSection } from "@/utils/validation";
-import { ParsedUrlQuery } from "querystring";
+import { TutorialParams } from "@/types";
 
 const finalCodeBlock = `
 import { Field, SmartContract, state, State, method } from "snarkyjs";
@@ -69,14 +69,10 @@ export const getStaticPaths: GetStaticPaths = async () => {
   };
 };
 
-interface Params extends ParsedUrlQuery {
-  chapter: string;
-  section: string;
-}
-
-export const getStaticProps: GetStaticProps<IHomeProps, Params> = async ({
-  params,
-}) => {
+export const getStaticProps: GetStaticProps<
+  IHomeProps,
+  TutorialParams
+> = async ({ params }) => {
   const { chapter: c, section: s } = params!;
   const isValid = isValidChapterAndSection(c as string, s as string);
   if (!isValid) {
@@ -110,19 +106,6 @@ export const getStaticProps: GetStaticProps<IHomeProps, Params> = async ({
     },
   };
 };
-
-interface IHomeProps {
-  c: string;
-  s: string;
-  item: {
-    tutorial: MDXRemoteSerializeResult;
-    test: string;
-    srcFiles: FileSystemTree;
-    focusedFiles: FileSystemTree;
-    testFiles: FileSystemTree;
-    files: FileSystemTree;
-  };
-}
 
 const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const [tutorialItem, setTutorialItem] = useState(item);
@@ -513,5 +496,18 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
     </>
   );
 };
+
+interface IHomeProps {
+  c: string;
+  s: string;
+  item: {
+    tutorial: MDXRemoteSerializeResult;
+    test: string;
+    srcFiles: FileSystemTree;
+    focusedFiles: FileSystemTree;
+    testFiles: FileSystemTree;
+    files: FileSystemTree;
+  };
+}
 
 export default Home;
