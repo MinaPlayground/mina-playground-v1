@@ -5,6 +5,8 @@ import {
   transformToWebcontainerFiles,
   transformToWebcontainerFilesWithFocus,
 } from "@/utils/webcontainer";
+import { remarkCodeHike } from "@code-hike/mdx";
+import theme from "shiki/themes/github-light.json";
 
 export const getTutorialByChapterAndSection = async (c: string, s: string) => {
   const dir = process.cwd();
@@ -25,7 +27,15 @@ export const getTutorialByChapterAndSection = async (c: string, s: string) => {
     `${dir}/tutorials/${c}/${s}/tutorial.mdx`,
     "utf-8"
   );
-  const tutorial = await serialize(tutorialFileContent);
+
+  const tutorial = await serialize(tutorialFileContent, {
+    mdxOptions: {
+      remarkPlugins: [
+        [remarkCodeHike, { autoImport: false, theme, showCopyButton: true }],
+      ],
+      useDynamicImport: true,
+    },
+  });
 
   return {
     name,
