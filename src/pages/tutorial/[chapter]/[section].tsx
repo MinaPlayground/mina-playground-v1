@@ -20,6 +20,9 @@ import { getTutorialByChapterAndSection } from "@/utils/tutorial";
 import { transformToWebcontainerFiles } from "@/utils/webcontainer";
 import { isValidChapterAndSection } from "@/utils/validation";
 import { TutorialParams } from "@/types";
+import { CH } from "@code-hike/mdx/components";
+
+const components = { CH };
 
 const finalCodeBlock = `
 import { Field, SmartContract, state, State, method } from "snarkyjs";
@@ -361,7 +364,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
             />
             <div className="px-4">
               <div id="tutorial">
-                <MDXRemote {...tutorial} />
+                <MDXRemote {...tutorial} components={components} />
               </div>
               <div className="flex justify-between">
                 <button
