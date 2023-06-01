@@ -354,7 +354,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
       <main className={styles.main}>
         <Header />
         <div className="flex flex-1 grid lg:grid-cols-2">
-          <div className="bg-[#eee]">
+          <div className="bg-[#eee] min-w-0">
             <Breadcrumb
               chapterIndex={chapter}
               sectionIndex={section}
