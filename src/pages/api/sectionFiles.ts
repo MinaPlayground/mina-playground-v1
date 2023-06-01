@@ -27,6 +27,7 @@ const handler = async (
     req.body.chapter,
     req.body.section
   );
+  res.setHeader("Cache-Control", "s-maxage=2678400");
   res.status(200).json({ ...response });
 };
 
