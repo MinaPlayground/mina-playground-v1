@@ -76,7 +76,7 @@ const Breadcrumb: FC<BreadCrumbProps> = ({
                         onClick={() => {
                           setSection(key);
                           router.push(
-                            `/tutorial?c=${chapterIndex}&s=${key}`,
+                            `/tutorial/${chapterIndex}/${key}`,
                             undefined,
                             { shallow: true }
                           );

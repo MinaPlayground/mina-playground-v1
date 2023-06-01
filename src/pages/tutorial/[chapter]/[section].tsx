@@ -8,10 +8,10 @@ import {
   MonacoJsxSyntaxHighlight,
 } from "monaco-jsx-syntax-highlight";
 import Loader from "@/components/Loader";
-import { WebContainer } from "@webcontainer/api";
+import { FileSystemTree, WebContainer } from "@webcontainer/api";
 import Breadcrumb from "@/components/breadcrumb/Breadcrumb";
-import type { GetServerSideProps } from "next";
-import { MDXRemote } from "next-mdx-remote";
+import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
+import { MDXRemote, MDXRemoteSerializeResult } from "next-mdx-remote";
 import axios from "axios";
 import Tree from "@/components/file-explorer/Tree";
 import { getCombinedFiles } from "@/utils/objects";
@@ -19,6 +19,7 @@ import tutorials from "@/tutorials.json";
 import { getTutorialByChapterAndSection } from "@/utils/tutorial";
 import { transformToWebcontainerFiles } from "@/utils/webcontainer";
 import { isValidChapterAndSection } from "@/utils/validation";
+import { ParsedUrlQuery } from "querystring";
 
 const finalCodeBlock = `
 import { Field, SmartContract, state, State, method } from "snarkyjs";
@@ -48,11 +49,35 @@ export class Add extends SmartContract {
 }
 `;
 
-export const getServerSideProps: GetServerSideProps = async ({
-  query,
-  req,
+export const getStaticPaths: GetStaticPaths = async () => {
+  return {
+    paths: [
+      {
+        params: {
+          chapter: "01-introduction",
+          section: "01-smart-contracts",
+        },
+      },
+      {
+        params: {
+          chapter: "01-introduction",
+          section: "02-private-inputs",
+        },
+      },
+    ],
+    fallback: false,
+  };
+};
+
+interface Params extends ParsedUrlQuery {
+  chapter: string;
+  section: string;
+}
+
+export const getStaticProps: GetStaticProps<IHomeProps, Params> = async ({
+  params,
 }) => {
-  const { c, s } = query;
+  const { chapter: c, section: s } = params!;
   const isValid = isValidChapterAndSection(c as string, s as string);
   if (!isValid) {
     return {
@@ -62,6 +87,7 @@ export const getServerSideProps: GetServerSideProps = async ({
       },
     };
   }
+
   const { name, test, tutorial, files, focusedFiles, testFiles } =
     await getTutorialByChapterAndSection(c as string, s as string);
 
@@ -85,16 +111,21 @@ export const getServerSideProps: GetServerSideProps = async ({
   };
 };
 
-const Home = ({ c, s, item }: { c: string; s: string; item: any }) => {
-  const [tutorialItem, setTutorialItem] = useState<{
-    tutorial: any;
+interface IHomeProps {
+  c: string;
+  s: string;
+  item: {
+    tutorial: MDXRemoteSerializeResult;
     test: string;
-    srcFiles: any;
-    focusedFiles: any;
-    files: any;
-    testFiles: any;
-  }>(item);
+    srcFiles: FileSystemTree;
+    focusedFiles: FileSystemTree;
+    testFiles: FileSystemTree;
+    files: FileSystemTree;
+  };
+}
 
+const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
+  const [tutorialItem, setTutorialItem] = useState(item);
   const { tutorial, test, srcFiles, focusedFiles, files, testFiles } =
     tutorialItem;
 
@@ -210,6 +241,7 @@ const Home = ({ c, s, item }: { c: string; s: string; item: any }) => {
         { headers: { "Content-Type": "application/json" } }
       );
       const { files, tutorial, focusedFiles, testFiles, test } = response.data;
+      console.log(test);
       setTutorialItem({
         ...tutorialItem,
         tutorial,
@@ -252,7 +284,7 @@ const Home = ({ c, s, item }: { c: string; s: string; item: any }) => {
   const initialize = async () => {
     setIsInitializing(true);
     await initializeTerminal();
-    await startWebContainer();
+    // await startWebContainer();
   };
 
   useEffect(() => {
