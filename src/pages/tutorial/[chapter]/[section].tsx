@@ -270,7 +270,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const initialize = async () => {
     setIsInitializing(true);
     await initializeTerminal();
-    // await startWebContainer();
+    await startWebContainer();
   };
 
   useEffect(() => {
