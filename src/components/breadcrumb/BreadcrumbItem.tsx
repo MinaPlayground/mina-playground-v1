@@ -20,10 +20,10 @@ const BreadcrumbItem: FC<BreadcrumbItemProps> = ({
   }, []);
 
   return (
-    <div className="relative max-w-xs px-4 text-base z-10">
+    <div className="relative max-w-42 sm:w-64 px-2 text-base z-10">
       <button
         ref={selectMenuRef}
-        className="flex items-center justify-between gap-2 w-full px-3 py-2 text-gray-500 bg-white border rounded-md shadow-sm cursor-default outline-none focus:border-indigo-600"
+        className="flex items-center justify-between gap-2 w-full px-3 py-2 text-black bg-white border rounded-md shadow-sm cursor-default outline-none focus:border-indigo-600"
         aria-haspopup="true"
         aria-expanded="true"
         aria-labelledby="listbox-label"
@@ -49,7 +49,7 @@ const BreadcrumbItem: FC<BreadcrumbItemProps> = ({
       {state ? (
         <div className="relative w-full">
           <ul
-            className="absolute w-full mt-3 overflow-y-auto bg-white border rounded-md shadow-sm max-h-64"
+            className="absolute w-full overflow-y-auto bg-white border rounded-md shadow-sm max-h-64"
             role="listbox"
           >
             {Object.entries(items).map(([key, value], index) => {

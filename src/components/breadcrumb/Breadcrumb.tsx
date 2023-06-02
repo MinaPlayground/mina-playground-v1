@@ -14,7 +14,13 @@ const Breadcrumb: FC<BreadCrumbProps> = ({
   const router = useRouter();
 
   return (
-    <>
+    <div className="flex m-2">
+      <BreadcrumbItem
+        name={chapterName}
+        activeIndex={chapterIndex}
+        items={items}
+        onClick={(key) => {}}
+      />
       <BreadcrumbItem
         name={sectionName}
         activeIndex={sectionIndex}
@@ -26,7 +32,7 @@ const Breadcrumb: FC<BreadCrumbProps> = ({
           });
         }}
       />
-    </>
+    </div>
   );
 };
 
