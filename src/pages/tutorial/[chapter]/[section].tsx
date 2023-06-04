@@ -270,7 +270,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const initialize = async () => {
     setIsInitializing(true);
     await initializeTerminal();
-    await startWebContainer();
+    // await startWebContainer();
   };
 
   useEffect(() => {
@@ -362,11 +362,11 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
               setSection={onSetSection}
               items={tutorials}
             />
-            <div className="px-4">
+            <div className="px-4 lg:h-[calc(100vh-120px)] overflow-y-auto">
               <div id="tutorial">
                 <MDXRemote {...tutorial} components={components} />
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between my-4">
                 <button
                   onClick={showMe}
                   type="button"
