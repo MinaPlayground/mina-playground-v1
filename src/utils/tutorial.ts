@@ -10,7 +10,9 @@ import theme from "shiki/themes/github-light.json";
 
 export const getTutorialByChapterAndSection = async (c: string, s: string) => {
   const dir = process.cwd();
-  const { name, focus } = await json(`${dir}/tutorials/${c}/${s}/meta.json`);
+  const { name, focus, highlight } = await json(
+    `${dir}/tutorials/${c}/${s}/meta.json`
+  );
   const { files, focusedFiles } = await transformToWebcontainerFilesWithFocus(
     `${dir}/tutorials/${c}/${s}/src/`,
     focus
@@ -42,6 +44,7 @@ export const getTutorialByChapterAndSection = async (c: string, s: string) => {
     test,
     tutorial,
     files,
+    highlight,
     focusedFiles,
     testFiles,
   };

@@ -1,1 +1,13 @@
-{"01-introduction":{"name":"Introduction","sections":{"01-smart-contracts":{"name":"Smart Contracts"},"02-private-inputs":{"name":"Private Inputs"},"03-private-output":{"name":"Private Output"}}}}
+{
+  "01-introduction": {
+    "name": "Introduction",
+    "sections": {
+      "01-smart-contracts": {
+        "name": "Smart Contracts"
+      },
+      "02-private-inputs": {
+        "name": "Private Inputs"
+      }
+    }
+  }
+}

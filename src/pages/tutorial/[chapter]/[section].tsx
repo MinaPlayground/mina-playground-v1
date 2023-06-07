@@ -14,7 +14,7 @@ import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import { MDXRemote, MDXRemoteSerializeResult } from "next-mdx-remote";
 import axios from "axios";
 import Tree from "@/components/file-explorer/Tree";
-import { getCombinedFiles } from "@/utils/objects";
+import { getCombinedFiles, getFileContentByPath } from "@/utils/objects";
 import tutorials from "@/tutorials.json";
 import { getTutorialByChapterAndSection } from "@/utils/tutorial";
 import { transformToWebcontainerFiles } from "@/utils/webcontainer";
@@ -23,34 +23,6 @@ import { TutorialParams } from "@/types";
 import { CH } from "@code-hike/mdx/components";
 
 const components = { CH };
-
-const finalCodeBlock = `
-import { Field, SmartContract, state, State, method } from "snarkyjs";
-
-/**
- * Basic Example
- * See https://docs.minaprotocol.com/zkapps for more info.
- *
- * The Add contract initializes the state variable 'num' to be a Field(1) value by default when deployed.
- * When the 'update' method is called, the Add contract adds Field(2) to its 'num' contract state.
- *
- * This file is safe to delete and replace with your own contract.
- */
-export class Add extends SmartContract {
-  @state(Field) num = State<Field>();
-
-  init() {
-    super.init();
-    this.num.set(Field(1));
-  }
-
-  @method update() {
-    const currentState = this.num.getAndAssertEquals();
-    const newState = currentState.add(2);
-    this.num.set(newState);
-  }
-}
-`;
 
 export const getStaticPaths: GetStaticPaths = async () => {
   return {
@@ -87,7 +59,7 @@ export const getStaticProps: GetStaticProps<
     };
   }
 
-  const { name, test, tutorial, files, focusedFiles, testFiles } =
+  const { name, test, tutorial, files, focusedFiles, testFiles, highlight } =
     await getTutorialByChapterAndSection(c as string, s as string);
 
   const webContainerFiles = await transformToWebcontainerFiles(
@@ -103,6 +75,7 @@ export const getStaticProps: GetStaticProps<
         test,
         srcFiles: webContainerFiles,
         focusedFiles,
+        highlight,
         testFiles,
         files,
       },
@@ -112,8 +85,22 @@ export const getStaticProps: GetStaticProps<
 
 const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const [tutorialItem, setTutorialItem] = useState(item);
-  const { tutorial, test, srcFiles, focusedFiles, files, testFiles } =
-    tutorialItem;
+  const {
+    tutorial,
+    test,
+    srcFiles,
+    focusedFiles,
+    files,
+    testFiles,
+    highlight,
+  } = tutorialItem;
+
+  useEffect(() => {
+    const fileCode = getFileContentByPath(highlight, focusedFiles);
+    setCode(fileCode);
+    setCurrentDirectory(highlight);
+    setTerminalOutput(null);
+  }, [tutorialItem]);
 
   const [isInitializing, setIsInitializing] = useState(true);
   const [code, setCode] = useState<string | undefined>("");
@@ -126,6 +113,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const [chapter, setChapter] = useState(c);
   const [section, setSection] = useState(s);
   const [currentDirectory, setCurrentDirectory] = useState("");
+  const [terminalOutput, setTerminalOutput] = useState<boolean | null>(null);
 
   const onClick = (code: string, dir: string) => {
     setCodeChange(code, dir);
@@ -158,7 +146,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const abortTest = async () => {
     setIsAborting(true);
     inputRef.current.write("\u0003");
-    terminalInstance.current.clear();
+    setTerminalOutput(null);
   };
 
   const runTest = async () => {
@@ -168,35 +156,9 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
     );
   };
 
-  const showMe = () => {
-    setCodeChange(finalCodeBlock);
-  };
-
-  const initializeTerminal = async () => {
-    const terminalEl = document.querySelector(".terminal") as HTMLDivElement;
-    const { Terminal } = await import("xterm");
-    const { FitAddon } = await import("xterm-addon-fit");
-    const terminal = new Terminal({
-      convertEol: true,
-    });
-    terminalInstance.current = terminal;
-    const fitAddon = new FitAddon();
-    terminal.loadAddon(fitAddon);
-    terminal.open(terminalEl);
-    fitAddon.fit();
-    window.addEventListener("resize", () => {
-      fitAddon.fit();
-    });
-  };
-
   const createProcess = async () => {
     if (!webcontainerInstance.current) return;
-    const shellProcess = await webcontainerInstance.current.spawn("jsh", {
-      terminal: {
-        cols: terminalInstance.current.cols,
-        rows: terminalInstance.current.rows,
-      },
-    });
+    const shellProcess = await webcontainerInstance.current.spawn("jsh");
 
     const input = shellProcess.input.getWriter();
 
@@ -209,7 +171,9 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
             setIsRunning(false);
             setIsAborting(false);
           }
-          terminalInstance.current.write(data);
+          if (data.includes("Tests")) {
+            setTerminalOutput(!data.includes("failed"));
+          }
         },
       })
     );
@@ -226,13 +190,14 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
         { chapter, section },
         { headers: { "Content-Type": "application/json" } }
       );
-      const { files, tutorial, focusedFiles, testFiles, test } = response.data;
-      console.log(test);
+      const { files, tutorial, focusedFiles, testFiles, test, highlight } =
+        response.data;
       setTutorialItem({
         ...tutorialItem,
         tutorial,
         focusedFiles,
         test,
+        highlight,
       });
       const mountFiles = getCombinedFiles(
         srcFiles,
@@ -269,7 +234,6 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
 
   const initialize = async () => {
     setIsInitializing(true);
-    await initializeTerminal();
     await startWebContainer();
   };
 
@@ -299,7 +263,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
 
   useEffect(() => {
     if (isAborting || !terminalInstance.current) return;
-    terminalInstance.current.clear();
+    setTerminalOutput(null);
   }, [isAborting]);
 
   const handleEditorDidMount = useCallback((editor: any, monaco: any) => {
@@ -362,37 +326,9 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
               setSection={onSetSection}
               items={tutorials}
             />
-            <div className="px-4">
+            <div className="px-4 pb-4 lg:h-[calc(100vh-120px)] overflow-y-auto">
               <div id="tutorial">
                 <MDXRemote {...tutorial} components={components} />
-              </div>
-              <div className="flex justify-between">
-                <button
-                  onClick={showMe}
-                  type="button"
-                  className="mt-4 text-white bg-gradient-to-br from-pink-500 to-orange-400 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2"
-                >
-                  Show me
-                </button>
-                <button
-                  type="button"
-                  className="inline-flex mt-4 text-white bg-gradient-to-br from-pink-500 to-orange-400 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2"
-                >
-                  Next
-                  <svg
-                    aria-hidden="true"
-                    className="w-5 h-5 ml-2 -mr-1"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </button>
               </div>
             </div>
           </div>
@@ -406,7 +342,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
                 currentDirectory={currentDirectory}
               />
               <Editor
-                className="editor max-lg:h-[300px]"
+                className="editor max-lg:h-[400px]"
                 path={"file:///index.tsx"}
                 defaultLanguage="typescript"
                 value={code}
@@ -491,7 +427,33 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
                   </>
                 )}
               </div>
-              <div className="terminal h-[250px] max-w-[100vw]" />
+              <div className="bg-black h-[125px] p-2">
+                {isRunning ? (
+                  <Loader
+                    text="Running tests, please wait"
+                    circleColor={"text-white"}
+                    spinnerColor={"fill-orange-500"}
+                  />
+                ) : terminalOutput !== null ? (
+                  terminalOutput ? (
+                    <div
+                      className="p-4 mb-4 text-green-800 rounded-lg bg-green-100"
+                      role="alert"
+                    >
+                      <span className="font-bold">Success!</span> You have
+                      passed the tutorial.
+                    </div>
+                  ) : (
+                    <div
+                      className="p-4 mb-4 text-red-800 rounded-lg bg-red-50"
+                      role="alert"
+                    >
+                      <span className="font-bold">Failed!</span> One of the
+                      tests failed.
+                    </div>
+                  )
+                ) : null}
+              </div>
             </div>
           </div>
         </div>
@@ -508,6 +470,7 @@ interface IHomeProps {
     test: string;
     srcFiles: FileSystemTree;
     focusedFiles: FileSystemTree;
+    highlight: string;
     testFiles: FileSystemTree;
     files: FileSystemTree;
   };

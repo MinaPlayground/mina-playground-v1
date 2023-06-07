@@ -1,4 +1,4 @@
-import { FileSystemTree } from "@webcontainer/api";
+import { DirectoryNode, FileNode, FileSystemTree } from "@webcontainer/api";
 
 export const getCombinedFiles = (
   srcFiles: FileSystemTree,
@@ -11,4 +11,16 @@ export const getCombinedFiles = (
     tests: { directory: testFiles },
     src: { directory: { ...files, ...focusedFiles } },
   };
+};
+
+export const getFileContentByPath = (
+  path: string,
+  object: string | FileSystemTree | Uint8Array
+) => {
+  return path.split("/").reduce((o, i) => {
+    if (!i.includes(".")) {
+      return ((o as FileSystemTree)[i] as DirectoryNode).directory;
+    }
+    return ((o as FileSystemTree)[i] as FileNode).file.contents;
+  }, object) as string;
 };
