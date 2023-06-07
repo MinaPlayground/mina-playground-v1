@@ -8,13 +8,13 @@ import {
   MonacoJsxSyntaxHighlight,
 } from "monaco-jsx-syntax-highlight";
 import Loader from "@/components/Loader";
-import { FileNode, FileSystemTree, WebContainer } from "@webcontainer/api";
+import { FileSystemTree, WebContainer } from "@webcontainer/api";
 import Breadcrumb from "@/components/breadcrumb/Breadcrumb";
 import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import { MDXRemote, MDXRemoteSerializeResult } from "next-mdx-remote";
 import axios from "axios";
 import Tree from "@/components/file-explorer/Tree";
-import { getCombinedFiles } from "@/utils/objects";
+import { getCombinedFiles, getFileContentByPath } from "@/utils/objects";
 import tutorials from "@/tutorials.json";
 import { getTutorialByChapterAndSection } from "@/utils/tutorial";
 import { transformToWebcontainerFiles } from "@/utils/webcontainer";
@@ -59,7 +59,7 @@ export const getStaticProps: GetStaticProps<
     };
   }
 
-  const { name, test, tutorial, files, focusedFiles, testFiles } =
+  const { name, test, tutorial, files, focusedFiles, testFiles, highlight } =
     await getTutorialByChapterAndSection(c as string, s as string);
 
   const webContainerFiles = await transformToWebcontainerFiles(
@@ -75,6 +75,7 @@ export const getStaticProps: GetStaticProps<
         test,
         srcFiles: webContainerFiles,
         focusedFiles,
+        highlight,
         testFiles,
         files,
       },
@@ -84,15 +85,25 @@ export const getStaticProps: GetStaticProps<
 
 const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const [tutorialItem, setTutorialItem] = useState(item);
-  const { tutorial, test, srcFiles, focusedFiles, files, testFiles } =
-    tutorialItem;
-  const [fileName, { file }] = Object.entries(focusedFiles)[0] as [
-    string,
-    FileNode
-  ];
+  const {
+    tutorial,
+    test,
+    srcFiles,
+    focusedFiles,
+    files,
+    testFiles,
+    highlight,
+  } = tutorialItem;
+
+  useEffect(() => {
+    const fileCode = getFileContentByPath(highlight, focusedFiles);
+    setCode(fileCode);
+    setCurrentDirectory(highlight);
+    setTerminalOutput(null);
+  }, [tutorialItem]);
 
   const [isInitializing, setIsInitializing] = useState(true);
-  const [code, setCode] = useState<string | undefined>(file.contents as string);
+  const [code, setCode] = useState<string | undefined>("");
   const [isRunning, setIsRunning] = useState(false);
   const [isAborting, setIsAborting] = useState(false);
   const webcontainerInstance = useRef<WebContainer | null>(null);
@@ -101,7 +112,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const shellRef = useRef<any>(null);
   const [chapter, setChapter] = useState(c);
   const [section, setSection] = useState(s);
-  const [currentDirectory, setCurrentDirectory] = useState(fileName);
+  const [currentDirectory, setCurrentDirectory] = useState("");
   const [terminalOutput, setTerminalOutput] = useState<boolean | null>(null);
 
   const onClick = (code: string, dir: string) => {
@@ -179,12 +190,14 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
         { chapter, section },
         { headers: { "Content-Type": "application/json" } }
       );
-      const { files, tutorial, focusedFiles, testFiles, test } = response.data;
+      const { files, tutorial, focusedFiles, testFiles, test, highlight } =
+        response.data;
       setTutorialItem({
         ...tutorialItem,
         tutorial,
         focusedFiles,
         test,
+        highlight,
       });
       const mountFiles = getCombinedFiles(
         srcFiles,
@@ -221,7 +234,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
 
   const initialize = async () => {
     setIsInitializing(true);
-    // await startWebContainer();
+    await startWebContainer();
   };
 
   useEffect(() => {
@@ -313,37 +326,9 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
               setSection={onSetSection}
               items={tutorials}
             />
-            <div className="px-4 lg:h-[calc(100vh-120px)] overflow-y-auto">
+            <div className="px-4 pb-4 lg:h-[calc(100vh-120px)] overflow-y-auto">
               <div id="tutorial">
                 <MDXRemote {...tutorial} components={components} />
-              </div>
-              <div className="flex justify-between my-4">
-                <button
-                  onClick={() => null}
-                  type="button"
-                  className="mt-4 text-white bg-gradient-to-br from-pink-500 to-orange-400 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2"
-                >
-                  Show me
-                </button>
-                <button
-                  type="button"
-                  className="inline-flex mt-4 text-white bg-gradient-to-br from-pink-500 to-orange-400 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2"
-                >
-                  Next
-                  <svg
-                    aria-hidden="true"
-                    className="w-5 h-5 ml-2 -mr-1"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </button>
               </div>
             </div>
           </div>
@@ -485,6 +470,7 @@ interface IHomeProps {
     test: string;
     srcFiles: FileSystemTree;
     focusedFiles: FileSystemTree;
+    highlight: string;
     testFiles: FileSystemTree;
     files: FileSystemTree;
   };

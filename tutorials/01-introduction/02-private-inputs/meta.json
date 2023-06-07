@@ -1,4 +1,5 @@
 {
   "name": "Private Inputs",
-  "focus": ["Private.ts"]
+  "focus": ["Private.ts"],
+  "highlight": "Private.ts"
 }

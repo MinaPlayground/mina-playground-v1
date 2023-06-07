@@ -1,4 +1,5 @@
 {
   "name": "Smart Contracts",
-  "focus": ["Add.ts", "test/Test2.ts"]
+  "focus": ["Add.ts"],
+  "highlight": "Add.ts"
 }

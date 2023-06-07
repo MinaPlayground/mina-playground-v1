@@ -36,14 +36,14 @@ const TreeNode: FC<TreeNodeProps> = ({
   currentDirectory,
 }) => {
   const [key, value] = node;
-  const [showChildren, setShowChildren] = useState(false);
-  const [inputValue, setInputValue] = useState("");
-
   const dir = directory ? `${directory}/${key}` : `${key}`;
+  const [inputValue, setInputValue] = useState("");
+  const [showChildren, setShowChildren] = useState(
+    currentDirectory.startsWith(dir)
+  );
   const isDirectory = "directory" in value;
   const isSelected = currentDirectory && dir === currentDirectory;
   const isSelectedStyle = isSelected ? "bg-blue-100" : "";
-
   const handleClick = () => {
     setCurrentDirectory(dir);
     if (!isDirectory) {
@@ -53,17 +53,11 @@ const TreeNode: FC<TreeNodeProps> = ({
     setShowChildren(!showChildren);
   };
 
-  // TODO re-do this logic to open the directory when you try to create a new file/folder
-  // useEffect(() => {
-  //   if (!isSelected) return;
-  //   setShowChildren(true);
-  // }, [node]);
-
   return (
     <>
       <div
         onClick={handleClick}
-        className={`flex flex-row items-center mb-2 cursor-pointer ${isSelectedStyle}`}
+        className={`flex p-2 flex-row items-center mb-2 cursor-pointer ${isSelectedStyle}`}
       >
         {isDirectory ? <DirectoryIcon /> : <FileIcon />}
         {key === "" ? (
