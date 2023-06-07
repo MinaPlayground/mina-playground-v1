@@ -8,7 +8,7 @@ import {
   MonacoJsxSyntaxHighlight,
 } from "monaco-jsx-syntax-highlight";
 import Loader from "@/components/Loader";
-import { FileSystemTree, WebContainer } from "@webcontainer/api";
+import { FileNode, FileSystemTree, WebContainer } from "@webcontainer/api";
 import Breadcrumb from "@/components/breadcrumb/Breadcrumb";
 import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import { MDXRemote, MDXRemoteSerializeResult } from "next-mdx-remote";
@@ -23,34 +23,6 @@ import { TutorialParams } from "@/types";
 import { CH } from "@code-hike/mdx/components";
 
 const components = { CH };
-
-const finalCodeBlock = `
-import { Field, SmartContract, state, State, method } from "snarkyjs";
-
-/**
- * Basic Example
- * See https://docs.minaprotocol.com/zkapps for more info.
- *
- * The Add contract initializes the state variable 'num' to be a Field(1) value by default when deployed.
- * When the 'update' method is called, the Add contract adds Field(2) to its 'num' contract state.
- *
- * This file is safe to delete and replace with your own contract.
- */
-export class Add extends SmartContract {
-  @state(Field) num = State<Field>();
-
-  init() {
-    super.init();
-    this.num.set(Field(1));
-  }
-
-  @method update() {
-    const currentState = this.num.getAndAssertEquals();
-    const newState = currentState.add(2);
-    this.num.set(newState);
-  }
-}
-`;
 
 export const getStaticPaths: GetStaticPaths = async () => {
   return {
@@ -114,9 +86,13 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const [tutorialItem, setTutorialItem] = useState(item);
   const { tutorial, test, srcFiles, focusedFiles, files, testFiles } =
     tutorialItem;
+  const [fileName, { file }] = Object.entries(focusedFiles)[0] as [
+    string,
+    FileNode
+  ];
 
   const [isInitializing, setIsInitializing] = useState(true);
-  const [code, setCode] = useState<string | undefined>("");
+  const [code, setCode] = useState<string | undefined>(file.contents as string);
   const [isRunning, setIsRunning] = useState(false);
   const [isAborting, setIsAborting] = useState(false);
   const webcontainerInstance = useRef<WebContainer | null>(null);
@@ -125,7 +101,8 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const shellRef = useRef<any>(null);
   const [chapter, setChapter] = useState(c);
   const [section, setSection] = useState(s);
-  const [currentDirectory, setCurrentDirectory] = useState("");
+  const [currentDirectory, setCurrentDirectory] = useState(fileName);
+  const [terminalOutput, setTerminalOutput] = useState<boolean | null>(null);
 
   const onClick = (code: string, dir: string) => {
     setCodeChange(code, dir);
@@ -158,7 +135,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const abortTest = async () => {
     setIsAborting(true);
     inputRef.current.write("\u0003");
-    terminalInstance.current.clear();
+    setTerminalOutput(null);
   };
 
   const runTest = async () => {
@@ -168,35 +145,9 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
     );
   };
 
-  const showMe = () => {
-    setCodeChange(finalCodeBlock);
-  };
-
-  const initializeTerminal = async () => {
-    const terminalEl = document.querySelector(".terminal") as HTMLDivElement;
-    const { Terminal } = await import("xterm");
-    const { FitAddon } = await import("xterm-addon-fit");
-    const terminal = new Terminal({
-      convertEol: true,
-    });
-    terminalInstance.current = terminal;
-    const fitAddon = new FitAddon();
-    terminal.loadAddon(fitAddon);
-    terminal.open(terminalEl);
-    fitAddon.fit();
-    window.addEventListener("resize", () => {
-      fitAddon.fit();
-    });
-  };
-
   const createProcess = async () => {
     if (!webcontainerInstance.current) return;
-    const shellProcess = await webcontainerInstance.current.spawn("jsh", {
-      terminal: {
-        cols: terminalInstance.current.cols,
-        rows: terminalInstance.current.rows,
-      },
-    });
+    const shellProcess = await webcontainerInstance.current.spawn("jsh");
 
     const input = shellProcess.input.getWriter();
 
@@ -209,7 +160,9 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
             setIsRunning(false);
             setIsAborting(false);
           }
-          terminalInstance.current.write(data);
+          if (data.includes("Tests")) {
+            setTerminalOutput(!data.includes("failed"));
+          }
         },
       })
     );
@@ -227,7 +180,6 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
         { headers: { "Content-Type": "application/json" } }
       );
       const { files, tutorial, focusedFiles, testFiles, test } = response.data;
-      console.log(test);
       setTutorialItem({
         ...tutorialItem,
         tutorial,
@@ -269,7 +221,6 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
 
   const initialize = async () => {
     setIsInitializing(true);
-    await initializeTerminal();
     // await startWebContainer();
   };
 
@@ -299,7 +250,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
 
   useEffect(() => {
     if (isAborting || !terminalInstance.current) return;
-    terminalInstance.current.clear();
+    setTerminalOutput(null);
   }, [isAborting]);
 
   const handleEditorDidMount = useCallback((editor: any, monaco: any) => {
@@ -368,7 +319,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
               </div>
               <div className="flex justify-between my-4">
                 <button
-                  onClick={showMe}
+                  onClick={() => null}
                   type="button"
                   className="mt-4 text-white bg-gradient-to-br from-pink-500 to-orange-400 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2"
                 >
@@ -406,7 +357,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
                 currentDirectory={currentDirectory}
               />
               <Editor
-                className="editor max-lg:h-[300px]"
+                className="editor max-lg:h-[400px]"
                 path={"file:///index.tsx"}
                 defaultLanguage="typescript"
                 value={code}
@@ -491,7 +442,33 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
                   </>
                 )}
               </div>
-              <div className="terminal h-[250px] max-w-[100vw]" />
+              <div className="bg-black h-[125px] p-2">
+                {isRunning ? (
+                  <Loader
+                    text="Running tests, please wait"
+                    circleColor={"text-white"}
+                    spinnerColor={"fill-orange-500"}
+                  />
+                ) : terminalOutput !== null ? (
+                  terminalOutput ? (
+                    <div
+                      className="p-4 mb-4 text-green-800 rounded-lg bg-green-100"
+                      role="alert"
+                    >
+                      <span className="font-bold">Success!</span> You have
+                      passed the tutorial.
+                    </div>
+                  ) : (
+                    <div
+                      className="p-4 mb-4 text-red-800 rounded-lg bg-red-50"
+                      role="alert"
+                    >
+                      <span className="font-bold">Failed!</span> One of the
+                      tests failed.
+                    </div>
+                  )
+                ) : null}
+              </div>
             </div>
           </div>
         </div>
