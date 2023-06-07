@@ -1,26 +1,26 @@
-import { Add } from "./Add";
-import { Field, Mina, PrivateKey, PublicKey, AccountUpdate } from "snarkyjs";
-
-/*
- * This file specifies how to test the `Add` example smart contract. It is safe to delete this file and replace
- * with your own tests.
- *
- * See https://docs.minaprotocol.com/zkapps for more info.
- */
+import { Private } from "../src/Private";
+import {
+  Field,
+  Mina,
+  PrivateKey,
+  PublicKey,
+  AccountUpdate,
+  Poseidon,
+} from "snarkyjs";
 
 let proofsEnabled = false;
 
-describe("Add", () => {
+describe("Private", () => {
   let deployerAccount: PublicKey,
     deployerKey: PrivateKey,
     senderAccount: PublicKey,
     senderKey: PrivateKey,
     zkAppAddress: PublicKey,
     zkAppPrivateKey: PrivateKey,
-    zkApp: Add;
+    zkApp: Private;
 
   beforeAll(async () => {
-    if (proofsEnabled) await Add.compile();
+    if (proofsEnabled) await Private.compile();
   });
 
   beforeEach(() => {
@@ -32,36 +32,36 @@ describe("Add", () => {
       Local.testAccounts[1]);
     zkAppPrivateKey = PrivateKey.random();
     zkAppAddress = zkAppPrivateKey.toPublicKey();
-    zkApp = new Add(zkAppAddress);
+    zkApp = new Private(zkAppAddress);
   });
 
   async function localDeploy() {
     const txn = await Mina.transaction(deployerAccount, () => {
       AccountUpdate.fundNewAccount(deployerAccount);
       zkApp.deploy();
+      zkApp.initState(Field(100), Field(150));
     });
     await txn.prove();
-    // this tx needs .sign(), because `deploy()` adds an account update that requires signature authorization
     await txn.sign([deployerKey, zkAppPrivateKey]).send();
   }
 
-  it("generates and deploys the `Add` smart contract", async () => {
+  it("generates and deploys the `Private` smart contract and checks the Poseidon hash", async () => {
     await localDeploy();
-    const num = zkApp.num.get();
-    expect(num).toEqual(Field(1));
+    const x = zkApp.x.get();
+    expect(x).toEqual(Poseidon.hash([Field(100), Field(150)]));
   });
 
-  it("correctly updates the num state on the `Add` smart contract", async () => {
+  it("correctly increments a secret on the `Private` smart contract using a Poseidon hash", async () => {
     await localDeploy();
 
     // update transaction
     const txn = await Mina.transaction(senderAccount, () => {
-      zkApp.update();
+      zkApp.incrementSecret(Field(100), Field(150));
     });
     await txn.prove();
     await txn.sign([senderKey]).send();
 
-    const updatedNum = zkApp.num.get();
-    expect(updatedNum).toEqual(Field(3));
+    const x = zkApp.x.get();
+    expect(x).toEqual(Poseidon.hash([Field(100), Field(151)]));
   });
 });
