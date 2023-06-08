@@ -1,12 +1,7 @@
 import Head from "next/head";
 import styles from "@/styles/Home.module.css";
 import Header from "@/components/Header";
-import Editor from "@monaco-editor/react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  getWorker,
-  MonacoJsxSyntaxHighlight,
-} from "monaco-jsx-syntax-highlight";
+import { useEffect, useRef, useState } from "react";
 import Loader from "@/components/Loader";
 import { FileSystemTree, WebContainer } from "@webcontainer/api";
 import Breadcrumb from "@/components/breadcrumb/Breadcrumb";
@@ -21,6 +16,7 @@ import { transformToWebcontainerFiles } from "@/utils/webcontainer";
 import { isValidChapterAndSection } from "@/utils/validation";
 import { TutorialParams } from "@/types";
 import { CH } from "@code-hike/mdx/components";
+import CodeEditor from "@/components/editor/CodeEditor";
 
 const components = { CH };
 
@@ -266,37 +262,6 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
     setTerminalOutput(null);
   }, [isAborting]);
 
-  const handleEditorDidMount = useCallback((editor: any, monaco: any) => {
-    monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
-      jsx: monaco.languages.typescript.JsxEmit.Preserve,
-      target: monaco.languages.typescript.ScriptTarget.ES2020,
-      esModuleInterop: true,
-    });
-
-    monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
-      noSemanticValidation: true,
-      noSyntaxValidation: true,
-    });
-
-    const monacoJsxSyntaxHighlight = new MonacoJsxSyntaxHighlight(
-      getWorker(),
-      monaco
-    );
-
-    const { highlighter, dispose } =
-      monacoJsxSyntaxHighlight.highlighterBuilder({
-        editor: editor,
-      });
-
-    highlighter();
-
-    editor.onDidChangeModelContent(() => {
-      highlighter();
-    });
-
-    return dispose;
-  }, []);
-
   const onSetSection = (section: string) => {
     setSection(section);
     setCode("");
@@ -341,19 +306,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
                 setCurrentDirectory={setCurrentDirectory}
                 currentDirectory={currentDirectory}
               />
-              <Editor
-                className="editor max-lg:h-[400px]"
-                path={"file:///index.tsx"}
-                defaultLanguage="typescript"
-                value={code}
-                onChange={(value) => setCodeChange(value)}
-                onMount={handleEditorDidMount}
-                options={{
-                  fontSize: 14,
-                  lineHeight: 24.5,
-                  automaticLayout: true,
-                }}
-              />
+              <CodeEditor code={code} setCodeChange={setCodeChange} />
             </div>
             <div>
               <div className="p-2">
