@@ -17,6 +17,7 @@ import { isValidChapterAndSection } from "@/utils/validation";
 import { TutorialParams } from "@/types";
 import { CH } from "@code-hike/mdx/components";
 import CodeEditor from "@/components/editor/CodeEditor";
+import TerminalOutput from "@/components/terminal/TerminalOutput";
 
 const components = { CH };
 
@@ -380,33 +381,10 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
                   </>
                 )}
               </div>
-              <div className="bg-black h-[125px] p-2">
-                {isRunning ? (
-                  <Loader
-                    text="Running tests, please wait"
-                    circleColor={"text-white"}
-                    spinnerColor={"fill-orange-500"}
-                  />
-                ) : terminalOutput !== null ? (
-                  terminalOutput ? (
-                    <div
-                      className="p-4 mb-4 text-green-800 rounded-lg bg-green-100"
-                      role="alert"
-                    >
-                      <span className="font-bold">Success!</span> You have
-                      passed the tutorial.
-                    </div>
-                  ) : (
-                    <div
-                      className="p-4 mb-4 text-red-800 rounded-lg bg-red-50"
-                      role="alert"
-                    >
-                      <span className="font-bold">Failed!</span> One of the
-                      tests failed.
-                    </div>
-                  )
-                ) : null}
-              </div>
+              <TerminalOutput
+                isRunning={isRunning}
+                terminalOutput={terminalOutput}
+              />
             </div>
           </div>
         </div>
