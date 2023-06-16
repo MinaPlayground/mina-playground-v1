@@ -36,16 +36,23 @@ const TreeNode: FC<TreeNodeProps> = ({
   currentDirectory,
 }) => {
   const [key, value] = node;
-  const dir = directory ? `${directory}/${key}` : `${key}`;
+  const dir = directory.path ? `${directory.path}/${key}` : `${key}`;
   const [inputValue, setInputValue] = useState("");
   const [showChildren, setShowChildren] = useState(
-    currentDirectory.startsWith(dir)
+    currentDirectory.path.startsWith(dir)
   );
   const isDirectory = "directory" in value;
-  const isSelected = currentDirectory && dir === currentDirectory;
+  const isSelected = currentDirectory && dir === currentDirectory.path;
   const isSelectedStyle = isSelected ? "bg-blue-100" : "";
+
+  const webcontainer = isDirectory
+    ? `${key}.directory`
+    : `${key}.file.contents`;
+  const webcontainerPath = directory.webcontainerPath
+    ? `${directory.webcontainerPath}.${webcontainer}`
+    : webcontainer;
   const handleClick = () => {
-    setCurrentDirectory(dir);
+    setCurrentDirectory({ path: dir, webcontainerPath });
     if (!isDirectory) {
       const code = (value as FileNode).file.contents;
       onClick(code as string, dir);
@@ -59,6 +66,13 @@ const TreeNode: FC<TreeNodeProps> = ({
         onClick={handleClick}
         className={`flex p-2 flex-row items-center mb-2 cursor-pointer ${isSelectedStyle}`}
       >
+        {isDirectory ? (
+          showChildren ? (
+            <span className="pr-2 text-sm">▼</span>
+          ) : (
+            <span className="pr-1 text-sm">►</span>
+          )
+        ) : null}
         {isDirectory ? <DirectoryIcon /> : <FileIcon />}
         {key === "" ? (
           <input
@@ -71,7 +85,7 @@ const TreeNode: FC<TreeNodeProps> = ({
             className="pl-2 border border-gray-300 rounded-md bg-gray-50"
           />
         ) : (
-          <span>{key}</span>
+          <span>{key.replace(/\*/g, ".")}</span>
         )}
       </div>
       {isDirectory && (
@@ -81,7 +95,7 @@ const TreeNode: FC<TreeNodeProps> = ({
               data={value.directory}
               onBlur={onBlur}
               onClick={onClick}
-              directory={dir}
+              directory={{ path: dir, webcontainerPath }}
               currentDirectory={currentDirectory}
               setCurrentDirectory={setCurrentDirectory}
             />
@@ -96,9 +110,12 @@ interface TreeNodeProps {
   node: [string, DirectoryNode | FileNode];
   onBlur(value: string, type: FileSystemType): void;
   onClick(code: string, dir: string): void;
-  setCurrentDirectory(directory: string): void;
-  directory: string;
-  currentDirectory: string;
+  setCurrentDirectory(directory: {
+    path: string;
+    webcontainerPath: string;
+  }): void;
+  directory: { path: string; webcontainerPath: string };
+  currentDirectory: { path: string; webcontainerPath: string };
 }
 
 export default TreeNode;

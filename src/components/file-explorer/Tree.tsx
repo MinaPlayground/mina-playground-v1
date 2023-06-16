@@ -8,7 +8,7 @@ const Tree: FC<TreeProps> = ({
   onBlur,
   onClick,
   setCurrentDirectory,
-  directory = "",
+  directory = { path: "", webcontainerPath: "" },
   currentDirectory,
 }) => {
   return (
@@ -32,9 +32,12 @@ interface TreeProps {
   data: FileSystemTree;
   onBlur(value: string, type: FileSystemType): void;
   onClick(code: string, dir: string): void;
-  setCurrentDirectory(directory: string): void;
-  directory?: string;
-  currentDirectory: string;
+  setCurrentDirectory(directory: {
+    path: string;
+    webcontainerPath: string;
+  }): void;
+  directory?: { path: string; webcontainerPath: string };
+  currentDirectory: { path: string; webcontainerPath: string };
 }
 
 export default Tree;
