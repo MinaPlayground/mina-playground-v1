@@ -3,10 +3,13 @@ import styles from "@/styles/Home.module.css";
 import Header from "@/components/Header";
 import { GetServerSideProps, NextPage } from "next";
 import axios from "axios";
-import { FileSystemTree } from "@webcontainer/api";
+import { FileSystemTree, WebContainer } from "@webcontainer/api";
 import Tree from "@/components/file-explorer/Tree";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CodeEditor from "@/components/editor/CodeEditor";
+import Loader from "@/components/Loader";
+import TestSection from "@/components/test/TestSection";
+import TerminalOutput from "@/components/terminal/TerminalOutput";
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { projectId } = query;
@@ -34,6 +37,14 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
     webcontainerPath: "",
   });
   const [code, setCode] = useState<string | undefined>("test");
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [isRunning, setIsRunning] = useState(false);
+  const [isAborting, setIsAborting] = useState(false);
+  const webcontainerInstance = useRef<WebContainer | null>(null);
+  const terminalInstance = useRef<any>(null);
+  const inputRef = useRef<any>(null);
+  const shellRef = useRef<any>(null);
+  const [terminalOutput, setTerminalOutput] = useState<boolean | null>(null);
 
   const setCodeChange = async (code: string | undefined, dir?: string) => {
     if (!code) return;
@@ -53,6 +64,90 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
       );
     } catch {}
   };
+
+  const installDependencies = async () => {
+    if (!webcontainerInstance.current) return;
+    const installProcess = await webcontainerInstance.current.spawn("npm", [
+      "install",
+    ]);
+    installProcess.output.pipeTo(
+      new WritableStream({
+        write(data) {
+          console.log(data);
+        },
+      })
+    );
+    return installProcess.exit;
+  };
+
+  const abortTest = async () => {
+    setIsAborting(true);
+    inputRef.current.write("\u0003");
+    setTerminalOutput(null);
+  };
+
+  const runTest = async () => {
+    setIsRunning(true);
+    inputRef.current.write(
+      `node --experimental-vm-modules --experimental-wasm-threads node_modules/jest/bin/jest.js test \r`
+    );
+  };
+
+  const createProcess = async () => {
+    if (!webcontainerInstance.current) return;
+    const shellProcess = await webcontainerInstance.current.spawn("jsh");
+
+    const input = shellProcess.input.getWriter();
+
+    inputRef.current = input;
+    shellRef.current = shellProcess;
+    shellRef.current.output.pipeTo(
+      new WritableStream({
+        write(data) {
+          if (data.endsWith("[3G")) {
+            setIsRunning(false);
+            setIsAborting(false);
+          }
+          if (data.includes("Tests")) {
+            setTerminalOutput(!data.includes("failed"));
+          }
+        },
+      })
+    );
+    return {
+      input,
+      shellProcess,
+    };
+  };
+
+  const startWebContainer = async () => {
+    const { WebContainer } = await import("@webcontainer/api");
+    if (webcontainerInstance.current) return;
+    webcontainerInstance.current = await WebContainer.boot();
+    await webcontainerInstance.current.mount(fileSystemTree);
+
+    const exitCode = await installDependencies();
+    if (exitCode !== 0) {
+      throw new Error("Installation failed");
+    }
+
+    await createProcess();
+    setIsInitializing(false);
+  };
+
+  const initialize = async () => {
+    setIsInitializing(true);
+    await startWebContainer();
+  };
+
+  useEffect(() => {
+    void initialize();
+  }, []);
+
+  useEffect(() => {
+    if (isAborting || !terminalInstance.current) return;
+    setTerminalOutput(null);
+  }, [isAborting]);
 
   return (
     <>
@@ -81,7 +176,30 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
           <div className="flex flex-[4]">
             <CodeEditor code={code} setCodeChange={setCodeChange} />
           </div>
-          <div className="flex flex-[2] bg-black"></div>
+          <div className="flex flex-col flex-[2]">
+            <div className="p-2">
+              {isInitializing ? (
+                <Loader
+                  text="Initializing Smart contract"
+                  circleColor={"text-black"}
+                  spinnerColor={"fill-orange-500"}
+                />
+              ) : (
+                <TestSection
+                  isAborting={isAborting}
+                  isRunning={isRunning}
+                  runTest={runTest}
+                  abortTest={abortTest}
+                />
+              )}
+            </div>
+            <div className="flex-1 bg-black">
+              <TerminalOutput
+                isRunning={isRunning}
+                terminalOutput={terminalOutput}
+              />
+            </div>
+          </div>
         </div>
       </main>
     </>
