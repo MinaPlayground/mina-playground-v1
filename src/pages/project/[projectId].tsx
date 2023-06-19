@@ -64,8 +64,8 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
       </Head>
       <main className={styles.main}>
         <Header />
-        <div className="flex flex-1 grid lg:grid-cols-2">
-          <div className="p-2">
+        <div className="flex flex-1">
+          <div className="p-2 flex-1">
             <h1 className="text-2xl font-medium">Project: {name}</h1>
             <button type="button" onClick={save}>
               Save
@@ -78,7 +78,10 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
               currentDirectory={directory}
             />
           </div>
-          <CodeEditor code={code} setCodeChange={setCodeChange} />
+          <div className="flex flex-[4]">
+            <CodeEditor code={code} setCodeChange={setCodeChange} />
+          </div>
+          <div className="flex flex-[2] bg-black"></div>
         </div>
       </main>
     </>
