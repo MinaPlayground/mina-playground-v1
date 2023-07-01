@@ -13,6 +13,9 @@ import TerminalOutput from "@/components/terminal/TerminalOutput";
 import SelectList from "@/components/select/SelectList";
 import { get, isEmpty } from "lodash";
 import { produce } from "immer";
+import { FileSystemAction, FileSystemType } from "@/types";
+import { mapFileSystemAction } from "@/mappers/mapFileSystemAction";
+import { mapFileSystemTypeToAction } from "@/mappers/mapFileSystemTypeToAction";
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { projectId } = query;
@@ -170,47 +173,57 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
   };
 
   const createNewFile = () => {
-    // const data = get(fileData, directory.webcontainerPath);
-    setFileData(
-      produce((data) => {
-        data[""] = {
-          ...data.directory,
-          "": {
-            file: {
-              contents: "",
-            },
-          },
-        };
-      })
-    );
-  };
-
-  const onBlur = (value: string, type: any) => {
-    const newFolder = {
-      directory: {},
-    };
-
     const newFile = {
       file: {
-        contents: "test",
+        contents: "",
       },
     };
 
-    const newValue = type === "directory" ? newFolder : newFile;
-
     setFileData(
-      produce((fileData) => {
-        if (value) {
-          (fileData as FileSystemTree)[value] = newValue;
-        }
-        delete (fileData as FileSystemTree)[""];
+      produce((fileData: FileSystemTree) => {
+        fileData[""] = newFile;
       })
     );
   };
 
-  const createNewFolder = () => {
-    setDirectory({ path: "src", webcontainerPath: "" });
+  const onChange = (
+    action: FileSystemAction,
+    type: FileSystemType,
+    path: string
+  ) => {
+    setFileData(
+      produce((fileData: FileSystemTree) => {
+        const data = get(fileData, path);
+        mapFileSystemAction(action, type).action(data);
+      })
+    );
   };
+
+  const onBlur = async (value: string, type: FileSystemType, path: string) => {
+    setFileData(
+      produce((fileData) => {
+        const data = get(fileData, path);
+        mapFileSystemTypeToAction(type).action(data, value);
+      })
+    );
+
+    const filePath = `${path}.${value}.file.contents`;
+    const directoryPath = `${path}.${value}.directory`;
+
+    try {
+      const response = await axios.patch(
+        `http://localhost:3000/fileTree/${_id}`,
+        {
+          fileLocation: type === "directory" ? directoryPath : filePath,
+          code: "",
+          directory: type === "directory",
+        },
+        { headers: { "Content-Type": "application/json" } }
+      );
+    } catch {}
+  };
+
+  const createNewFolder = () => {};
   return (
     <>
       <Head>
@@ -249,6 +262,7 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
             <Tree
               data={fileData}
               onBlur={onBlur}
+              onChange={onChange}
               onClick={onClick}
               setCurrentDirectory={setDirectory}
               currentDirectory={directory}
