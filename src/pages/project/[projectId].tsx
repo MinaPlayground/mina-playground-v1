@@ -19,7 +19,10 @@ import {
   FileSystemType,
 } from "@/types";
 import { mapFileSystemAction } from "@/mappers/mapFileSystemAction";
-import { mutateFileTreeOnBlur } from "@/mutations/fileTreeMutations";
+import {
+  mutateFileTreeCreateNew,
+  mutateFileTreeOnBlur,
+} from "@/mutations/fileTreeMutations";
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { projectId } = query;
@@ -179,15 +182,9 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
   };
 
   const createNewFile = () => {
-    const newFile = {
-      file: {
-        contents: "",
-      },
-    };
-
     setFileData(
       produce((fileData: FileSystemTree) => {
-        fileData[""] = newFile;
+        mutateFileTreeCreateNew(fileData, "file");
       })
     );
   };
@@ -217,13 +214,9 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
   };
 
   const createNewFolder = () => {
-    const newFolder = {
-      directory: {},
-    };
-
     setFileData(
       produce((fileData: FileSystemTree) => {
-        fileData[""] = newFolder;
+        mutateFileTreeCreateNew(fileData, "directory");
       })
     );
   };

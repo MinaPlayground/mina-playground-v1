@@ -7,6 +7,13 @@ import {
 } from "@/types";
 import { getFileSystemValueByType } from "@/utils/fileSystemWeb";
 
+export const mutateFileTreeCreateNew = (
+  fileData: KeyValueObj,
+  type: FileSystemType
+) => {
+  fileData[""] = getFileSystemValueByType(type);
+};
+
 export const mutateFileTreeOnBlur = (
   fileData: KeyValueObj,
   { path, key, value }: FileSystemPayload
