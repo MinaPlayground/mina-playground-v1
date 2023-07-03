@@ -16,17 +16,24 @@ type MapFileSystemTypeToAction = {
   action(data: KeyValueObj, value: string): void;
 };
 
+export type FileSystemPayload = { path: string; key: string; value: string };
+
+type MapFileSystemActionAndType = {
+  action(data: KeyValueObj, payload: FileSystemPayload): void;
+};
+
 export type MapFileSystemActions = {
   create: MapFileSystemAction;
   delete: MapFileSystemAction;
   rename: MapFileSystemAction;
 };
 
-export type MapFileSystemTypeToActions = {
-  file: MapFileSystemTypeToAction;
-  directory: MapFileSystemTypeToAction;
+export type MapFileSystemActionsAndTypes = {
+  create: MapFileSystemActionAndType;
+  rename: MapFileSystemActionAndType;
 };
 
+export type FileSystemActionOnBlur = keyof MapFileSystemActionsAndTypes;
 export type FileSystemAction = keyof MapFileSystemActions;
 
 export interface TutorialParams extends ParsedUrlQuery {
