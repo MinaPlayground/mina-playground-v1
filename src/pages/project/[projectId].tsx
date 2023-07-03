@@ -13,9 +13,13 @@ import TerminalOutput from "@/components/terminal/TerminalOutput";
 import SelectList from "@/components/select/SelectList";
 import { get, isEmpty } from "lodash";
 import { produce } from "immer";
-import { FileSystemAction, FileSystemType } from "@/types";
+import {
+  FileSystemAction,
+  FileSystemOnChangePayload,
+  FileSystemType,
+} from "@/types";
 import { mapFileSystemAction } from "@/mappers/mapFileSystemAction";
-import { mapFileSystemTypeToAction } from "@/mappers/mapFileSystemTypeToAction";
+import { mutateFileTreeOnBlur } from "@/mutations/fileTreeMutations";
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { projectId } = query;
@@ -52,18 +56,20 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
   const shellRef = useRef<any>(null);
   const [terminalOutput, setTerminalOutput] = useState<boolean | null>(null);
   const [fileData, setFileData] = useState<FileSystemTree>(fileSystemTree);
-
   const [changedFields, setChangedFields] = useState({});
 
   const setCodeChange = async (code: string | undefined, dir?: string) => {
     if (!code) return;
     if (!dir) {
-      setChangedFields({ ...changedFields, [directory.path]: code });
+      setChangedFields({
+        ...changedFields,
+        [directory.webcontainerPath]: code,
+      });
     }
     setCode(code);
   };
 
-  const notSaved = directory.path in changedFields;
+  const notSaved = directory.webcontainerPath in changedFields;
 
   const onClick = async (code: string, dir: string) => {
     setCodeChange(code, dir);
@@ -189,41 +195,38 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
   const onChange = (
     action: FileSystemAction,
     type: FileSystemType,
-    path: string
+    payload: FileSystemOnChangePayload
   ) => {
     setFileData(
       produce((fileData: FileSystemTree) => {
-        const data = get(fileData, path);
-        mapFileSystemAction(action, type).action(data);
+        mapFileSystemAction(action, type).action(fileData, payload);
       })
     );
   };
 
-  const onBlur = async (value: string, type: FileSystemType, path: string) => {
+  const onBlur = async (payload: {
+    path: string;
+    key: string;
+    value: string;
+  }) => {
     setFileData(
       produce((fileData) => {
-        const data = get(fileData, path);
-        mapFileSystemTypeToAction(type).action(data, value);
+        mutateFileTreeOnBlur(fileData, payload);
       })
     );
-
-    const filePath = `${path}.${value}.file.contents`;
-    const directoryPath = `${path}.${value}.directory`;
-
-    try {
-      const response = await axios.patch(
-        `http://localhost:3000/fileTree/${_id}`,
-        {
-          fileLocation: type === "directory" ? directoryPath : filePath,
-          code: "",
-          directory: type === "directory",
-        },
-        { headers: { "Content-Type": "application/json" } }
-      );
-    } catch {}
   };
 
-  const createNewFolder = () => {};
+  const createNewFolder = () => {
+    const newFolder = {
+      directory: {},
+    };
+
+    setFileData(
+      produce((fileData: FileSystemTree) => {
+        fileData[""] = newFolder;
+      })
+    );
+  };
   return (
     <>
       <Head>
@@ -234,8 +237,8 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
       </Head>
       <main className={styles.main}>
         <Header />
-        <div className="flex flex-1">
-          <div className="p-2 flex-1">
+        <div className="flex flex-1 flex-col md:flex-row">
+          <div className="p-2 flex-1 bg-gray-50">
             <h1 className="text-2xl font-medium">Project: {name}</h1>
             <div className="flex flex-row gap-1 mb-2">
               <svg

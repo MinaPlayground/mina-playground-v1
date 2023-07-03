@@ -3,38 +3,31 @@ import {
   FileSystemType,
   MapFileSystemActions,
 } from "@/types";
+import { getFileSystemValueByType } from "@/utils/fileSystemWeb";
+import { get } from "lodash";
 
 export const mapFileSystemAction = (
   action: FileSystemAction,
   type: FileSystemType
 ) => {
+  const fileSystemValue = getFileSystemValueByType(type);
   const actions: MapFileSystemActions = {
     create: {
-      file: {
-        action: (data) => {
-          data[""] = {
-            file: {
-              contents: "",
-            },
-          };
-        },
-      },
-      directory: {
-        action: (data) => {
-          data[""] = {
-            directory: {},
-          };
-        },
+      action: (fileData, { path }) => {
+        const data = get(fileData, path);
+        data[""] = fileSystemValue;
       },
     },
     delete: {
-      file: { action: (data) => {} },
-      directory: { action: (data) => {} },
-    },
-    rename: {
-      file: { action: (data) => {} },
-      directory: { action: (data) => {} },
+      action: (fileData, { path, key }) => {
+        if (!path) {
+          delete fileData[key as string];
+          return;
+        }
+        const foundItem = get(fileData, path) as Record<string, any>;
+        delete foundItem[key as string];
+      },
     },
   };
-  return actions[action][type];
+  return actions[action];
 };

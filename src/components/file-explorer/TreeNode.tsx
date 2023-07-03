@@ -1,7 +1,12 @@
 import { FC, useState } from "react";
 import Tree from "@/components/file-explorer/Tree";
 import { DirectoryNode, FileNode } from "@webcontainer/api";
-import { FileSystemAction, FileSystemType } from "@/types";
+import {
+  FileSystemAction,
+  FileSystemOnChangePayload,
+  FileSystemPayload,
+  FileSystemType,
+} from "@/types";
 
 const DirectoryIcon = () => (
   <svg
@@ -31,7 +36,7 @@ const ChevronRightIcon = () => (
   <svg
     height={12}
     width={12}
-    className="mr-1"
+    className="ml-[-3px] mr-1"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 320 512"
   >
@@ -63,12 +68,13 @@ const TreeNode: FC<TreeNodeProps> = ({
   const [key, value] = node;
   const dir = directory.path ? `${directory.path}/${key}` : `${key}`;
   const [inputValue, setInputValue] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
   const [showChildren, setShowChildren] = useState(
     currentDirectory.path.startsWith(dir)
   );
   const isDirectory = "directory" in value;
   const isSelected = currentDirectory && dir === currentDirectory.path;
-  const isSelectedStyle = isSelected ? "bg-blue-100" : "";
+  const isSelectedStyle = isSelected ? "bg-gray-200" : "";
   const type = isDirectory ? "directory" : "file";
   const webcontainer = isDirectory
     ? `${key}.directory`
@@ -89,7 +95,7 @@ const TreeNode: FC<TreeNodeProps> = ({
     <>
       <div
         onClick={handleClick}
-        className={`group new-file hover:bg-gray-200 flex p-1 flex-row items-center mb-2 cursor-pointer ${isSelectedStyle}`}
+        className={`group new-file hover:bg-gray-200 flex flex-row items-center mb-1 cursor-pointer ${isSelectedStyle}`}
       >
         <div className="flex flex-1 flex-row items-center">
           {isDirectory ? (
@@ -100,40 +106,61 @@ const TreeNode: FC<TreeNodeProps> = ({
             )
           ) : null}
           {isDirectory ? <DirectoryIcon /> : <FileIcon />}
-          {key === "" ? (
+          {/*<Text />*/}
+          {key === "" || isEditing ? (
             <input
               autoFocus
               onKeyPress={(event) => {
                 if (event.key !== "Enter") return;
-                onBlur(
-                  inputValue.replace(/\./g, "*"),
-                  type,
-                  directory.webcontainerPath
-                );
+                onBlur({
+                  path: directory.webcontainerPath,
+                  key,
+                  value: inputValue.replace(/\./g, "*"),
+                });
+                setIsEditing(false);
+                setShowChildren(false);
               }}
               value={inputValue}
               onChange={(event) => setInputValue(event.target.value)}
-              onBlur={() =>
-                onBlur(
-                  inputValue.replace(/\./g, "*"),
-                  type,
-                  directory.webcontainerPath
-                )
-              }
+              onBlur={() => {
+                onBlur({
+                  path: directory.webcontainerPath,
+                  key,
+                  value: inputValue.replace(/\./g, "*"),
+                });
+                setIsEditing(false);
+                setShowChildren(false);
+              }}
               className="pl-2 border border-gray-300 rounded-md bg-gray-50"
             />
           ) : (
-            <span>{key.replace(/\*/g, ".")}</span>
+            <span className="text-sm">{key.replace(/\*/g, ".")}</span>
           )}
         </div>
         <div className="hidden group-hover:block">
-          {isDirectory && (
+          {true && (
             <div className="flex flex-row gap-1">
               <svg
                 onClick={(event) => {
                   event.stopPropagation();
-                  setShowChildren(true);
-                  onChange("create", type, webcontainerPath);
+                  onChange("delete", "file", {
+                    path: directory.webcontainerPath,
+                    key,
+                  });
+                }}
+                xmlns="http://www.w3.org/2000/svg"
+                height={16}
+                width={16}
+                className="cursor-pointer hover:fill-gray-500"
+                viewBox="0 0 448 512"
+              >
+                <path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z" />
+              </svg>
+
+              <svg
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setIsEditing(true);
                 }}
                 height={16}
                 width={16}
@@ -147,7 +174,7 @@ const TreeNode: FC<TreeNodeProps> = ({
                 onClick={(event) => {
                   event.stopPropagation();
                   setShowChildren(true);
-                  onChange("create", "file", webcontainerPath);
+                  onChange("create", "file", { path: webcontainerPath });
                 }}
                 height={16}
                 width={16}
@@ -161,7 +188,7 @@ const TreeNode: FC<TreeNodeProps> = ({
                 onClick={(event) => {
                   event.stopPropagation();
                   setShowChildren(true);
-                  onChange("create", "directory", webcontainerPath);
+                  onChange("create", "directory", { path: webcontainerPath });
                 }}
                 height={16}
                 width={16}
@@ -176,7 +203,7 @@ const TreeNode: FC<TreeNodeProps> = ({
         </div>
       </div>
       {isDirectory && (
-        <ul className="pl-2">
+        <ul className="pl-4">
           {showChildren && (
             <Tree
               data={value.directory}
@@ -196,8 +223,12 @@ const TreeNode: FC<TreeNodeProps> = ({
 
 interface TreeNodeProps {
   node: [string, DirectoryNode | FileNode];
-  onBlur(value: string, type: FileSystemType, path: string): void;
-  onChange(action: FileSystemAction, type: FileSystemType, path: string): void;
+  onBlur(payload: FileSystemPayload): void;
+  onChange(
+    action: FileSystemAction,
+    type: FileSystemType,
+    payload: FileSystemOnChangePayload
+  ): void;
   onClick(code: string, dir: string): void;
   setCurrentDirectory(directory: {
     path: string;
