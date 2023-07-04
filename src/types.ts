@@ -8,7 +8,12 @@ type MapFileSystemAction = {
   action(data: KeyValueObj, payload: FileSystemOnChangePayload): void;
 };
 
-export type FileSystemPayload = { path: string; key: string; value: string };
+export type FileSystemPayload = {
+  path: string;
+  fullPath: string;
+  key: string;
+  value: string;
+};
 
 export type MapFileSystemActions = {
   create: MapFileSystemAction;

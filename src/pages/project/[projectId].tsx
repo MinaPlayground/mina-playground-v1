@@ -23,6 +23,7 @@ import {
   mutateFileTreeCreateNew,
   mutateFileTreeOnBlur,
 } from "@/mutations/fileTreeMutations";
+import { useUpdateFileTreeMutation } from "@/services/fileTree";
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { projectId } = query;
@@ -60,6 +61,8 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
   const [terminalOutput, setTerminalOutput] = useState<boolean | null>(null);
   const [fileData, setFileData] = useState<FileSystemTree>(fileSystemTree);
   const [changedFields, setChangedFields] = useState({});
+
+  const [updateFileTree, { isLoading }] = useUpdateFileTreeMutation();
 
   const setCodeChange = async (code: string | undefined, dir?: string) => {
     if (!code) return;
@@ -201,16 +204,38 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
     );
   };
 
-  const onBlur = async (payload: {
-    path: string;
-    key: string;
-    value: string;
-  }) => {
+  const onBlur = async (
+    action: "create" | "rename",
+    payload: {
+      path: string;
+      fullPath: string;
+      key: string;
+      value: string;
+    }
+  ) => {
+    const { path, fullPath, key, value } = payload;
     setFileData(
       produce((fileData) => {
         mutateFileTreeOnBlur(fileData, payload);
       })
     );
+    if (action === "create") {
+      updateFileTree({
+        id: _id,
+        body: {
+          location: fullPath,
+        },
+      });
+    }
+    if (action === "rename") {
+      updateFileTree({
+        id: _id,
+        body: {
+          location: path ? `${path}.${key}` : key,
+          rename: path ? `${path}.${value}` : value,
+        },
+      });
+    }
   };
 
   const createNewFolder = () => {

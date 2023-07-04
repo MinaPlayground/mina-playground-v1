@@ -67,7 +67,7 @@ const TreeNode: FC<TreeNodeProps> = ({
 }) => {
   const [key, value] = node;
   const dir = directory.path ? `${directory.path}/${key}` : `${key}`;
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState(key);
   const [isEditing, setIsEditing] = useState(false);
   const [showChildren, setShowChildren] = useState(
     currentDirectory.path.startsWith(dir)
@@ -77,8 +77,8 @@ const TreeNode: FC<TreeNodeProps> = ({
   const isSelectedStyle = isSelected ? "bg-gray-200" : "";
   const type = isDirectory ? "directory" : "file";
   const webcontainer = isDirectory
-    ? `${key}.directory`
-    : `${key}.file.contents`;
+    ? `${key || inputValue.replace(/\./g, "*")}.directory`
+    : `${key || inputValue.replace(/\./g, "*")}.file.contents`;
   const webcontainerPath = directory.webcontainerPath
     ? `${directory.webcontainerPath}.${webcontainer}`
     : webcontainer;
@@ -112,8 +112,14 @@ const TreeNode: FC<TreeNodeProps> = ({
               autoFocus
               onKeyPress={(event) => {
                 if (event.key !== "Enter") return;
-                onBlur({
+                if (key === inputValue) {
+                  setIsEditing(false);
+                  setShowChildren(false);
+                  return;
+                }
+                onBlur(isEditing ? "rename" : "create", {
                   path: directory.webcontainerPath,
+                  fullPath: webcontainerPath,
                   key,
                   value: inputValue.replace(/\./g, "*"),
                 });
@@ -123,8 +129,14 @@ const TreeNode: FC<TreeNodeProps> = ({
               value={inputValue}
               onChange={(event) => setInputValue(event.target.value)}
               onBlur={() => {
-                onBlur({
+                if (key === inputValue) {
+                  setIsEditing(false);
+                  setShowChildren(false);
+                  return;
+                }
+                onBlur(isEditing ? "rename" : "create", {
                   path: directory.webcontainerPath,
+                  fullPath: webcontainerPath,
                   key,
                   value: inputValue.replace(/\./g, "*"),
                 });
@@ -138,7 +150,7 @@ const TreeNode: FC<TreeNodeProps> = ({
           )}
         </div>
         <div className="hidden group-hover:block">
-          {true && (
+          {isDirectory && (
             <div className="flex flex-row gap-1">
               <svg
                 onClick={(event) => {
@@ -223,7 +235,7 @@ const TreeNode: FC<TreeNodeProps> = ({
 
 interface TreeNodeProps {
   node: [string, DirectoryNode | FileNode];
-  onBlur(payload: FileSystemPayload): void;
+  onBlur(action: "create" | "rename", payload: FileSystemPayload): void;
   onChange(
     action: FileSystemAction,
     type: FileSystemType,

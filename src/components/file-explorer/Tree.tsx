@@ -37,7 +37,7 @@ const Tree: FC<TreeProps> = ({
 
 interface TreeProps {
   data: FileSystemTree;
-  onBlur(payload: FileSystemPayload): void;
+  onBlur(action: "create" | "rename", payload: FileSystemPayload): void;
   onChange(
     action: FileSystemAction,
     type: FileSystemType,
