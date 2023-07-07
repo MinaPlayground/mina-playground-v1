@@ -30,30 +30,36 @@ const TreeNode: FC<TreeNodeProps> = ({
   currentDirectory,
 }) => {
   const [key, value] = node;
-  const dir = directory.path ? `${directory.path}/${key}` : `${key}`;
-  const [inputValue, setInputValue] = useState(key.replace(/\*/g, "."));
+  const path = directory.path ? `${directory.path}/${key}` : `${key}`;
+  const fileName = key.replace(/\*/g, ".");
+  const [inputValue, setInputValue] = useState(fileName);
   const [isEditing, setIsEditing] = useState(false);
   const [showChildren, setShowChildren] = useState(
-    currentDirectory.path.startsWith(dir)
+    currentDirectory.path.startsWith(path)
   );
+  const inputFileName = inputValue.replace(/\./g, "*");
   const isDirectory = "directory" in value;
-  const isSelected = currentDirectory && dir === currentDirectory.path;
+  const isSelected = currentDirectory && path === currentDirectory.path;
   const isSelectedStyle = isSelected ? "bg-gray-200" : "";
-  const type = isDirectory ? "directory" : "file";
   const webcontainer = isDirectory
-    ? `${key || inputValue.replace(/\./g, "*")}.directory`
-    : `${key || inputValue.replace(/\./g, "*")}.file.contents`;
+    ? `${key || inputFileName}.directory`
+    : `${key || inputFileName}.file.contents`;
   const webcontainerPath = directory.webcontainerPath
     ? `${directory.webcontainerPath}.${webcontainer}`
     : webcontainer;
+
   const handleClick = () => {
-    setCurrentDirectory({ path: dir, webcontainerPath });
+    setCurrentDirectory({ path, webcontainerPath });
     if (!isDirectory) {
       const code = (value as FileNode).file.contents;
-      onClick(code as string, dir);
+      onClick(code as string, path);
     }
     setShowChildren(!showChildren);
   };
+
+  const showChevronIcon =
+    isDirectory && (showChildren ? <ChevronDownIcon /> : <ChevronRightIcon />);
+  const icon = isDirectory ? <DirectoryIcon /> : <FileIcon />;
 
   return (
     <>
@@ -62,15 +68,8 @@ const TreeNode: FC<TreeNodeProps> = ({
         className={`group new-file hover:bg-gray-200 flex flex-row items-center mb-1 cursor-pointer ${isSelectedStyle}`}
       >
         <div className="flex flex-1 flex-row items-center">
-          {isDirectory ? (
-            showChildren ? (
-              <ChevronDownIcon />
-            ) : (
-              <ChevronRightIcon />
-            )
-          ) : null}
-          {isDirectory ? <DirectoryIcon /> : <FileIcon />}
-          {/*<Text />*/}
+          {showChevronIcon}
+          {icon}
           {key === "" || isEditing ? (
             <input
               autoFocus
@@ -85,7 +84,7 @@ const TreeNode: FC<TreeNodeProps> = ({
                   path: directory.webcontainerPath,
                   fullPath: webcontainerPath,
                   key,
-                  value: inputValue.replace(/\./g, "*"),
+                  value: inputFileName,
                 });
                 setIsEditing(false);
                 setShowChildren(false);
@@ -102,7 +101,7 @@ const TreeNode: FC<TreeNodeProps> = ({
                   path: directory.webcontainerPath,
                   fullPath: webcontainerPath,
                   key,
-                  value: inputValue.replace(/\./g, "*"),
+                  value: inputFileName,
                 });
                 setIsEditing(false);
                 setShowChildren(false);
@@ -110,7 +109,7 @@ const TreeNode: FC<TreeNodeProps> = ({
               className="pl-2 border border-gray-300 rounded-md bg-gray-50"
             />
           ) : (
-            <span className="text-sm">{key.replace(/\*/g, ".")}</span>
+            <span className="text-sm">{fileName}</span>
           )}
         </div>
         <div className="hidden group-hover:block">
@@ -127,7 +126,7 @@ const TreeNode: FC<TreeNodeProps> = ({
             <RenameActionIcon
               onClick={(event) => {
                 event.stopPropagation();
-                setInputValue(key.replace(/\*/g, "."));
+                setInputValue(fileName);
                 setIsEditing(true);
               }}
             />
@@ -160,7 +159,7 @@ const TreeNode: FC<TreeNodeProps> = ({
               onBlur={onBlur}
               onChange={onChange}
               onClick={onClick}
-              directory={{ path: dir, webcontainerPath }}
+              directory={{ path, webcontainerPath }}
               currentDirectory={currentDirectory}
               setCurrentDirectory={setCurrentDirectory}
             />
