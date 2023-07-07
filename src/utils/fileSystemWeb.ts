@@ -8,3 +8,6 @@ export const getFileSystemValueByType = (type: FileSystemType) =>
           contents: "",
         },
       };
+
+export const getCombinedPathName = (key: string, path: string) =>
+  path ? `${path}.${key}` : key;

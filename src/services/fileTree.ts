@@ -17,7 +17,18 @@ export const fileTreeApi = createApi({
         };
       },
     }),
+    deleteFileTreeItem: builder.mutation({
+      query(data) {
+        const { id, body } = data;
+        return {
+          url: `fileTree/${id}`,
+          method: "DELETE",
+          body,
+        };
+      },
+    }),
   }),
 });
 
-export const { useUpdateFileTreeMutation } = fileTreeApi;
+export const { useUpdateFileTreeMutation, useDeleteFileTreeItemMutation } =
+  fileTreeApi;

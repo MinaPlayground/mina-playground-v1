@@ -23,7 +23,11 @@ import {
   mutateFileTreeCreateNew,
   mutateFileTreeOnBlur,
 } from "@/mutations/fileTreeMutations";
-import { useUpdateFileTreeMutation } from "@/services/fileTree";
+import {
+  useDeleteFileTreeItemMutation,
+  useUpdateFileTreeMutation,
+} from "@/services/fileTree";
+import { getCombinedPathName } from "@/utils/fileSystemWeb";
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { projectId } = query;
@@ -63,6 +67,8 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
   const [changedFields, setChangedFields] = useState({});
 
   const [updateFileTree, { isLoading }] = useUpdateFileTreeMutation();
+  const [deleteFileTreeItem, { isLoading: isLoadingDeletion }] =
+    useDeleteFileTreeItemMutation();
 
   const setCodeChange = async (code: string | undefined, dir?: string) => {
     if (!code) return;
@@ -200,6 +206,13 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
     setFileData(
       produce((fileData: FileSystemTree) => {
         mapFileSystemAction(action, type).action(fileData, payload);
+        if (action === "delete") {
+          const location = getCombinedPathName(
+            payload.key as string,
+            payload.path
+          );
+          deleteFileTreeItem({ id: _id, body: { location } });
+        }
       })
     );
   };
@@ -219,23 +232,18 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
         mutateFileTreeOnBlur(fileData, payload);
       })
     );
-    if (action === "create") {
-      updateFileTree({
-        id: _id,
-        body: {
-          location: fullPath,
-        },
-      });
-    }
-    if (action === "rename") {
-      updateFileTree({
-        id: _id,
-        body: {
-          location: path ? `${path}.${key}` : key,
-          rename: path ? `${path}.${value}` : value,
-        },
-      });
-    }
+    const isCreateAction = action === "create";
+    const body = isCreateAction
+      ? { location: fullPath }
+      : {
+          location: getCombinedPathName(key as string, path),
+          rename: getCombinedPathName(value, path),
+        };
+
+    updateFileTree({
+      id: _id,
+      body,
+    });
   };
 
   const createNewFolder = () => {
@@ -245,6 +253,7 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
       })
     );
   };
+
   return (
     <>
       <Head>
