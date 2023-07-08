@@ -88,13 +88,15 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
   };
 
   const save = async () => {
-    try {
-      const response = await axios.patch(
-        `http://localhost:3000/fileTree/${_id}`,
-        { fileLocation: directory.webcontainerPath, code },
-        { headers: { "Content-Type": "application/json" } }
-      );
-    } catch {}
+    const body = { location: directory.webcontainerPath, code };
+    updateFileTree({
+      id: _id,
+      body,
+    });
+    webcontainerInstance.current?.fs.writeFile(
+      directory.path.replace(/\*/g, "."),
+      code
+    );
   };
 
   const installDependencies = async () => {
