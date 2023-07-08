@@ -1,13 +1,17 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { fileTreeApi } from "@/services/fileTree";
 import { setupListeners } from "@reduxjs/toolkit/query";
+import webcontainerReducer from "@/features/webcontainer/webcontainerSlice";
 
 export const store = configureStore({
   reducer: {
+    webcontainer: webcontainerReducer,
     [fileTreeApi.reducerPath]: fileTreeApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(fileTreeApi.middleware),
+    getDefaultMiddleware({ serializableCheck: false }).concat(
+      fileTreeApi.middleware
+    ),
 });
 
 setupListeners(store.dispatch);
