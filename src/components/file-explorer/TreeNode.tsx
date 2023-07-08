@@ -73,9 +73,12 @@ const TreeNode: FC<TreeNodeProps> = ({
           {key === "" || isEditing ? (
             <input
               autoFocus
+              onFocus={(e) => {
+                e.target.setSelectionRange(0, e.target.value.lastIndexOf("."));
+              }}
               onKeyPress={(event) => {
                 if (event.key !== "Enter") return;
-                if (key === inputValue) {
+                if (key.replace(/\*/g, ".") === inputValue) {
                   setIsEditing(false);
                   setShowChildren(false);
                   return;
@@ -92,7 +95,7 @@ const TreeNode: FC<TreeNodeProps> = ({
               value={inputValue}
               onChange={(event) => setInputValue(event.target.value)}
               onBlur={() => {
-                if (key === inputValue) {
+                if (key.replace(/\*/g, ".") === inputValue) {
                   setIsEditing(false);
                   setShowChildren(false);
                   return;
@@ -114,22 +117,6 @@ const TreeNode: FC<TreeNodeProps> = ({
         </div>
         <div className="hidden group-hover:block">
           <div className="flex flex-row gap-1">
-            <DeleteActionIcon
-              onClick={(event) => {
-                event.stopPropagation();
-                onChange("delete", "file", {
-                  path: directory.webcontainerPath,
-                  key,
-                });
-              }}
-            />
-            <RenameActionIcon
-              onClick={(event) => {
-                event.stopPropagation();
-                setInputValue(fileName);
-                setIsEditing(true);
-              }}
-            />
             {isDirectory && (
               <>
                 <CreateFileActionIcon
@@ -148,6 +135,22 @@ const TreeNode: FC<TreeNodeProps> = ({
                 />
               </>
             )}
+            <RenameActionIcon
+              onClick={(event) => {
+                event.stopPropagation();
+                setInputValue(fileName);
+                setIsEditing(true);
+              }}
+            />
+            <DeleteActionIcon
+              onClick={(event) => {
+                event.stopPropagation();
+                onChange("delete", "file", {
+                  path: directory.webcontainerPath,
+                  key,
+                });
+              }}
+            />
           </div>
         </div>
       </div>
