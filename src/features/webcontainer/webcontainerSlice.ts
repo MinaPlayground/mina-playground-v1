@@ -81,4 +81,10 @@ export const webcontainerSlice = createSlice({
 export const selectInitializingEsbuild = (state: RootState) =>
   state.webcontainer.initializingWebcontainer;
 
+export const selectWebcontainerInstance = (state: RootState) =>
+  state.webcontainer.webcontainerInstance;
+
+export const selectShellProcessInput = (state: RootState) =>
+  state.webcontainer.shellProcessInput;
+
 export default webcontainerSlice.reducer;

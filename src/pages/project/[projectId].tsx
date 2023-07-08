@@ -16,6 +16,14 @@ import {
   useUpdateFileTreeMutation,
 } from "@/services/fileTree";
 import ProjectFileExplorer from "@/components/file-explorer/ProjectFileExplorer";
+import { useAppDispatch } from "@/hooks/useAppDispatch";
+import {
+  initializeWebcontainer,
+  selectInitializingEsbuild,
+  selectShellProcessInput,
+  selectWebcontainerInstance,
+} from "@/features/webcontainer/webcontainerSlice";
+import { useAppSelector } from "@/hooks/useAppSelector";
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { projectId } = query;
@@ -43,15 +51,11 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
     webcontainerPath: "",
   });
   const [code, setCode] = useState<string | undefined>("");
-  const [isInitializing, setIsInitializing] = useState(true);
-  const [isRunning, setIsRunning] = useState(false);
-  const [isAborting, setIsAborting] = useState(false);
-  const webcontainerInstance = useRef<WebContainer | null>(null);
-  const terminalInstance = useRef<any>(null);
-  const inputRef = useRef<any>(null);
-  const shellRef = useRef<any>(null);
-  const [terminalOutput, setTerminalOutput] = useState<boolean | null>(null);
   const [changedFields, setChangedFields] = useState({});
+  const dispatch = useAppDispatch();
+  const isInitializing = useAppSelector(selectInitializingEsbuild);
+  const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
+  const shellProcessInput = useAppSelector(selectShellProcessInput);
 
   const [updateFileTree, { isLoading }] = useUpdateFileTreeMutation();
   const [deleteFileTreeItem, { isLoading: isLoadingDeletion }] =
@@ -76,95 +80,25 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
       id: _id,
       body,
     });
-    webcontainerInstance.current?.fs.writeFile(
+    webcontainerInstance?.fs.writeFile(
       directory.path.replace(/\*/g, "."),
       code || ""
     );
   };
 
-  const installDependencies = async () => {
-    if (!webcontainerInstance.current) return;
-    const installProcess = await webcontainerInstance.current.spawn("npm", [
-      "install",
-    ]);
-    installProcess.output.pipeTo(
-      new WritableStream({
-        write(data) {
-          console.log(data);
-        },
-      })
-    );
-    return installProcess.exit;
-  };
-
   const abortTest = async () => {
-    setIsAborting(true);
-    inputRef.current.write("\u0003");
-    setTerminalOutput(null);
+    shellProcessInput?.write("\u0003");
   };
 
   const runTest = async () => {
-    setIsRunning(true);
-    inputRef.current.write(
+    shellProcessInput?.write(
       `node --experimental-vm-modules --experimental-wasm-threads node_modules/jest/bin/jest.js test \r`
     );
   };
 
-  const createProcess = async () => {
-    if (!webcontainerInstance.current) return;
-    const shellProcess = await webcontainerInstance.current.spawn("jsh");
-
-    const input = shellProcess.input.getWriter();
-
-    inputRef.current = input;
-    shellRef.current = shellProcess;
-    shellRef.current.output.pipeTo(
-      new WritableStream({
-        write(data) {
-          if (data.endsWith("[3G")) {
-            setIsRunning(false);
-            setIsAborting(false);
-          }
-          if (data.includes("Tests")) {
-            setTerminalOutput(!data.includes("failed"));
-          }
-        },
-      })
-    );
-    return {
-      input,
-      shellProcess,
-    };
-  };
-
-  const startWebContainer = async () => {
-    const { WebContainer } = await import("@webcontainer/api");
-    if (webcontainerInstance.current) return;
-    webcontainerInstance.current = await WebContainer.boot();
-    await webcontainerInstance.current.mount(fileSystemTree);
-
-    const exitCode = await installDependencies();
-    if (exitCode !== 0) {
-      throw new Error("Installation failed");
-    }
-
-    await createProcess();
-    setIsInitializing(false);
-  };
-
-  const initialize = async () => {
-    setIsInitializing(true);
-    // await startWebContainer();
-  };
-
   useEffect(() => {
-    void initialize();
+    dispatch(initializeWebcontainer({ fileSystemTree }));
   }, []);
-
-  useEffect(() => {
-    if (isAborting || !terminalInstance.current) return;
-    setTerminalOutput(null);
-  }, [isAborting]);
 
   const getScripts = () => {
     if (!("package*json" in fileSystemTree)) return null;
@@ -215,18 +149,18 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
                 />
               ) : (
                 <TestSection
-                  isAborting={isAborting}
-                  isRunning={isRunning}
+                  isAborting={false}
+                  isRunning={false}
                   runTest={runTest}
                   abortTest={abortTest}
                 />
               )}
             </div>
             <div className="flex-1 bg-black">
-              <TerminalOutput
-                isRunning={isRunning}
-                terminalOutput={terminalOutput}
-              />
+              {/*<TerminalOutput*/}
+              {/*  isRunning={isRunning}*/}
+              {/*  terminalOutput={terminalOutput}*/}
+              {/*/>*/}
             </div>
           </div>
         </div>
