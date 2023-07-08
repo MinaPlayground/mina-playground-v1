@@ -1,11 +1,9 @@
 import { configureStore } from "@reduxjs/toolkit";
-import fileTreeReducer from "@/features/filetree/fileTreeSlice";
 import { fileTreeApi } from "@/services/fileTree";
 import { setupListeners } from "@reduxjs/toolkit/query";
 
 export const store = configureStore({
   reducer: {
-    fileTree: fileTreeReducer,
     [fileTreeApi.reducerPath]: fileTreeApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
