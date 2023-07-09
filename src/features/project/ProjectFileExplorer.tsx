@@ -17,11 +17,14 @@ import {
   useDeleteFileTreeItemMutation,
   useUpdateFileTreeMutation,
 } from "@/services/fileTree";
+import { setCurrentTreeItem } from "@/features/fileTree/fileTreeSlice";
+import { useAppDispatch } from "@/hooks/useAppDispatch";
 
 const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
   fileSystemTree,
   id,
 }) => {
+  const dispatch = useAppDispatch();
   const [fileData, setFileData] = useState<FileSystemTree>(fileSystemTree);
   const [updateFileTree, { isLoading }] = useUpdateFileTreeMutation();
   const [deleteFileTreeItem, { isLoading: isLoadingDeletion }] =
@@ -31,8 +34,16 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
     webcontainerPath: "",
   });
 
-  const onClick = async (code: string, dir: string) => {
-    // setCodeChange(code, dir);
+  const onClick = async (
+    code: string,
+    path: { path: string; webcontainerPath: string }
+  ) => {
+    dispatch(
+      setCurrentTreeItem({
+        currentDirectory: path,
+        code: code as string,
+      })
+    );
   };
 
   const createNewFolder = () => {

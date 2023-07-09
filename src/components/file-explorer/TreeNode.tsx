@@ -20,11 +20,7 @@ import {
   RenameActionIcon,
 } from "@/icons/FileSystemActionIcons";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import {
-  selectCurrentDirectory,
-  setCurrentTreeItem,
-} from "@/features/fileTree/fileTreeSlice";
-import { useAppDispatch } from "@/hooks/useAppDispatch";
+import { selectCurrentDirectory } from "@/features/fileTree/fileTreeSlice";
 
 const TreeNode: FC<TreeNodeProps> = ({
   node,
@@ -35,7 +31,6 @@ const TreeNode: FC<TreeNodeProps> = ({
 }) => {
   const [key, value] = node;
   const currentDirectory = useAppSelector(selectCurrentDirectory);
-  const dispatch = useAppDispatch();
   const path = directory.path ? `${directory.path}/${key}` : `${key}`;
   const fileName = key.replace(/\*/g, ".");
   const [inputValue, setInputValue] = useState(fileName);
@@ -57,22 +52,9 @@ const TreeNode: FC<TreeNodeProps> = ({
   const handleClick = () => {
     if (!isDirectory) {
       const code = (value as FileNode).file.contents;
-      onClick(code as string, path);
-      dispatch(
-        setCurrentTreeItem({
-          currentDirectory: { path, webcontainerPath },
-          code: code as string,
-        })
-      );
+      onClick(code as string, { path, webcontainerPath });
       return;
     }
-    dispatch(
-      setCurrentTreeItem({
-        currentDirectory: { path, webcontainerPath },
-        code: "",
-      })
-    );
-
     setShowChildren(!showChildren);
   };
 
@@ -198,7 +180,7 @@ interface TreeNodeProps {
     type: FileSystemType,
     payload: FileSystemOnChangePayload
   ): void;
-  onClick(code: string, dir: string): void;
+  onClick(code: string, path: { path: string; webcontainerPath: string }): void;
   directory: { path: string; webcontainerPath: string };
 }
 

@@ -58,7 +58,7 @@ interface TreeProps {
     type: FileSystemType,
     payload: FileSystemOnChangePayload
   ): void;
-  onClick(code: string, dir: string): void;
+  onClick(code: string, path: { path: string; webcontainerPath: string }): void;
   directory?: { path: string; webcontainerPath: string };
 }
 
