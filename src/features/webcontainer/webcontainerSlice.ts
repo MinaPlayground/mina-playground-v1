@@ -106,9 +106,6 @@ export const selectInitializingEsbuild = (state: RootState) =>
 export const selectWebcontainerInstance = (state: RootState) =>
   state.webcontainer.webcontainerInstance;
 
-export const selectShellProcessInput = (state: RootState) =>
-  state.webcontainer.shellProcessInput;
-
 export const selectIsRunning = (state: RootState) =>
   state.webcontainer.isRunning;
 

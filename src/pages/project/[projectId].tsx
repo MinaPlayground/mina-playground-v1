@@ -6,25 +6,16 @@ import axios from "axios";
 import { FileNode, FileSystemTree, WebContainer } from "@webcontainer/api";
 import { useEffect, useRef, useState } from "react";
 import CodeEditor from "@/components/editor/CodeEditor";
-import Loader from "@/components/Loader";
-import TestSection from "@/components/test/TestSection";
 import TerminalOutput from "@/components/terminal/TerminalOutput";
-import SelectList from "@/components/select/SelectList";
-import { isEmpty } from "lodash";
-import {
-  useDeleteFileTreeItemMutation,
-  useUpdateFileTreeMutation,
-} from "@/services/fileTree";
-import ProjectFileExplorer from "@/components/file-explorer/ProjectFileExplorer";
+import { useUpdateFileTreeMutation } from "@/services/fileTree";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import {
   initializeWebcontainer,
-  selectInitializingEsbuild,
-  selectShellProcessInput,
   selectWebcontainerInstance,
-  writeCommand,
 } from "@/features/webcontainer/webcontainerSlice";
 import { useAppSelector } from "@/hooks/useAppSelector";
+import ProjectFileExplorer from "@/features/project/ProjectFileExplorer";
+import RunScript from "@/features/project/RunScript";
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { projectId } = query;
@@ -54,13 +45,8 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
   const [code, setCode] = useState<string | undefined>("");
   const [changedFields, setChangedFields] = useState({});
   const dispatch = useAppDispatch();
-  const isInitializing = useAppSelector(selectInitializingEsbuild);
   const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
-  const shellProcessInput = useAppSelector(selectShellProcessInput);
-
   const [updateFileTree, { isLoading }] = useUpdateFileTreeMutation();
-  const [deleteFileTreeItem, { isLoading: isLoadingDeletion }] =
-    useDeleteFileTreeItemMutation();
 
   const setCodeChange = async (code: string | undefined, dir?: string) => {
     if (!code) return;
@@ -87,30 +73,9 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
     );
   };
 
-  const abortTest = async () => {
-    shellProcessInput?.write("\u0003");
-  };
-
-  const runTest = async () => {
-    dispatch(
-      writeCommand(
-        "node --experimental-vm-modules --experimental-wasm-threads node_modules/jest/bin/jest.js test \r"
-      )
-    );
-  };
-
   useEffect(() => {
     dispatch(initializeWebcontainer({ fileSystemTree }));
   }, []);
-
-  const getScripts = () => {
-    if (!("package*json" in fileSystemTree)) return null;
-    const parsedJSON = JSON.parse(
-      (fileSystemTree["package*json"] as FileNode).file.contents as string
-    );
-    if (!("scripts" in parsedJSON) || isEmpty(parsedJSON.scripts)) return null;
-    return parsedJSON.scripts;
-  };
 
   return (
     <>
@@ -143,20 +108,7 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
           </div>
           <div className="flex flex-col flex-[2]">
             <div className="p-2">
-              <SelectList title={"Choose a script"} items={getScripts()} />
-              {isInitializing ? (
-                <Loader
-                  text="Initializing Smart contract"
-                  circleColor={"text-black"}
-                  spinnerColor={"fill-orange-500"}
-                />
-              ) : (
-                <TestSection
-                  isAborting={false}
-                  runTest={runTest}
-                  abortTest={abortTest}
-                />
-              )}
+              <RunScript fileSystemTree={fileSystemTree} />
             </div>
             <div className="flex-1 bg-black">
               {/*<TerminalOutput*/}
