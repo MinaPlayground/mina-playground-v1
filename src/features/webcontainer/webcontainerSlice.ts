@@ -8,6 +8,7 @@ interface WebcontainerState {
   webcontainerInstance: WebContainer | null;
   shellProcessInput: WritableStreamDefaultWriter | null;
   isRunning: boolean;
+  isAborting: boolean;
 }
 
 const initialState: WebcontainerState = {
@@ -16,6 +17,7 @@ const initialState: WebcontainerState = {
   webcontainerInstance: null,
   shellProcessInput: null,
   isRunning: false,
+  isAborting: false,
 };
 
 export const initializeWebcontainer = createAsyncThunk(
@@ -42,16 +44,17 @@ export const initializeWebcontainer = createAsyncThunk(
     }
 
     const shellProcess = await webcontainer.spawn("jsh");
-    // save shellProcess, keep output stream in component
     const input = shellProcess.input.getWriter();
     shellProcess.output.pipeTo(
       new WritableStream({
         write(data) {
           console.log(data);
+          if (data === "^C") {
+            dispatch(setIsAborting(true));
+          }
           if (data.endsWith("[3G")) {
             dispatch(setIsRunning(false));
-            // setIsRunning(false);
-            // setIsAborting(false);
+            dispatch(setIsAborting(false));
           }
           if (data.includes("Tests")) {
             // setTerminalOutput(!data.includes("failed"));
@@ -80,6 +83,9 @@ export const webcontainerSlice = createSlice({
     setIsRunning: (state, action: PayloadAction<boolean>) => {
       state.isRunning = action.payload;
     },
+    setIsAborting: (state, action: PayloadAction<boolean>) => {
+      state.isAborting = action.payload;
+    },
   },
   extraReducers(builder) {
     builder
@@ -95,8 +101,7 @@ export const webcontainerSlice = createSlice({
         state.initializingWebcontainer = false;
         state.initializingWebcontainerError = true;
       });
-
-    // add reject case for write command
+    //TODO add reject case for write command
   },
 });
 
@@ -109,5 +114,8 @@ export const selectWebcontainerInstance = (state: RootState) =>
 export const selectIsRunning = (state: RootState) =>
   state.webcontainer.isRunning;
 
-export const { setIsRunning } = webcontainerSlice.actions;
+export const selectIsAborting = (state: RootState) =>
+  state.webcontainer.isAborting;
+
+export const { setIsRunning, setIsAborting } = webcontainerSlice.actions;
 export default webcontainerSlice.reducer;
