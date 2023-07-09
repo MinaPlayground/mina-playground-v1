@@ -127,8 +127,6 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
         onBlur={onBlur}
         onChange={onChange}
         onClick={onClick}
-        setCurrentDirectory={setDirectory}
-        currentDirectory={directory}
       />
     </>
   );

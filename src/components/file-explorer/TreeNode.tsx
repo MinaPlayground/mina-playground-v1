@@ -19,17 +19,23 @@ import {
   DeleteActionIcon,
   RenameActionIcon,
 } from "@/icons/FileSystemActionIcons";
+import { useAppSelector } from "@/hooks/useAppSelector";
+import {
+  selectCurrentDirectory,
+  setCurrentTreeItem,
+} from "@/features/fileTree/fileTreeSlice";
+import { useAppDispatch } from "@/hooks/useAppDispatch";
 
 const TreeNode: FC<TreeNodeProps> = ({
   node,
   onBlur,
   onChange,
   onClick,
-  setCurrentDirectory,
   directory,
-  currentDirectory,
 }) => {
   const [key, value] = node;
+  const currentDirectory = useAppSelector(selectCurrentDirectory);
+  const dispatch = useAppDispatch();
   const path = directory.path ? `${directory.path}/${key}` : `${key}`;
   const fileName = key.replace(/\*/g, ".");
   const [inputValue, setInputValue] = useState(fileName);
@@ -49,11 +55,24 @@ const TreeNode: FC<TreeNodeProps> = ({
     : webcontainer;
 
   const handleClick = () => {
-    setCurrentDirectory({ path, webcontainerPath });
     if (!isDirectory) {
       const code = (value as FileNode).file.contents;
       onClick(code as string, path);
+      dispatch(
+        setCurrentTreeItem({
+          currentDirectory: { path, webcontainerPath },
+          code: code as string,
+        })
+      );
+      return;
     }
+    dispatch(
+      setCurrentTreeItem({
+        currentDirectory: { path, webcontainerPath },
+        code: "",
+      })
+    );
+
     setShowChildren(!showChildren);
   };
 
@@ -163,8 +182,6 @@ const TreeNode: FC<TreeNodeProps> = ({
               onChange={onChange}
               onClick={onClick}
               directory={{ path, webcontainerPath }}
-              currentDirectory={currentDirectory}
-              setCurrentDirectory={setCurrentDirectory}
             />
           )}
         </ul>
@@ -182,12 +199,7 @@ interface TreeNodeProps {
     payload: FileSystemOnChangePayload
   ): void;
   onClick(code: string, dir: string): void;
-  setCurrentDirectory(directory: {
-    path: string;
-    webcontainerPath: string;
-  }): void;
   directory: { path: string; webcontainerPath: string };
-  currentDirectory: { path: string; webcontainerPath: string };
 }
 
 export default TreeNode;

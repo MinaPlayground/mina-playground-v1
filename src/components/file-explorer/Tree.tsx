@@ -13,9 +13,7 @@ const Tree: FC<TreeProps> = ({
   onBlur,
   onChange,
   onClick,
-  setCurrentDirectory,
   directory = { path: "", webcontainerPath: "" },
-  currentDirectory,
 }) => {
   const newData = Object.entries(data).sort(function (a, b) {
     const isADirectory = "directory" in a[1];
@@ -45,8 +43,6 @@ const Tree: FC<TreeProps> = ({
             onChange={onChange}
             onClick={onClick}
             directory={directory}
-            currentDirectory={currentDirectory}
-            setCurrentDirectory={setCurrentDirectory}
           />
         );
       })}
@@ -63,12 +59,7 @@ interface TreeProps {
     payload: FileSystemOnChangePayload
   ): void;
   onClick(code: string, dir: string): void;
-  setCurrentDirectory(directory: {
-    path: string;
-    webcontainerPath: string;
-  }): void;
   directory?: { path: string; webcontainerPath: string };
-  currentDirectory: { path: string; webcontainerPath: string };
 }
 
 export default Tree;
