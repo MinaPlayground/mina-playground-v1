@@ -5,25 +5,28 @@ import SaveCode from "@/components/editor/SaveCode";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { selectWebcontainerInstance } from "@/features/webcontainer/webcontainerSlice";
 import { useUpdateFileTreeMutation } from "@/services/fileTree";
-import { selectCurrentTreeItem } from "@/features/fileTree/fileTreeSlice";
+import {
+  selectChangedFields,
+  selectCurrentTreeItem,
+  setChangedFields,
+} from "@/features/fileTree/fileTreeSlice";
+import { useAppDispatch } from "@/hooks/useAppDispatch";
 
 const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({ id }) => {
   const { currentDirectory: directory, code: treeItemCode } = useAppSelector(
     selectCurrentTreeItem
   );
+  const changedFields = useAppSelector(selectChangedFields);
+  const dispatch = useAppDispatch();
 
   const [code, setCode] = useState<string | undefined>("");
-  const [changedFields, setChangedFields] = useState({});
   const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
   const [updateFileTree, { isLoading }] = useUpdateFileTreeMutation();
 
   const setCodeChange = async (code: string | undefined) => {
     if (!code) return;
-    setChangedFields({
-      ...changedFields,
-      [directory.webcontainerPath]: code,
-    });
     setCode(code);
+    dispatch(setChangedFields({ [directory.webcontainerPath]: code }));
   };
 
   useEffect(() => {

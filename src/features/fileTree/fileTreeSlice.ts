@@ -6,6 +6,7 @@ interface FileTreeState {
     currentDirectory: { path: string; webcontainerPath: string };
     code: string;
   };
+  changedFields: Record<string, string>;
 }
 
 const initialState: FileTreeState = {
@@ -13,6 +14,7 @@ const initialState: FileTreeState = {
     currentDirectory: { path: "", webcontainerPath: "" },
     code: "",
   },
+  changedFields: {},
 };
 
 export const FileTreeSlice = createSlice({
@@ -28,6 +30,12 @@ export const FileTreeSlice = createSlice({
     ) => {
       state.currentTreeItem = action.payload;
     },
+    setChangedFields: (
+      state,
+      action: PayloadAction<Record<string, string>>
+    ) => {
+      state.changedFields = { ...state.changedFields, ...action.payload };
+    },
   },
 });
 
@@ -37,6 +45,9 @@ export const selectCurrentDirectory = (state: RootState) =>
 export const selectCurrentTreeItem = (state: RootState) =>
   state.fileTree.currentTreeItem;
 
-export const { setCurrentTreeItem } = FileTreeSlice.actions;
+export const selectChangedFields = (state: RootState) =>
+  state.fileTree.changedFields;
+
+export const { setCurrentTreeItem, setChangedFields } = FileTreeSlice.actions;
 
 export default FileTreeSlice.reducer;
