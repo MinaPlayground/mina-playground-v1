@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { ChangeEvent, FC, useState } from "react";
 import SelectList from "@/components/select/SelectList";
 import Loader from "@/components/Loader";
 import TestSection from "@/components/test/TestSection";
@@ -10,6 +10,7 @@ import {
 } from "@/features/webcontainer/webcontainerSlice";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { useAppSelector } from "@/hooks/useAppSelector";
+import RunScriptButton from "@/components/terminal/RunScriptButton";
 
 const getScripts = (fileSystemTree: FileSystemTree) => {
   if (!("package*json" in fileSystemTree)) return null;
@@ -21,6 +22,7 @@ const getScripts = (fileSystemTree: FileSystemTree) => {
 };
 
 const RunScript: FC<RunScriptProps> = ({ fileSystemTree }) => {
+  const [script, setScript] = useState("");
   const dispatch = useAppDispatch();
   const isInitializing = useAppSelector(selectInitializingEsbuild);
 
@@ -29,11 +31,11 @@ const RunScript: FC<RunScriptProps> = ({ fileSystemTree }) => {
   };
 
   const runTest = async () => {
-    dispatch(
-      writeCommand(
-        "node --experimental-vm-modules --experimental-wasm-threads node_modules/jest/bin/jest.js test \r"
-      )
-    );
+    dispatch(writeCommand(`npm run ${script} \r`));
+  };
+
+  const onChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    setScript(event.target.value);
   };
 
   return (
@@ -41,6 +43,7 @@ const RunScript: FC<RunScriptProps> = ({ fileSystemTree }) => {
       <SelectList
         title={"Choose a script"}
         items={getScripts(fileSystemTree)}
+        onChange={onChange}
       />
       {isInitializing ? (
         <Loader
@@ -49,10 +52,11 @@ const RunScript: FC<RunScriptProps> = ({ fileSystemTree }) => {
           spinnerColor={"fill-orange-500"}
         />
       ) : (
-        <TestSection
-          isAborting={false}
-          runTest={runTest}
-          abortTest={abortTest}
+        <RunScriptButton
+          onRun={runTest}
+          abortTitle={"Abort"}
+          onAbort={abortTest}
+          runTitle={"Run script"}
         />
       )}
     </>

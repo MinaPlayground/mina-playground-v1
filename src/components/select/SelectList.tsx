@@ -1,10 +1,13 @@
-import { FC } from "react";
+import { ChangeEvent, FC } from "react";
 
-const SelectList: FC<SelectListProps> = ({ title, items }) => {
+const SelectList: FC<SelectListProps> = ({ title, items, onChange }) => {
   if (!items) return null;
   return (
     <div className="py-2.5">
-      <select className="h-10 w-full rounded border-r-8 border-transparent px-4 text-sm outline outline-neutral-700">
+      <select
+        onChange={onChange}
+        className="h-10 w-full rounded border-r-8 border-transparent px-4 text-sm outline outline-neutral-700"
+      >
         <option value="none">{title}</option>
         {Object.entries(items).map(([key, value], index) => (
           <option key={index} value={key}>
@@ -19,6 +22,7 @@ const SelectList: FC<SelectListProps> = ({ title, items }) => {
 interface SelectListProps {
   title: string;
   items: Record<string, any>;
+  onChange(event: ChangeEvent<HTMLSelectElement>): void;
 }
 
 export default SelectList;
