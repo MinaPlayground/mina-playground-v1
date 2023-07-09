@@ -20,7 +20,10 @@ import {
   RenameActionIcon,
 } from "@/icons/FileSystemActionIcons";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { selectCurrentDirectory } from "@/features/fileTree/fileTreeSlice";
+import {
+  selectChangedFields,
+  selectCurrentDirectory,
+} from "@/features/fileTree/fileTreeSlice";
 
 const TreeNode: FC<TreeNodeProps> = ({
   node,
@@ -31,6 +34,8 @@ const TreeNode: FC<TreeNodeProps> = ({
 }) => {
   const [key, value] = node;
   const currentDirectory = useAppSelector(selectCurrentDirectory);
+  const changedFields = useAppSelector(selectChangedFields);
+
   const path = directory.path ? `${directory.path}/${key}` : `${key}`;
   const fileName = key.replace(/\*/g, ".");
   const [inputValue, setInputValue] = useState(fileName);
@@ -61,6 +66,7 @@ const TreeNode: FC<TreeNodeProps> = ({
   const showChevronIcon =
     isDirectory && (showChildren ? <ChevronDownIcon /> : <ChevronRightIcon />);
   const icon = isDirectory ? <DirectoryIcon /> : <FileIcon />;
+  const isChanged = webcontainerPath in changedFields;
 
   return (
     <>
@@ -114,6 +120,12 @@ const TreeNode: FC<TreeNodeProps> = ({
             />
           ) : (
             <span className="text-sm">{fileName}</span>
+          )}
+          {isChanged && (
+            <svg width="16" height="16" fill="none" aria-hidden="true">
+              <path d="M4 12L12 4M12 12L4 4"></path>
+              <circle fill="red" cx="8" cy="8" r="4"></circle>
+            </svg>
           )}
         </div>
         <div className="hidden group-hover:block">
