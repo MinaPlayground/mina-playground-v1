@@ -3,19 +3,12 @@ import styles from "@/styles/Home.module.css";
 import Header from "@/components/Header";
 import { GetServerSideProps, NextPage } from "next";
 import axios from "axios";
-import { FileNode, FileSystemTree, WebContainer } from "@webcontainer/api";
-import { useEffect, useRef, useState } from "react";
-import CodeEditor from "@/components/editor/CodeEditor";
-import TerminalOutput from "@/components/terminal/TerminalOutput";
-import { useUpdateFileTreeMutation } from "@/services/fileTree";
+import { FileSystemTree } from "@webcontainer/api";
+import { useEffect } from "react";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
-import {
-  initializeWebcontainer,
-  selectWebcontainerInstance,
-} from "@/features/webcontainer/webcontainerSlice";
-import { useAppSelector } from "@/hooks/useAppSelector";
 import ProjectFileExplorer from "@/features/project/ProjectFileExplorer";
-import RunScript from "@/features/project/RunScript";
+import RunScriptSection from "@/features/project/RunScriptSection";
+import CodeEditorWithSave from "@/features/project/CodeEditorWithSave";
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { projectId } = query;
@@ -38,43 +31,10 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
 };
 
 const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
-  const [directory, setDirectory] = useState({
-    path: "",
-    webcontainerPath: "",
-  });
-  const [code, setCode] = useState<string | undefined>("");
-  const [changedFields, setChangedFields] = useState({});
   const dispatch = useAppDispatch();
-  const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
-  const [updateFileTree, { isLoading }] = useUpdateFileTreeMutation();
-
-  const setCodeChange = async (code: string | undefined, dir?: string) => {
-    if (!code) return;
-    if (!dir) {
-      setChangedFields({
-        ...changedFields,
-        [directory.webcontainerPath]: code,
-      });
-    }
-    setCode(code);
-  };
-
-  const notSaved = directory.webcontainerPath in changedFields;
-
-  const save = async () => {
-    const body = { location: directory.webcontainerPath, code };
-    updateFileTree({
-      id: _id,
-      body,
-    });
-    webcontainerInstance?.fs.writeFile(
-      directory.path.replace(/\*/g, "."),
-      code || ""
-    );
-  };
 
   useEffect(() => {
-    dispatch(initializeWebcontainer({ fileSystemTree }));
+    // dispatch(initializeWebcontainer({ fileSystemTree }));
   }, []);
 
   return (
@@ -93,22 +53,11 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
             <ProjectFileExplorer fileSystemTree={fileSystemTree} id={_id} />
           </div>
           <div className="flex flex-col flex-[4]">
-            <div className="ml-8 my-2 cursor-pointer" onClick={save}>
-              {notSaved && (
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  viewBox="0 0 448 512"
-                >
-                  <path d="M64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V173.3c0-17-6.7-33.3-18.7-45.3L352 50.7C340 38.7 323.7 32 306.7 32H64zm0 96c0-17.7 14.3-32 32-32H288c17.7 0 32 14.3 32 32v64c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V128zM224 288a64 64 0 1 1 0 128 64 64 0 1 1 0-128z" />
-                </svg>
-              )}
-            </div>
-            <CodeEditor code={code} setCodeChange={setCodeChange} />
+            <CodeEditorWithSave id={_id} />
           </div>
           <div className="flex flex-col flex-[2]">
             <div className="p-2">
-              <RunScript fileSystemTree={fileSystemTree} />
+              <RunScriptSection fileSystemTree={fileSystemTree} />
             </div>
             <div className="flex-1 bg-black">
               {/*<TerminalOutput*/}

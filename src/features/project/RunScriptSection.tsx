@@ -1,7 +1,6 @@
 import { ChangeEvent, FC, useState } from "react";
 import SelectList from "@/components/select/SelectList";
 import Loader from "@/components/Loader";
-import TestSection from "@/components/test/TestSection";
 import { FileNode, FileSystemTree } from "@webcontainer/api";
 import { isEmpty } from "lodash";
 import {
@@ -21,7 +20,7 @@ const getScripts = (fileSystemTree: FileSystemTree) => {
   return parsedJSON.scripts;
 };
 
-const RunScript: FC<RunScriptProps> = ({ fileSystemTree }) => {
+const RunScriptSection: FC<RunScriptSectionProps> = ({ fileSystemTree }) => {
   const [script, setScript] = useState("");
   const dispatch = useAppDispatch();
   const isInitializing = useAppSelector(selectInitializingEsbuild);
@@ -63,8 +62,8 @@ const RunScript: FC<RunScriptProps> = ({ fileSystemTree }) => {
   );
 };
 
-interface RunScriptProps {
+interface RunScriptSectionProps {
   fileSystemTree: FileSystemTree;
 }
 
-export default RunScript;
+export default RunScriptSection;
