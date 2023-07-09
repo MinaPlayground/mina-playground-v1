@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/store";
 import { FileSystemTree, WebContainer } from "@webcontainer/api";
 
@@ -7,6 +7,7 @@ interface WebcontainerState {
   initializingWebcontainerError: boolean;
   webcontainerInstance: WebContainer | null;
   shellProcessInput: WritableStreamDefaultWriter | null;
+  isRunning: boolean;
 }
 
 const initialState: WebcontainerState = {
@@ -14,11 +15,15 @@ const initialState: WebcontainerState = {
   initializingWebcontainerError: false,
   webcontainerInstance: null,
   shellProcessInput: null,
+  isRunning: false,
 };
 
 export const initializeWebcontainer = createAsyncThunk(
   "initializeWebcontainer",
-  async ({ fileSystemTree }: { fileSystemTree: FileSystemTree }) => {
+  async (
+    { fileSystemTree }: { fileSystemTree: FileSystemTree },
+    { dispatch }
+  ) => {
     const { WebContainer } = await import("@webcontainer/api");
     const webcontainer = await WebContainer.boot();
     webcontainer.mount(fileSystemTree);
@@ -37,12 +42,14 @@ export const initializeWebcontainer = createAsyncThunk(
     }
 
     const shellProcess = await webcontainer.spawn("jsh");
+    // save shellProcess, keep output stream in component
     const input = shellProcess.input.getWriter();
     shellProcess.output.pipeTo(
       new WritableStream({
         write(data) {
           console.log(data);
           if (data.endsWith("[3G")) {
+            dispatch(setIsRunning(false));
             // setIsRunning(false);
             // setIsAborting(false);
           }
@@ -57,10 +64,23 @@ export const initializeWebcontainer = createAsyncThunk(
   }
 );
 
+export const writeCommand = createAsyncThunk(
+  "writeCommand",
+  async (command: string, { getState, dispatch }) => {
+    dispatch(setIsRunning(true));
+    const { webcontainer } = getState() as { webcontainer: WebcontainerState };
+    await webcontainer.shellProcessInput?.write(command);
+  }
+);
+
 export const webcontainerSlice = createSlice({
   name: "webcontainer",
   initialState,
-  reducers: {},
+  reducers: {
+    setIsRunning: (state, action: PayloadAction<boolean>) => {
+      state.isRunning = action.payload;
+    },
+  },
   extraReducers(builder) {
     builder
       .addCase(initializeWebcontainer.pending, (state, action) => {
@@ -75,6 +95,8 @@ export const webcontainerSlice = createSlice({
         state.initializingWebcontainer = false;
         state.initializingWebcontainerError = true;
       });
+
+    // add reject case for write command
   },
 });
 
@@ -87,4 +109,8 @@ export const selectWebcontainerInstance = (state: RootState) =>
 export const selectShellProcessInput = (state: RootState) =>
   state.webcontainer.shellProcessInput;
 
+export const selectIsRunning = (state: RootState) =>
+  state.webcontainer.isRunning;
+
+export const { setIsRunning } = webcontainerSlice.actions;
 export default webcontainerSlice.reducer;

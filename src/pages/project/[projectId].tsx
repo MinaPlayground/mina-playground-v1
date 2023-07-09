@@ -22,6 +22,7 @@ import {
   selectInitializingEsbuild,
   selectShellProcessInput,
   selectWebcontainerInstance,
+  writeCommand,
 } from "@/features/webcontainer/webcontainerSlice";
 import { useAppSelector } from "@/hooks/useAppSelector";
 
@@ -91,8 +92,10 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
   };
 
   const runTest = async () => {
-    shellProcessInput?.write(
-      `node --experimental-vm-modules --experimental-wasm-threads node_modules/jest/bin/jest.js test \r`
+    dispatch(
+      writeCommand(
+        "node --experimental-vm-modules --experimental-wasm-threads node_modules/jest/bin/jest.js test \r"
+      )
     );
   };
 
@@ -150,7 +153,6 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
               ) : (
                 <TestSection
                   isAborting={false}
-                  isRunning={false}
                   runTest={runTest}
                   abortTest={abortTest}
                 />

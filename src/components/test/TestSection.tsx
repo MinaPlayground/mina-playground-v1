@@ -1,11 +1,14 @@
 import { FC } from "react";
+import { useAppSelector } from "@/hooks/useAppSelector";
+import { selectIsRunning } from "@/features/webcontainer/webcontainerSlice";
 
 const TestSection: FC<TestSectionProps> = ({
-  isRunning,
   isAborting,
   abortTest,
   runTest,
 }) => {
+  const isRunning = useAppSelector(selectIsRunning);
+
   const onClick = isRunning ? abortTest : runTest;
   const { style, title } = isRunning
     ? { style: "from-red-400 via-red-500 to-red-600", title: "Abort tests" }
@@ -88,7 +91,6 @@ const RunIcon = () => (
 );
 
 interface TestSectionProps {
-  isRunning: boolean;
   isAborting: boolean;
   abortTest(): void;
   runTest(): void;
