@@ -38,7 +38,7 @@ const RunScriptSection: FC<RunScriptSectionProps> = ({ fileSystemTree }) => {
   };
 
   return (
-    <>
+    <div className="flex bg-black gap-2 items-center p-2">
       <SelectList
         title={"Choose a script"}
         items={getScripts(fileSystemTree)}
@@ -46,8 +46,8 @@ const RunScriptSection: FC<RunScriptSectionProps> = ({ fileSystemTree }) => {
       />
       {isInitializing ? (
         <Loader
-          text="Initializing Smart contract"
-          circleColor={"text-black"}
+          text="Initializing"
+          circleColor={"text-white"}
           spinnerColor={"fill-orange-500"}
         />
       ) : (
@@ -59,7 +59,7 @@ const RunScriptSection: FC<RunScriptSectionProps> = ({ fileSystemTree }) => {
           runTitle={"Run script"}
         />
       )}
-    </>
+    </div>
   );
 };
 

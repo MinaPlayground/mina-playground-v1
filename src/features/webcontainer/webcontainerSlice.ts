@@ -26,15 +26,26 @@ export const initializeWebcontainer = createAsyncThunk(
     { fileSystemTree }: { fileSystemTree: FileSystemTree },
     { dispatch }
   ) => {
+    const { FitAddon } = await import("xterm-addon-fit");
+    const fitAddon = new FitAddon();
+    const { Terminal } = await import("xterm");
+    const terminalEl = document.querySelector(".terminal");
+    const terminal = new Terminal({
+      convertEol: true,
+    });
+    terminal.loadAddon(fitAddon);
+    terminal.open(<HTMLElement>terminalEl);
+    fitAddon.fit();
+
     const { WebContainer } = await import("@webcontainer/api");
     const webcontainer = await WebContainer.boot();
-    webcontainer.mount(fileSystemTree);
+    await webcontainer.mount(fileSystemTree);
 
     const installProcess = await webcontainer.spawn("npm", ["install"]);
     installProcess.output.pipeTo(
       new WritableStream({
         write(data) {
-          console.log(data);
+          terminal.write(data);
         },
       })
     );
@@ -43,12 +54,31 @@ export const initializeWebcontainer = createAsyncThunk(
       throw new Error("Installation failed");
     }
 
-    const shellProcess = await webcontainer.spawn("jsh");
+    const shellProcess = await webcontainer.spawn("jsh", {
+      terminal: {
+        cols: terminal.cols,
+        rows: terminal.rows,
+      },
+    });
+
+    window.addEventListener("resize", () => {
+      fitAddon.fit();
+      shellProcess.resize({
+        cols: terminal.cols,
+        rows: terminal.rows,
+      });
+    });
+
     const input = shellProcess.input.getWriter();
+
+    terminal.onData((data) => {
+      input.write(data);
+    });
+
     shellProcess.output.pipeTo(
       new WritableStream({
         write(data) {
-          console.log(data);
+          terminal.write(data);
           if (data === "^C") {
             dispatch(setIsAborting(true));
           }

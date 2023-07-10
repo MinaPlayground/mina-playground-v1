@@ -23,27 +23,25 @@ const RunScriptButton: FC<RunScriptButtonProps> = ({
         title: runTitle,
       };
   return (
-    <>
-      <button
-        disabled={disabled}
-        type="button"
-        onClick={onClick}
-        className={`inline-flex w-36 text-white bg-gradient-to-r ${style} disabled:opacity-50 disabled:pointer-events-none
+    <button
+      disabled={disabled}
+      type="button"
+      onClick={onClick}
+      className={`inline-flex w-36 text-white bg-gradient-to-r ${style} disabled:opacity-50 disabled:pointer-events-none
 
         } hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center`}
-      >
-        {isRunning || isAborting ? (
-          isAborting ? (
-            <AbortSpinner />
-          ) : (
-            <AbortSquare />
-          )
+    >
+      {isRunning || isAborting ? (
+        isAborting ? (
+          <AbortSpinner />
         ) : (
-          <RunIcon />
-        )}
-        {title}
-      </button>
-    </>
+          <AbortSquare />
+        )
+      ) : (
+        <RunIcon />
+      )}
+      {title}
+    </button>
   );
 };
 
