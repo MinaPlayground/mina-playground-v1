@@ -37,6 +37,7 @@ export const FileTreeSlice = createSlice({
       state.changedFields = { ...state.changedFields, ...action.payload };
     },
     deleteFromChangedFields: (state, action: PayloadAction<string>) => {
+      if (!(action.payload in state.changedFields)) return;
       delete state.changedFields[action.payload];
     },
   },

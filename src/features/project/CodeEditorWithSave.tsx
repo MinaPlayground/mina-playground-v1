@@ -17,7 +17,6 @@ const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({ id }) => {
   );
   const changedFields = useAppSelector(selectChangedFields);
   const dispatch = useAppDispatch();
-
   const [code, setCode] = useState<string | undefined>("");
   const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
   const [updateFileTree, { isLoading, isSuccess, isError }] =
@@ -30,7 +29,8 @@ const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({ id }) => {
   };
 
   useEffect(() => {
-    setCode(treeItemCode);
+    const changedStoredCode = changedFields[directory.webcontainerPath];
+    setCode(changedStoredCode || treeItemCode);
   }, [treeItemCode]);
 
   const hasChanged = directory.webcontainerPath in changedFields;
