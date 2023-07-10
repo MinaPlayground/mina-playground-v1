@@ -10,6 +10,7 @@ const RunScriptButton: FC<RunScriptButtonProps> = ({
   abortTitle,
   onAbort,
   onRun,
+  disabled = false,
 }) => {
   const isRunning = useAppSelector(selectIsRunning);
   const isAborting = useAppSelector(selectIsAborting);
@@ -24,9 +25,11 @@ const RunScriptButton: FC<RunScriptButtonProps> = ({
   return (
     <>
       <button
+        disabled={disabled}
         type="button"
         onClick={onClick}
-        className={`inline-flex w-36 text-white bg-gradient-to-r ${style}
+        className={`inline-flex w-36 text-white bg-gradient-to-r ${style} disabled:opacity-50 disabled:pointer-events-none
+
         } hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center`}
       >
         {isRunning || isAborting ? (
@@ -92,6 +95,7 @@ const RunIcon = () => (
 interface RunScriptButtonProps {
   runTitle: string;
   abortTitle: string;
+  disabled?: boolean;
 
   onAbort(): void;
 

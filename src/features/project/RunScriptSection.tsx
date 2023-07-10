@@ -52,6 +52,7 @@ const RunScriptSection: FC<RunScriptSectionProps> = ({ fileSystemTree }) => {
         />
       ) : (
         <RunScriptButton
+          disabled={!script}
           onRun={runTest}
           abortTitle={"Abort"}
           onAbort={abortTest}

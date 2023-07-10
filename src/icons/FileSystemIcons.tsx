@@ -2,7 +2,7 @@ export const DirectoryIcon = () => (
   <svg
     height={12}
     width={12}
-    className={"mr-1"}
+    className="mr-1 fill-gray-600"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 512 512"
   >
@@ -14,7 +14,7 @@ export const FileIcon = () => (
   <svg
     height={12}
     width={12}
-    className="mr-1"
+    className="mr-1 fill-gray-600"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 384 512"
   >
@@ -26,7 +26,7 @@ export const ChevronRightIcon = () => (
   <svg
     height={12}
     width={12}
-    className="ml-[-3px] mr-1"
+    className="ml-[-3px] mr-1 fill-gray-600"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 320 512"
   >
@@ -38,7 +38,7 @@ export const ChevronDownIcon = () => (
   <svg
     height={12}
     width={12}
-    className="mr-1"
+    className="mr-1 fill-gray-600"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 512 512"
   >

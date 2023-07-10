@@ -116,7 +116,7 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
           onClick={createNewFile}
           height={16}
           width={16}
-          className="cursor-pointer"
+          className="cursor-pointer fill-gray-600 hover:fill-black"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 576 512"
         >
@@ -126,7 +126,7 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
           onClick={createNewFolder}
           height={16}
           width={16}
-          className="cursor-pointer"
+          className="cursor-pointer fill-gray-600 hover:fill-black"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 512 512"
         >

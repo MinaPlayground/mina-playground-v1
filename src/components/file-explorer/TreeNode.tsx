@@ -122,50 +122,54 @@ const TreeNode: FC<TreeNodeProps> = ({
             <span className="text-sm">{fileName}</span>
           )}
           {isChanged && (
-            <svg width="16" height="16" fill="none" aria-hidden="true">
-              <path d="M4 12L12 4M12 12L4 4"></path>
-              <circle fill="red" cx="8" cy="8" r="4"></circle>
+            <svg width="16" height="16" fill="black" aria-hidden="true">
+              <path d="M4 12L12 4M12 12L4 4" />
+              <circle cx="8" cy="8" r="4" />
             </svg>
           )}
         </div>
-        <div className="hidden group-hover:block">
-          <div className="flex flex-row gap-1">
-            {isDirectory && (
-              <>
-                <CreateFileActionIcon
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setShowChildren(true);
-                    onChange("create", "file", { path: webcontainerPath });
-                  }}
-                />
-                <CreateDirectoryActionIcon
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setShowChildren(true);
-                    onChange("create", "directory", { path: webcontainerPath });
-                  }}
-                />
-              </>
-            )}
-            <RenameActionIcon
-              onClick={(event) => {
-                event.stopPropagation();
-                setInputValue(fileName);
-                setIsEditing(true);
-              }}
-            />
-            <DeleteActionIcon
-              onClick={(event) => {
-                event.stopPropagation();
-                onChange("delete", "file", {
-                  path: directory.webcontainerPath,
-                  key,
-                });
-              }}
-            />
+        {key !== "" && !isEditing && (
+          <div className="hidden group-hover:block">
+            <div className="flex flex-row gap-1">
+              {isDirectory && (
+                <>
+                  <CreateFileActionIcon
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setShowChildren(true);
+                      onChange("create", "file", { path: webcontainerPath });
+                    }}
+                  />
+                  <CreateDirectoryActionIcon
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setShowChildren(true);
+                      onChange("create", "directory", {
+                        path: webcontainerPath,
+                      });
+                    }}
+                  />
+                </>
+              )}
+              <RenameActionIcon
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setInputValue(fileName);
+                  setIsEditing(true);
+                }}
+              />
+              <DeleteActionIcon
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onChange("delete", "file", {
+                    path: directory.webcontainerPath,
+                    key,
+                  });
+                }}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </div>
       {isDirectory && (
         <ul className="pl-4">
