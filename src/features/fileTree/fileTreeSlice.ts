@@ -36,6 +36,9 @@ export const FileTreeSlice = createSlice({
     ) => {
       state.changedFields = { ...state.changedFields, ...action.payload };
     },
+    deleteFromChangedFields: (state, action: PayloadAction<string>) => {
+      delete state.changedFields[action.payload];
+    },
   },
 });
 
@@ -48,6 +51,7 @@ export const selectCurrentTreeItem = (state: RootState) =>
 export const selectChangedFields = (state: RootState) =>
   state.fileTree.changedFields;
 
-export const { setCurrentTreeItem, setChangedFields } = FileTreeSlice.actions;
+export const { setCurrentTreeItem, setChangedFields, deleteFromChangedFields } =
+  FileTreeSlice.actions;
 
 export default FileTreeSlice.reducer;

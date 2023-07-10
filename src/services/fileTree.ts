@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { deleteFromChangedFields } from "@/features/fileTree/fileTreeSlice";
 
 export const fileTreeApi = createApi({
   reducerPath: "fileTreeApi",
@@ -15,6 +16,13 @@ export const fileTreeApi = createApi({
           method: "PATCH",
           body,
         };
+      },
+      async onQueryStarted(data, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          const { body } = data;
+          dispatch(deleteFromChangedFields(body.location));
+        } catch {}
       },
     }),
     deleteFileTreeItem: builder.mutation({

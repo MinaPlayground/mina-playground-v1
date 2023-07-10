@@ -1,5 +1,4 @@
 import { FC, useEffect, useState } from "react";
-import { FileSystemTree } from "@webcontainer/api";
 import CodeEditor from "@/components/editor/CodeEditor";
 import SaveCode from "@/components/editor/SaveCode";
 import { useAppSelector } from "@/hooks/useAppSelector";
@@ -21,7 +20,8 @@ const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({ id }) => {
 
   const [code, setCode] = useState<string | undefined>("");
   const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
-  const [updateFileTree, { isLoading }] = useUpdateFileTreeMutation();
+  const [updateFileTree, { isLoading, isSuccess, isError }] =
+    useUpdateFileTreeMutation();
 
   const setCodeChange = async (code: string | undefined) => {
     if (!code) return;
@@ -33,7 +33,7 @@ const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({ id }) => {
     setCode(treeItemCode);
   }, [treeItemCode]);
 
-  const notSaved = directory.webcontainerPath in changedFields;
+  const hasChanged = directory.webcontainerPath in changedFields;
 
   const save = async () => {
     const body = { location: directory.webcontainerPath, code };
@@ -46,12 +46,18 @@ const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({ id }) => {
       code || ""
     );
   };
+
   return (
     <>
-      {/*<svg width="16" height="16" fill="none" aria-hidden="true">*/}
-      {/*  <path d="M4 12L12 4M12 12L4 4"></path>*/}
-      {/*  <circle cx="8" cy="8" r="4"></circle>*/}
-      {/*</svg>*/}
+      <div className="flex bg-gray-50 items-center p-2">
+        <SaveCode
+          disabled={!hasChanged}
+          onClick={save}
+          isLoading={isLoading}
+          isSuccess={isSuccess}
+          isError={isError}
+        />
+      </div>
       <CodeEditor code={code} setCodeChange={setCodeChange} />
     </>
   );
