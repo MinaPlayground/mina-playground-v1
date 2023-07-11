@@ -45,7 +45,7 @@ export const initializeWebcontainer = createAsyncThunk(
     installProcess.output.pipeTo(
       new WritableStream({
         write(data) {
-          terminal.write(data);
+          // terminal.write(data);
         },
       })
     );
@@ -61,13 +61,22 @@ export const initializeWebcontainer = createAsyncThunk(
       },
     });
 
-    window.addEventListener("resize", () => {
+    // window.addEventListener("resize", () => {
+    //   fitAddon.fit();
+    //   shellProcess.resize({
+    //     cols: terminal.cols,
+    //     rows: terminal.rows,
+    //   });
+    // });
+
+    const xterm_resize_ob = new ResizeObserver(function (entries) {
       fitAddon.fit();
       shellProcess.resize({
         cols: terminal.cols,
         rows: terminal.rows,
       });
     });
+    xterm_resize_ob.observe(<HTMLElement>terminalEl);
 
     const input = shellProcess.input.getWriter();
 

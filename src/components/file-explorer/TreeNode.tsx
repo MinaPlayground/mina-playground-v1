@@ -66,7 +66,9 @@ const TreeNode: FC<TreeNodeProps> = ({
   const showChevronIcon =
     isDirectory && (showChildren ? <ChevronDownIcon /> : <ChevronRightIcon />);
   const icon = isDirectory ? <DirectoryIcon /> : <FileIcon />;
-  const isChanged = webcontainerPath in changedFields;
+
+  const changedField = changedFields[webcontainerPath];
+  const isChanged = changedField && !changedField.saved;
 
   return (
     <>

@@ -6,7 +6,13 @@ interface FileTreeState {
     currentDirectory: { path: string; webcontainerPath: string };
     code: string;
   };
-  changedFields: Record<string, string>;
+  changedFields: Record<
+    string,
+    {
+      code: string;
+      saved: boolean;
+    }
+  >;
 }
 
 const initialState: FileTreeState = {
@@ -32,13 +38,21 @@ export const FileTreeSlice = createSlice({
     },
     setChangedFields: (
       state,
-      action: PayloadAction<Record<string, string>>
+      action: PayloadAction<{ location: string; code: string }>
     ) => {
-      state.changedFields = { ...state.changedFields, ...action.payload };
+      const { location, code } = action.payload;
+      state.changedFields = {
+        ...state.changedFields,
+        [location]: { code, saved: false },
+      };
     },
-    deleteFromChangedFields: (state, action: PayloadAction<string>) => {
-      if (!(action.payload in state.changedFields)) return;
-      delete state.changedFields[action.payload];
+    setChangedFieldStatus: (
+      state,
+      action: PayloadAction<{ location: string; saved: boolean }>
+    ) => {
+      const { location, saved } = action.payload;
+      if (!(location in state.changedFields)) return;
+      state.changedFields[location].saved = saved;
     },
   },
 });
@@ -52,7 +66,7 @@ export const selectCurrentTreeItem = (state: RootState) =>
 export const selectChangedFields = (state: RootState) =>
   state.fileTree.changedFields;
 
-export const { setCurrentTreeItem, setChangedFields, deleteFromChangedFields } =
+export const { setCurrentTreeItem, setChangedFields, setChangedFieldStatus } =
   FileTreeSlice.actions;
 
 export default FileTreeSlice.reducer;

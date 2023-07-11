@@ -8,9 +8,8 @@ import {
 
 const mapStatusToIconText = (
   isLoading: boolean,
-  isSuccess: boolean,
-  isError: boolean,
-  disabled: boolean
+  isSaved: boolean,
+  isError: boolean
 ) => {
   if (isLoading) {
     return {
@@ -18,7 +17,7 @@ const mapStatusToIconText = (
       Icon: <Spinner />,
     };
   }
-  if (isSuccess && disabled) {
+  if (isSaved) {
     return {
       text: "Saved",
       Icon: <SuccessIcon />,
@@ -39,20 +38,15 @@ const mapStatusToIconText = (
 const SaveCode: FC<SaveCodeProps> = ({
   disabled,
   isLoading,
-  isSuccess,
+  isSaved,
   isError,
   onClick,
 }) => {
-  const { text, Icon } = mapStatusToIconText(
-    isLoading,
-    isSuccess,
-    isError,
-    disabled
-  );
+  const { text, Icon } = mapStatusToIconText(isLoading, isSaved, isError);
   return (
     <button
       onClick={onClick}
-      disabled={disabled || isLoading}
+      disabled={disabled || isLoading || isSaved}
       type="button"
       className="text-gray-900 hover:text-white border border-gray-300 hover:bg-gray-900 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-1.5 text-center mr-2 inline-flex items-center disabled:opacity-50 disabled:pointer-events-none
 "
@@ -66,7 +60,7 @@ const SaveCode: FC<SaveCodeProps> = ({
 interface SaveCodeProps {
   disabled: boolean;
   isLoading: boolean;
-  isSuccess: boolean;
+  isSaved: boolean;
   isError: boolean;
   onClick(): void;
 }
