@@ -19,21 +19,21 @@ const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({ id }) => {
   const dispatch = useAppDispatch();
   const [code, setCode] = useState<string | undefined>("");
   const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
-  const [updateFileTree, { isLoading, isSuccess, isError }] =
-    useUpdateFileTreeMutation();
+  const [updateFileTree, { isLoading, isError }] = useUpdateFileTreeMutation();
 
   const setCodeChange = async (code: string | undefined) => {
     if (!code) return;
     setCode(code);
-    dispatch(setChangedFields({ [directory.webcontainerPath]: code }));
+    dispatch(setChangedFields({ location: directory.webcontainerPath, code }));
   };
 
   useEffect(() => {
-    const changedStoredCode = changedFields[directory.webcontainerPath];
+    const changedStoredCode = changedFields[directory.webcontainerPath]?.code;
     setCode(changedStoredCode || treeItemCode);
   }, [treeItemCode]);
 
-  const hasChanged = directory.webcontainerPath in changedFields;
+  const changedField = changedFields[directory.webcontainerPath];
+  const isSaved = changedField?.saved;
 
   const save = async () => {
     const body = { location: directory.webcontainerPath, code };
@@ -54,10 +54,10 @@ const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({ id }) => {
           {" "}
           <div className="flex bg-gray-50 items-center p-2">
             <SaveCode
-              disabled={!hasChanged}
+              disabled={!changedField}
               onClick={save}
               isLoading={isLoading}
-              isSuccess={isSuccess}
+              isSaved={isSaved}
               isError={isError}
             />
           </div>
