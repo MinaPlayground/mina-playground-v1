@@ -8,7 +8,7 @@ const Projects: FC<ProjectProps> = ({ data }) => {
   const createProject = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:3000/project",
+        `${process.env.NEXT_PUBLIC_API_URL}/project`,
         { name, type: 0, visibility: true, files_id: 1 },
         { headers: { "Content-Type": "application/json" } }
       );

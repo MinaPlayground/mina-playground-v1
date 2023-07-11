@@ -1,33 +1,21 @@
 import Head from "next/head";
 import styles from "@/styles/Home.module.css";
 import Header from "@/components/Header";
-import { GetServerSideProps, NextPage } from "next";
+import { NextPage } from "next";
 import axios from "axios";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/router";
 
-export const getServerSideProps: GetServerSideProps = async ({}) => {
-  try {
-    const response = await axios.get("http://localhost:3000/project");
-    const { data } = response;
-    return {
-      props: { data },
-    };
-  } catch {
-    return {
-      props: { data: null },
-    };
-  }
-};
-
-const Home: NextPage<HomeProps> = ({ data }) => {
+const Project: NextPage = () => {
   const [name, setName] = useState("");
   const router = useRouter();
 
-  const createProject = async () => {
+  const createProject = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
     try {
       const response = await axios.post(
-        "http://localhost:3000/project",
+        `${process.env.NEXT_PUBLIC_API_URL}/project`,
         { name, type: 0, visibility: true, files_id: 1 },
         { headers: { "Content-Type": "application/json" } }
       );
@@ -53,7 +41,7 @@ const Home: NextPage<HomeProps> = ({ data }) => {
               <h2 className="text-2xl font-bold text-gray-900">
                 Create a new project
               </h2>
-              <form className="mt-8 space-y-6">
+              <form onSubmit={createProject} className="mt-8 space-y-6">
                 <div>
                   <label
                     htmlFor="name"
@@ -73,8 +61,7 @@ const Home: NextPage<HomeProps> = ({ data }) => {
                   />
                 </div>
                 <button
-                  type="button"
-                  onClick={createProject}
+                  type="submit"
                   className="w-full px-5 py-3 text-base font-medium text-center text-white bg-gray-700 rounded-lg hover:bg-black focus:ring-4 focus:ring-blue-300 sm:w-auto"
                 >
                   Create project
@@ -88,14 +75,4 @@ const Home: NextPage<HomeProps> = ({ data }) => {
   );
 };
 
-interface HomeProps {
-  data: {
-    _id: string;
-    name: string;
-    type: number;
-    visibility: boolean;
-    files_id: number;
-  }[];
-}
-
-export default Home;
+export default Project;
