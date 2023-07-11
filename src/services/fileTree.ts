@@ -3,7 +3,7 @@ import { deleteFromChangedFields } from "@/features/fileTree/fileTreeSlice";
 
 export const fileTreeApi = createApi({
   reducerPath: "fileTreeApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "http://localhost:3000/" }),
+  baseQuery: fetchBaseQuery({ baseUrl: `${process.env.NEXT_PUBLIC_API_URL}/` }),
   endpoints: (builder) => ({
     getPokemonByName: builder.query({
       query: (name) => `project/64a1f352851a7f64391ab7cc`,

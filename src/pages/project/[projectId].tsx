@@ -15,10 +15,10 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { projectId } = query;
   try {
     const responseProject = await axios.get(
-      `http://localhost:3000/project/${projectId}`
+      `${process.env.NEXT_PUBLIC_API_URL}/project/${projectId}`
     );
     const response = await axios.get(
-      `http://localhost:3000/fileTree/${projectId}`
+      `${process.env.NEXT_PUBLIC_API_URL}/fileTree/${projectId}`
     );
     const { data } = response;
     return {

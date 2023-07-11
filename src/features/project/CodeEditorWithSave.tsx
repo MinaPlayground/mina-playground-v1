@@ -49,16 +49,21 @@ const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({ id }) => {
 
   return (
     <>
-      <div className="flex bg-gray-50 items-center p-2">
-        <SaveCode
-          disabled={!hasChanged}
-          onClick={save}
-          isLoading={isLoading}
-          isSuccess={isSuccess}
-          isError={isError}
-        />
-      </div>
-      <CodeEditor code={code} setCodeChange={setCodeChange} />
+      {directory.path && (
+        <>
+          {" "}
+          <div className="flex bg-gray-50 items-center p-2">
+            <SaveCode
+              disabled={!hasChanged}
+              onClick={save}
+              isLoading={isLoading}
+              isSuccess={isSuccess}
+              isError={isError}
+            />
+          </div>
+          <CodeEditor code={code} setCodeChange={setCodeChange} />
+        </>
+      )}
     </>
   );
 };
