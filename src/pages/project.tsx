@@ -19,7 +19,7 @@ const Project: NextPage = () => {
     try {
       const response = await createProject({ body }).unwrap();
       // @ts-ignore
-      router.push(`/project/${response.data.project_id}`);
+      router.push(`/project/${response.project_id}`);
     } catch {
       setIsLoading(false);
     }
