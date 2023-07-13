@@ -1,9 +1,8 @@
 import { FC } from "react";
-import { UserCircleIcon } from "@heroicons/react/24/outline";
 
 const Header: FC = () => {
   return (
-    <nav className="bg-gradient-to-br from-pink-500 to-orange-400 border-gray-200">
+    <nav className="bg-gray-800 border-gray-200">
       <div className="flex flex-wrap items-center justify-between mx-auto p-4">
         <a href="/" className="flex items-center">
           <img

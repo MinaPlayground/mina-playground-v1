@@ -16,7 +16,7 @@ export const mutateFileTreeCreateNew = (
 
 export const mutateFileTreeOnBlur = (
   fileData: KeyValueObj,
-  { path, key, value }: FileSystemPayload
+  { path, key, value }: any
 ) => {
   const foundItem = get(fileData, path || key) as Record<string, any>;
   if (!path) {

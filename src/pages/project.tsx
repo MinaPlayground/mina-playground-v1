@@ -2,26 +2,26 @@ import Head from "next/head";
 import styles from "@/styles/Home.module.css";
 import Header from "@/components/Header";
 import { NextPage } from "next";
-import axios from "axios";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import { useCreateProjectMutation } from "@/services/project";
 
 const Project: NextPage = () => {
   const [name, setName] = useState("");
   const router = useRouter();
+  const [createProject] = useCreateProjectMutation();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const createProject = async (e: FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
+    setIsLoading(true);
+    const body = { name, type: 0, visibility: true, files_id: 1 };
     try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/project`,
-        { name, type: 0, visibility: true, files_id: 1 },
-        { headers: { "Content-Type": "application/json" } }
-      );
+      const response = await createProject({ body }).unwrap();
+      // @ts-ignore
       router.push(`/project/${response.data.project_id}`);
-    } catch (err) {
-      console.log(err);
+    } catch {
+      setIsLoading(false);
     }
   };
 
@@ -35,17 +35,17 @@ const Project: NextPage = () => {
       </Head>
       <main className={styles.main}>
         <Header />
-        <section className="bg-gray-50">
+        <section className="">
           <div className="flex justify-center m-4 sm:m-8">
-            <div className="w-full lg:max-w-xl p-6 space-y-8 sm:p-8 bg-white rounded-lg shadow-xl">
-              <h2 className="text-2xl font-bold text-gray-900">
+            <div className="w-full lg:max-w-xl p-6 space-y-8 sm:p-8 bg-[#252728] rounded-lg shadow-2xl">
+              <h2 className="text-2xl font-bold text-gray-200">
                 Create a new project
               </h2>
-              <form onSubmit={createProject} className="mt-8 space-y-6">
+              <form onSubmit={onSubmit} className="mt-8 space-y-6">
                 <div>
                   <label
                     htmlFor="name"
-                    className="block mb-2 text-sm font-medium text-gray-900"
+                    className="block mb-2 text-sm font-medium text-gray-200"
                   >
                     Project name
                   </label>
@@ -55,16 +55,17 @@ const Project: NextPage = () => {
                     id="name"
                     value={name}
                     onChange={(evt) => setName(evt.target.value)}
-                    className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                    className="bg-[#252728] border border-gray-500 text-gray-100 text-sm rounded-lg block w-full p-2.5"
                     placeholder="My project"
                     required
                   />
                 </div>
                 <button
                   type="submit"
-                  className="w-full px-5 py-3 text-base font-medium text-center text-white bg-gray-700 rounded-lg hover:bg-black focus:ring-4 focus:ring-blue-300 sm:w-auto"
+                  disabled={isLoading}
+                  className="w-full px-5 py-3 text-base font-medium text-center text-white bg-gray-600 rounded-lg hover:bg-gray-700 focus:ring-4 focus:ring-blue-300 sm:w-auto"
                 >
-                  Create project
+                  {isLoading ? "Loading..." : "Create project"}
                 </button>
               </form>
             </div>

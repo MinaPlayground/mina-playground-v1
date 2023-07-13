@@ -27,7 +27,7 @@ const RunScriptButton: FC<RunScriptButtonProps> = ({
       disabled={disabled}
       type="button"
       onClick={onClick}
-      className={`inline-flex w-36 text-white bg-gradient-to-r ${style} disabled:opacity-50 disabled:pointer-events-none
+      className={`inline-flex text-white bg-gradient-to-r ${style} disabled:opacity-50 disabled:pointer-events-none
 
         } hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center`}
     >
