@@ -1,5 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { fileTreeApi } from "@/services/fileTree";
+import { projectApi } from "@/services/project";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import webcontainerReducer from "@/features/webcontainer/webcontainerSlice";
 import fileTreeReducer from "@/features/fileTree/fileTreeSlice";
@@ -9,10 +10,12 @@ export const store = configureStore({
     fileTree: fileTreeReducer,
     webcontainer: webcontainerReducer,
     [fileTreeApi.reducerPath]: fileTreeApi.reducer,
+    [projectApi.reducerPath]: projectApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false }).concat(
-      fileTreeApi.middleware
+      fileTreeApi.middleware,
+      projectApi.middleware
     ),
 });
 
