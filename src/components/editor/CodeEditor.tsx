@@ -4,6 +4,7 @@ import {
   getWorker,
   MonacoJsxSyntaxHighlight,
 } from "monaco-jsx-syntax-highlight";
+import Loader from "@/components/Loader";
 
 const CodeEditor: FC<CodeEditorProps> = ({ code, setCodeChange }) => {
   const handleEditorDidMount = useCallback((editor: any, monaco: any) => {
@@ -37,14 +38,34 @@ const CodeEditor: FC<CodeEditorProps> = ({ code, setCodeChange }) => {
     return dispose;
   }, []);
 
+  const setEditorTheme = (monaco: any) => {
+    monaco.editor.defineTheme("dark", {
+      base: "vs-dark",
+      inherit: true,
+      rules: [],
+      colors: {
+        "editor.background": "#202123",
+      },
+    });
+  };
+
   return (
     <Editor
       className="editor max-lg:h-[400px]"
       path={"file:///index.tsx"}
       defaultLanguage="typescript"
       value={code}
+      theme="dark"
+      loading={
+        <Loader
+          text="Loading"
+          circleColor={"text-white"}
+          spinnerColor={"fill-black"}
+        />
+      }
       onChange={(value) => setCodeChange(value)}
       onMount={handleEditorDidMount}
+      beforeMount={setEditorTheme}
       options={editorOptions}
     />
   );
