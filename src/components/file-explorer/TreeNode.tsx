@@ -2,10 +2,10 @@ import { FC, useState } from "react";
 import Tree from "@/components/file-explorer/Tree";
 import { DirectoryNode, FileNode } from "@webcontainer/api";
 import {
-  FileSystemAction,
-  FileSystemOnChangePayload,
-  FileSystemPayload,
-  FileSystemType,
+  Directory,
+  FileSystemOnBlurHandler,
+  FileSystemOnChangeHandler,
+  FileSystemOnClickHandler,
 } from "@/types";
 import {
   ChevronDownIcon,
@@ -46,7 +46,7 @@ const TreeNode: FC<TreeNodeProps> = ({
   const inputFileName = inputValue.replace(/\./g, "*");
   const isDirectory = "directory" in value;
   const isSelected = currentDirectory && path === currentDirectory.path;
-  const isSelectedStyle = isSelected ? "bg-gray-200" : "";
+  const isSelectedStyle = isSelected ? "bg-gray-800" : "";
   const webcontainer = isDirectory
     ? `${key || inputFileName}.directory`
     : `${key || inputFileName}.file.contents`;
@@ -69,12 +69,13 @@ const TreeNode: FC<TreeNodeProps> = ({
 
   const changedField = changedFields[webcontainerPath];
   const isChanged = changedField && !changedField.saved;
+  const type = isDirectory ? "directory" : "file";
 
   return (
     <>
       <div
         onClick={handleClick}
-        className={`group new-file hover:bg-gray-200 flex flex-row items-center mb-1 cursor-pointer ${isSelectedStyle}`}
+        className={`group new-file hover:bg-gray-800 flex flex-row items-center mb-1 cursor-pointer ${isSelectedStyle}`}
       >
         <div className="flex flex-1 flex-row items-center">
           {showChevronIcon}
@@ -92,11 +93,23 @@ const TreeNode: FC<TreeNodeProps> = ({
                   setShowChildren(false);
                   return;
                 }
-                onBlur(isEditing ? "rename" : "create", {
+
+                if (isEditing) {
+                  onBlur("rename", type, {
+                    path: directory.webcontainerPath,
+                    key,
+                    value: inputFileName,
+                    directoryPath: directory.path,
+                  });
+                  return;
+                }
+
+                onBlur("create", type, {
                   path: directory.webcontainerPath,
-                  fullPath: webcontainerPath,
                   key,
                   value: inputFileName,
+                  fullPath: webcontainerPath,
+                  directoryPath: directory.path,
                 });
                 setIsEditing(false);
                 setShowChildren(false);
@@ -109,22 +122,34 @@ const TreeNode: FC<TreeNodeProps> = ({
                   setShowChildren(false);
                   return;
                 }
-                onBlur(isEditing ? "rename" : "create", {
+
+                if (isEditing) {
+                  onBlur("rename", type, {
+                    path: directory.webcontainerPath,
+                    key,
+                    value: inputFileName,
+                    directoryPath: directory.path,
+                  });
+                  return;
+                }
+
+                onBlur("create", type, {
                   path: directory.webcontainerPath,
-                  fullPath: webcontainerPath,
                   key,
                   value: inputFileName,
+                  fullPath: webcontainerPath,
+                  directoryPath: directory.path,
                 });
                 setIsEditing(false);
                 setShowChildren(false);
               }}
-              className="pl-2 border border-gray-300 rounded-md bg-gray-50"
+              className="pl-2 border border-gray-500 text-gray-100 rounded-md bg-gray-800"
             />
           ) : (
-            <span className="text-sm">{fileName}</span>
+            <span className="text-sm text-gray-400">{fileName}</span>
           )}
           {isChanged && (
-            <svg width="16" height="16" fill="black" aria-hidden="true">
+            <svg width="16" height="16" fill="white" aria-hidden="true">
               <path d="M4 12L12 4M12 12L4 4" />
               <circle cx="8" cy="8" r="4" />
             </svg>
@@ -192,14 +217,10 @@ const TreeNode: FC<TreeNodeProps> = ({
 
 interface TreeNodeProps {
   node: [string, DirectoryNode | FileNode];
-  onBlur(action: "create" | "rename", payload: FileSystemPayload): void;
-  onChange(
-    action: FileSystemAction,
-    type: FileSystemType,
-    payload: FileSystemOnChangePayload
-  ): void;
-  onClick(code: string, path: { path: string; webcontainerPath: string }): void;
-  directory: { path: string; webcontainerPath: string };
+  onBlur: FileSystemOnBlurHandler;
+  onChange: FileSystemOnChangeHandler;
+  onClick: FileSystemOnClickHandler;
+  directory: Directory;
 }
 
 export default TreeNode;
