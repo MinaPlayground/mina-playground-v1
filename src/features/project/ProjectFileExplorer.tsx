@@ -9,6 +9,7 @@ import {
 import { getCombinedPathName } from "@/utils/fileSystemWeb";
 import {
   FileSystemAction,
+  FileSystemOnBlurHandler,
   FileSystemOnChangePayload,
   FileSystemType,
 } from "@/types";
@@ -19,6 +20,8 @@ import {
 } from "@/services/fileTree";
 import { setCurrentTreeItem } from "@/features/fileTree/fileTreeSlice";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
+import { useAppSelector } from "@/hooks/useAppSelector";
+import { selectWebcontainerInstance } from "@/features/webcontainer/webcontainerSlice";
 
 const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
   fileSystemTree,
@@ -29,10 +32,7 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
   const [updateFileTree, { isLoading }] = useUpdateFileTreeMutation();
   const [deleteFileTreeItem, { isLoading: isLoadingDeletion }] =
     useDeleteFileTreeItemMutation();
-  const [directory, setDirectory] = useState({
-    path: "",
-    webcontainerPath: "",
-  });
+  const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
 
   const onClick = async (
     code: string,
@@ -62,7 +62,7 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
     );
   };
 
-  const onChange = (
+  const onChange = async (
     action: FileSystemAction,
     type: FileSystemType,
     payload: FileSystemOnChangePayload
@@ -70,44 +70,70 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
     setFileData(
       produce((fileData: FileSystemTree) => {
         mapFileSystemAction(action, type).action(fileData, payload);
-        if (action === "delete") {
-          const location = getCombinedPathName(
-            payload.key as string,
-            payload.path
-          );
-          deleteFileTreeItem({ id, body: { location } });
-        }
       })
     );
+
+    if (action === "delete") {
+      const location = getCombinedPathName(
+        payload.key as string,
+        payload.path,
+        "."
+      );
+      try {
+        await deleteFileTreeItem({ id, body: { location } }).unwrap();
+        await webcontainerInstance?.fs.rm(location.replace(/\*/g, "."), {
+          recursive: true,
+        });
+      } catch {}
+    }
   };
 
-  const onBlur = async (
-    action: "create" | "rename",
-    payload: {
-      path: string;
-      fullPath: string;
-      key: string;
-      value: string;
-    }
-  ) => {
-    const { path, fullPath, key, value } = payload;
+  const onBlur: FileSystemOnBlurHandler = async (action, type, payload) => {
     setFileData(
       produce((fileData) => {
         mutateFileTreeOnBlur(fileData, payload);
       })
     );
-    const isCreateAction = action === "create";
-    const body = isCreateAction
-      ? { location: fullPath }
-      : {
-          location: getCombinedPathName(key as string, path),
-          rename: getCombinedPathName(value, path),
-        };
 
-    updateFileTree({
-      id,
-      body,
-    });
+    if (action === "create") {
+      const { value, fullPath, directoryPath } = payload;
+      const webcontainerPath = getCombinedPathName(value, directoryPath, "/");
+      const body = { location: fullPath };
+      try {
+        await updateFileTree({
+          id,
+          body,
+        }).unwrap();
+        type === "directory"
+          ? webcontainerInstance?.fs.mkdir(webcontainerPath.replace(/\*/g, "."))
+          : webcontainerInstance?.fs.writeFile(
+              webcontainerPath.replace(/\*/g, "."),
+              ""
+            );
+      } catch {}
+    }
+
+    if (action === "rename") {
+      const { path, key, value, directoryPath } = payload;
+      const body = {
+        location: getCombinedPathName(key as string, path, "."),
+        rename: getCombinedPathName(value, path, "."),
+      };
+
+      try {
+        await updateFileTree({
+          id,
+          body,
+        }).unwrap();
+        const newPath = getCombinedPathName(value, directoryPath, "/");
+        const oldPath = getCombinedPathName(key, directoryPath, "/");
+        await webcontainerInstance?.spawn("mv", [
+          "-t",
+          newPath.replace(/\*/g, "."),
+          oldPath.replace(/\*/g, "."),
+        ]);
+      } catch {}
+    }
   };
   return (
     <>
@@ -116,7 +142,7 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
           onClick={createNewFile}
           height={16}
           width={16}
-          className="cursor-pointer fill-gray-600 hover:fill-black"
+          className="cursor-pointer fill-gray-400 hover:fill-gray-200"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 576 512"
         >
@@ -126,7 +152,7 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
           onClick={createNewFolder}
           height={16}
           width={16}
-          className="cursor-pointer fill-gray-600 hover:fill-black"
+          className="cursor-pointer fill-gray-400 hover:fill-gray-200"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 512 512"
         >

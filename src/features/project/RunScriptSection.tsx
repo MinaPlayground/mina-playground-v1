@@ -47,8 +47,8 @@ const RunScriptSection: FC<RunScriptSectionProps> = ({ fileSystemTree }) => {
       {isInitializing ? (
         <Loader
           text="Initializing"
-          circleColor={"text-white"}
-          spinnerColor={"fill-orange-500"}
+          circleColor={"text-gray-400"}
+          spinnerColor={"fill-white"}
         />
       ) : (
         <RunScriptButton
@@ -56,7 +56,7 @@ const RunScriptSection: FC<RunScriptSectionProps> = ({ fileSystemTree }) => {
           onRun={runTest}
           abortTitle={"Abort"}
           onAbort={abortTest}
-          runTitle={"Run script"}
+          runTitle={"Run"}
         />
       )}
     </div>

@@ -2,9 +2,9 @@ import { FC } from "react";
 
 const ReadMoreSection: FC = () => {
   return (
-    <section className="bg-white">
+    <section>
       <div className="px-4 mx-auto max-w-screen-xl mb-12">
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 md:p-12 mb-8">
+        <div className="shadow-2xl bg-[#252728] rounded-lg p-8 md:p-12 mb-8">
           <a
             href="#"
             className="bg-gradient-to-br from-pink-500 to-orange-400 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mb-2"
@@ -20,16 +20,16 @@ const ReadMoreSection: FC = () => {
             </svg>
             Tutorials
           </a>
-          <h1 className="text-gray-900 text-3xl md:text-5xl font-extrabold mb-2">
+          <h1 className="text-gray-200 text-3xl md:text-5xl font-extrabold mb-2">
             How to setup and create a zkApp
           </h1>
-          <p className="text-lg font-normal text-gray-500 mb-6">
+          <p className="text-lg font-normal text-gray-400 mb-6">
             Follow our interactive tutorial and learn how to setup and create
             your own zkApp with a step-to-step guide.
           </p>
           <a
             href="#"
-            className="inline-flex justify-center items-center py-2.5 px-5 text-base font-medium text-center text-white rounded-lg bg-black hover:bg-blue-800 focus:ring-4 focus:ring-blue-300"
+            className="inline-flex justify-center items-center py-2.5 px-5 text-base font-medium text-center rounded-lg bg-gray-100 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300"
           >
             Read more
             <svg
@@ -48,7 +48,7 @@ const ReadMoreSection: FC = () => {
           </a>
         </div>
         <div className="grid md:grid-cols-2 gap-8">
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 md:p-12">
+          <div className="shadow-2xl bg-[#252728] rounded-lg p-8 md:p-12">
             <a
               href="#"
               className="bg-gradient-to-br from-pink-500 to-orange-400 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mb-2"
@@ -68,16 +68,16 @@ const ReadMoreSection: FC = () => {
               </svg>
               Projects
             </a>
-            <h2 className="text-gray-900 text-3xl font-extrabold mb-2">
+            <h2 className="text-gray-200 text-3xl font-extrabold mb-2">
               Manage your zkApp and Smart Contract projects
             </h2>
-            <p className="text-lg font-normal text-gray-500 mb-4">
+            <p className="text-lg font-normal text-gray-400 mb-4">
               Create and manage public/private zkApp and Smart Contract
               projects.
             </p>
             <a
               href="#"
-              className="text-blue-600 hover:underline font-medium text-lg inline-flex items-center"
+              className="text-white hover:underline font-medium text-lg inline-flex items-center"
             >
               Read more
               <svg
@@ -97,7 +97,7 @@ const ReadMoreSection: FC = () => {
               </svg>
             </a>
           </div>
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 md:p-12">
+          <div className="shadow-2xl bg-[#252728] rounded-lg p-8 md:p-12">
             <a
               href="#"
               className="bg-gradient-to-br from-pink-500 to-orange-400 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mb-2"
@@ -117,16 +117,16 @@ const ReadMoreSection: FC = () => {
               </svg>
               Smart Contracts
             </a>
-            <h2 className="text-gray-900 text-3xl font-extrabold mb-2">
+            <h2 className="text-gray-200 text-3xl font-extrabold mb-2">
               Deploy Smart Contracts in seconds
             </h2>
-            <p className="text-lg font-normal text-gray-500 mb-4">
+            <p className="text-lg font-normal text-gray-400 mb-4">
               Deploy Smart Contracts easily and directly using our web
               interface.
             </p>
             <a
               href="#"
-              className="text-blue-600 hover:underline font-medium text-lg inline-flex items-center"
+              className="text-white hover:underline font-medium text-lg inline-flex items-center"
             >
               Read more
               <svg

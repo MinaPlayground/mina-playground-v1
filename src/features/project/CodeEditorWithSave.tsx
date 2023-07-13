@@ -8,6 +8,7 @@ import {
   selectChangedFields,
   selectCurrentTreeItem,
   setChangedFields,
+  setChangedFieldStatus,
 } from "@/features/fileTree/fileTreeSlice";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 
@@ -36,23 +37,27 @@ const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({ id }) => {
   const isSaved = changedField?.saved;
 
   const save = async () => {
-    const body = { location: directory.webcontainerPath, code };
-    updateFileTree({
-      id: id,
-      body,
-    });
-    webcontainerInstance?.fs.writeFile(
-      directory.path.replace(/\*/g, "."),
-      code || ""
-    );
+    const { webcontainerPath: location, path } = directory;
+    try {
+      await updateFileTree({
+        id: id,
+        body: { location, code },
+      }).unwrap();
+      dispatch(
+        setChangedFieldStatus({
+          location,
+          saved: true,
+        })
+      );
+      webcontainerInstance?.fs.writeFile(path.replace(/\*/g, "."), code || "");
+    } catch {}
   };
 
   return (
     <>
       {directory.path && (
         <>
-          {" "}
-          <div className="flex bg-gray-50 items-center p-2">
+          <div className="flex items-center p-2">
             <SaveCode
               disabled={!changedField}
               onClick={save}

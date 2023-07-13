@@ -6,7 +6,7 @@ const SelectList: FC<SelectListProps> = ({ title, items, onChange }) => {
     <div className="py-2.5">
       <select
         onChange={onChange}
-        className="h-10 w-full rounded border-r-8 border-transparent px-4 text-sm outline outline-neutral-700"
+        className="h-10 w-full bg-gray-300 rounded border-r-8 border-transparent px-4 text-sm outline outline-neutral-700"
       >
         <option value="">{title}</option>
         {Object.entries(items).map(([key, value], index) => (
