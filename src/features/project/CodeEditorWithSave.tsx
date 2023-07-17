@@ -31,7 +31,7 @@ const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({ id }) => {
   useEffect(() => {
     const changedStoredCode = changedFields[directory.webcontainerPath]?.code;
     setCode(changedStoredCode || treeItemCode);
-  }, [treeItemCode]);
+  }, [directory.webcontainerPath]);
 
   const changedField = changedFields[directory.webcontainerPath];
   const isSaved = changedField?.saved;

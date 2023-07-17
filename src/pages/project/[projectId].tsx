@@ -49,19 +49,21 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
       <main className={styles.main}>
         <Header />
         <div className="flex flex-1 flex-col md:flex-row">
-          <div className="p-2 flex-1">
-            <h1 className="font-medium text-gray-300">{name}</h1>
-            <h1 className="text-xs font-medium text-gray-300">
-              Type: Smart Contract
-            </h1>
-            <hr className="h-px mt-2 mb-4 bg-gray-300 border-0" />
+          <div className="flex-1 border-r-[1px] border-gray-500">
+            <div className="p-2">
+              <h1 className="font-medium text-gray-300">{name}</h1>
+              <h1 className="text-xs font-medium text-gray-300">
+                Type: Smart Contract
+              </h1>
+            </div>
+            <hr className="h-px mt-2 mb-4 bg-gray-500 border-0" />
             <ProjectFileExplorer fileSystemTree={fileSystemTree} id={_id} />
           </div>
           <div className="flex flex-col flex-[4]">
             <CodeEditorWithSave id={_id} />
           </div>
         </div>
-        <div className="flex flex-col p-2">
+        <div className="flex flex-col">
           <RunScriptSection fileSystemTree={fileSystemTree} />
           <div className="terminal h-[150px]" />
         </div>

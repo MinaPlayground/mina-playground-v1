@@ -136,7 +136,7 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
     }
   };
   return (
-    <>
+    <div className="p-2">
       <div className="flex flex-row gap-1 mb-2">
         <svg
           onClick={createNewFile}
@@ -165,7 +165,7 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
         onChange={onChange}
         onClick={onClick}
       />
-    </>
+    </div>
   );
 };
 
