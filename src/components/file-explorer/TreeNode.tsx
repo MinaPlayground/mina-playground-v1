@@ -143,7 +143,7 @@ const TreeNode: FC<TreeNodeProps> = ({
                 setIsEditing(false);
                 setShowChildren(false);
               }}
-              className="pl-2 border border-gray-500 text-gray-100 rounded-md bg-gray-800"
+              className="pl-2 w-36 border border-gray-500 text-gray-100 rounded-md bg-gray-800"
             />
           ) : (
             <span className="text-sm text-gray-400">{fileName}</span>

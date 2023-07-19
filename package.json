@@ -30,6 +30,7 @@
     "@types/react-dom": "18.0.11",
     "@webcontainer/api": "^1.1.0",
     "axios": "^1.4.0",
+    "dockview": "^1.7.6",
     "esbuild-wasm": "^0.17.10",
     "eslint": "8.35.0",
     "eslint-config-next": "13.2.1",
