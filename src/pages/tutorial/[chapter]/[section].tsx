@@ -1,5 +1,4 @@
 import Head from "next/head";
-import styles from "@/styles/Home.module.css";
 import Header from "@/components/Header";
 import { useEffect, useRef, useState } from "react";
 import Loader from "@/components/Loader";
@@ -282,7 +281,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/icon.svg" />
       </Head>
-      <main className={styles.main}>
+      <main>
         <Header />
         <div className="flex flex-1 grid lg:grid-cols-2">
           <div className="bg-[#eee] min-w-0">

@@ -21,7 +21,11 @@ import {
 import { setCurrentTreeItem } from "@/features/fileTree/fileTreeSlice";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { selectWebcontainerInstance } from "@/features/webcontainer/webcontainerSlice";
+import {
+  selectIsAborting,
+  selectWebcontainerInstance,
+} from "@/features/webcontainer/webcontainerSlice";
+import { selectDockApi } from "@/features/dockView/dockViewSlice";
 
 const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
   fileSystemTree,
@@ -33,6 +37,7 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
   const [deleteFileTreeItem, { isLoading: isLoadingDeletion }] =
     useDeleteFileTreeItemMutation();
   const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
+  const dockApi = useAppSelector(selectDockApi);
 
   const onClick = async (
     code: string,
@@ -44,6 +49,18 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
         code: code as string,
       })
     );
+
+    const panel = dockApi?.getPanel(path.path);
+    if (panel) {
+      panel.api.setActive();
+      return;
+    }
+    dockApi?.addPanel({
+      id: path.path,
+      title: path.path.replace(/\*/g, "."),
+      component: "editor",
+      params: { id, value: code, directory: path },
+    });
   };
 
   const createNewFolder = () => {

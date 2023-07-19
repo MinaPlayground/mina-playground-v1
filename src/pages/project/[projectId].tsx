@@ -1,15 +1,12 @@
 import Head from "next/head";
-import styles from "@/styles/Home.module.css";
 import Header from "@/components/Header";
 import { GetServerSideProps, NextPage } from "next";
 import axios from "axios";
 import { FileSystemTree } from "@webcontainer/api";
 import { useEffect } from "react";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
-import ProjectFileExplorer from "@/features/project/ProjectFileExplorer";
-import RunScriptSection from "@/features/project/RunScriptSection";
-import CodeEditorWithSave from "@/features/project/CodeEditorWithSave";
 import { initializeWebcontainer } from "@/features/webcontainer/webcontainerSlice";
+import DockView from "@/components/dockview/DockView";
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { projectId } = query;
@@ -46,27 +43,9 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className={styles.main}>
+      <main>
         <Header />
-        <div className="flex flex-1 flex-col md:flex-row">
-          <div className="flex-1 border-r-[1px] border-gray-500">
-            <div className="p-2">
-              <h1 className="font-medium text-gray-300">{name}</h1>
-              <h1 className="text-xs font-medium text-gray-300">
-                Type: Smart Contract
-              </h1>
-            </div>
-            <hr className="h-px mt-2 mb-4 bg-gray-500 border-0" />
-            <ProjectFileExplorer fileSystemTree={fileSystemTree} id={_id} />
-          </div>
-          <div className="flex flex-col flex-[4]">
-            <CodeEditorWithSave id={_id} />
-          </div>
-        </div>
-        <div className="flex flex-col">
-          <RunScriptSection fileSystemTree={fileSystemTree} />
-          <div className="terminal h-[150px]" />
-        </div>
+        <DockView id={_id} fileSystemTree={fileSystemTree} />
       </main>
     </>
   );
