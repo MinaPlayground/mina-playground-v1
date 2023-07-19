@@ -66,6 +66,9 @@ export const selectCurrentTreeItem = (state: RootState) =>
 export const selectChangedFields = (state: RootState) =>
   state.fileTree.changedFields;
 
+export const selectChangedField = (state: RootState, fieldName: string) =>
+  state.fileTree.changedFields[fieldName];
+
 export const { setCurrentTreeItem, setChangedFields, setChangedFieldStatus } =
   FileTreeSlice.actions;
 
