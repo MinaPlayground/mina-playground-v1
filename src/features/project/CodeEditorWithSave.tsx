@@ -5,18 +5,21 @@ import { useAppSelector } from "@/hooks/useAppSelector";
 import { selectWebcontainerInstance } from "@/features/webcontainer/webcontainerSlice";
 import { useUpdateFileTreeMutation } from "@/services/fileTree";
 import {
-  selectChangedFields,
-  selectCurrentTreeItem,
+  selectChangedField,
   setChangedFields,
   setChangedFieldStatus,
 } from "@/features/fileTree/fileTreeSlice";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 
-const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({ id }) => {
-  const { currentDirectory: directory, code: treeItemCode } = useAppSelector(
-    selectCurrentTreeItem
+const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({
+  id,
+  value,
+  directory,
+}) => {
+  const { webcontainerPath, path } = directory;
+  const changedField = useAppSelector((state) =>
+    selectChangedField(state, webcontainerPath)
   );
-  const changedFields = useAppSelector(selectChangedFields);
   const dispatch = useAppDispatch();
   const [code, setCode] = useState<string | undefined>("");
   const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
@@ -25,27 +28,25 @@ const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({ id }) => {
   const setCodeChange = async (code: string | undefined) => {
     if (!code) return;
     setCode(code);
-    dispatch(setChangedFields({ location: directory.webcontainerPath, code }));
+    dispatch(setChangedFields({ location: webcontainerPath, code }));
   };
 
   useEffect(() => {
-    const changedStoredCode = changedFields[directory.webcontainerPath]?.code;
-    setCode(changedStoredCode || treeItemCode);
-  }, [directory.webcontainerPath]);
+    const changedStoredCode = changedField?.code;
+    setCode(changedStoredCode || value);
+  }, []);
 
-  const changedField = changedFields[directory.webcontainerPath];
   const isSaved = changedField?.saved;
 
   const save = async () => {
-    const { webcontainerPath: location, path } = directory;
     try {
       await updateFileTree({
         id: id,
-        body: { location, code },
+        body: { location: webcontainerPath, code },
       }).unwrap();
       dispatch(
         setChangedFieldStatus({
-          location,
+          location: webcontainerPath,
           saved: true,
         })
       );
@@ -55,26 +56,24 @@ const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({ id }) => {
 
   return (
     <>
-      {directory.path && (
-        <>
-          <div className="flex items-center p-2">
-            <SaveCode
-              disabled={!changedField}
-              onClick={save}
-              isLoading={isLoading}
-              isSaved={isSaved}
-              isError={isError}
-            />
-          </div>
-          <CodeEditor code={code} setCodeChange={setCodeChange} />
-        </>
-      )}
+      <div className="flex items-center p-2">
+        <SaveCode
+          disabled={!changedField}
+          onClick={save}
+          isLoading={isLoading}
+          isSaved={isSaved}
+          isError={isError}
+        />
+      </div>
+      <CodeEditor code={code} setCodeChange={setCodeChange} />
     </>
   );
 };
 
 interface CodeEditorWithSaveProps {
   id: string;
+  directory: { path: string; webcontainerPath: string };
+  value: string;
 }
 
 export default CodeEditorWithSave;

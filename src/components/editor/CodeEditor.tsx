@@ -8,34 +8,10 @@ import Loader from "@/components/Loader";
 
 const CodeEditor: FC<CodeEditorProps> = ({ code, setCodeChange }) => {
   const handleEditorDidMount = useCallback((editor: any, monaco: any) => {
-    monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
-      jsx: monaco.languages.typescript.JsxEmit.Preserve,
-      target: monaco.languages.typescript.ScriptTarget.ES2020,
-      esModuleInterop: true,
-    });
-
     monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
       noSemanticValidation: true,
       noSyntaxValidation: true,
     });
-
-    const monacoJsxSyntaxHighlight = new MonacoJsxSyntaxHighlight(
-      getWorker(),
-      monaco
-    );
-
-    const { highlighter, dispose } =
-      monacoJsxSyntaxHighlight.highlighterBuilder({
-        editor: editor,
-      });
-
-    highlighter();
-
-    editor.onDidChangeModelContent(() => {
-      highlighter();
-    });
-
-    return dispose;
   }, []);
 
   const setEditorTheme = (monaco: any) => {
@@ -51,9 +27,8 @@ const CodeEditor: FC<CodeEditorProps> = ({ code, setCodeChange }) => {
 
   return (
     <Editor
-      className="editor max-lg:h-[400px]"
-      path={"file:///index.tsx"}
-      defaultLanguage="typescript"
+      className="editor"
+      language={"typescript"}
       value={code}
       theme="dark"
       loading={
