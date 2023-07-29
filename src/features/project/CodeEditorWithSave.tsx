@@ -10,6 +10,9 @@ import {
   setChangedFieldStatus,
 } from "@/features/fileTree/fileTreeSlice";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
+import { isEmpty } from "lodash";
+import { Deploy } from "@/components/deploy/Deploy";
+import { findSmartContractMatches } from "@/utils/deploy";
 
 const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({
   id,
@@ -37,6 +40,8 @@ const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({
   }, []);
 
   const isSaved = changedField?.saved;
+  const results = findSmartContractMatches(code);
+  const formattedPath = path.replace(/\*/g, ".");
 
   const save = async () => {
     try {
@@ -50,13 +55,13 @@ const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({
           saved: true,
         })
       );
-      webcontainerInstance?.fs.writeFile(path.replace(/\*/g, "."), code || "");
+      webcontainerInstance?.fs.writeFile(formattedPath, code || "");
     } catch {}
   };
 
   return (
     <>
-      <div className="flex items-center p-2">
+      <div className="flex items-center p-2 bg-[#131415]">
         <SaveCode
           disabled={!changedField}
           onClick={save}
@@ -64,6 +69,7 @@ const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({
           isSaved={isSaved}
           isError={isError}
         />
+        {!isEmpty(results) && <Deploy path={formattedPath} results={results} />}
       </div>
       <CodeEditor code={code} setCodeChange={setCodeChange} />
     </>
