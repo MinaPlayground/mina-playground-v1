@@ -10,7 +10,13 @@ import { useAppDispatch } from "@/hooks/useAppDispatch";
 import CTAModal from "@/components/modal/CTAModal";
 import { KeyIcon } from "@/icons/DeployIcons";
 import SelectList from "@/components/select/SelectList";
-import { wrap } from "comlink";
+import { Remote, wrap } from "comlink";
+
+interface SnarkyWorker {
+  generateKeys(
+    customKeyValue: string | undefined
+  ): Promise<{ publicKey: string; privateKey: string }>;
+}
 
 const DeployModal: FC<DeployModalProps> = ({
   isVisible,
@@ -23,6 +29,7 @@ const DeployModal: FC<DeployModalProps> = ({
   const dispatch = useAppDispatch();
   const [keys, setKeys] = useState({ publicKey: "", privateKey: "" });
   const snarkyWorker = useRef<any>();
+  const generate = useRef<SnarkyWorker>();
 
   useEffect(() => {
     return () => snarkyWorker.current?.terminate();
@@ -40,10 +47,13 @@ const DeployModal: FC<DeployModalProps> = ({
       snarkyWorker.current = new Worker(
         new URL("../../webworkers/worker.ts", import.meta.url)
       );
+      generate.current = wrap<SnarkyWorker>(snarkyWorker.current);
     }
-    const generateKeys = wrap(snarkyWorker.current);
-    // @ts-ignore
-    const { publicKey, privateKey } = await generateKeys(customKeyValue);
+    const workerFunctions = generate.current;
+    if (!workerFunctions) return;
+    const { publicKey, privateKey } = await workerFunctions.generateKeys(
+      customKeyValue
+    );
     setKeys({ publicKey, privateKey });
   };
 

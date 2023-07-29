@@ -10,4 +10,4 @@ const generateKeys = async (customKeyValue: string | undefined) => {
   return { publicKey, privateKey };
 };
 
-expose(generateKeys);
+expose({ generateKeys });
