@@ -20,7 +20,7 @@ const CodeEditor: FC<CodeEditorProps> = ({ code, setCodeChange }) => {
       inherit: true,
       rules: [],
       colors: {
-        "editor.background": "#202123",
+        "editor.background": "#131415",
       },
     });
   };
