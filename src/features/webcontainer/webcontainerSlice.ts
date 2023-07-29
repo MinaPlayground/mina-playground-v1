@@ -7,8 +7,15 @@ interface WebcontainerState {
   initializingWebcontainerError: boolean;
   webcontainerInstance: WebContainer | null;
   shellProcessInput: WritableStreamDefaultWriter | null;
+
   isRunning: boolean;
   isAborting: boolean;
+  isDeploying: boolean;
+  deploymentMessage: {
+    type: "info" | "error";
+    message: string;
+    details?: string;
+  } | null;
 }
 
 const initialState: WebcontainerState = {
@@ -18,6 +25,8 @@ const initialState: WebcontainerState = {
   shellProcessInput: null,
   isRunning: false,
   isAborting: false,
+  isDeploying: false,
+  deploymentMessage: null,
 };
 
 export const initializeWebcontainer = createAsyncThunk(
@@ -107,6 +116,49 @@ export const writeCommand = createAsyncThunk(
   }
 );
 
+export const deploySmartContract = createAsyncThunk(
+  "deploySmartContract",
+  async (
+    { path, feePayerKey }: { path: string; feePayerKey: string },
+    { getState, dispatch }
+  ) => {
+    dispatch(setIsDeploying(true));
+    dispatch(setDeploymentMessage(null));
+    const { webcontainer } = getState() as { webcontainer: WebcontainerState };
+    const process = await webcontainer?.webcontainerInstance?.spawn("npm", [
+      "run",
+      "build",
+    ]);
+    await process?.exit;
+
+    const process2 = await webcontainer?.webcontainerInstance?.spawn("npx", [
+      "--yes",
+      "easy-mina-deploy",
+      "deploy",
+      "--path",
+      path,
+      "--className",
+      "Add",
+      "--feePayerKey",
+      feePayerKey,
+    ]);
+
+    process2?.output.pipeTo(
+      new WritableStream({
+        write(data) {
+          console.log(data);
+          if (data.startsWith("{")) {
+            dispatch(setDeploymentMessage(JSON.parse(data)));
+          }
+        },
+      })
+    );
+
+    await process2?.exit;
+    dispatch(setIsDeploying(false));
+  }
+);
+
 export const webcontainerSlice = createSlice({
   name: "webcontainer",
   initialState,
@@ -116,6 +168,12 @@ export const webcontainerSlice = createSlice({
     },
     setIsAborting: (state, action: PayloadAction<boolean>) => {
       state.isAborting = action.payload;
+    },
+    setIsDeploying: (state, action: PayloadAction<boolean>) => {
+      state.isDeploying = action.payload;
+    },
+    setDeploymentMessage: (state, action: PayloadAction<any>) => {
+      state.deploymentMessage = action.payload;
     },
   },
   extraReducers(builder) {
@@ -148,5 +206,16 @@ export const selectIsRunning = (state: RootState) =>
 export const selectIsAborting = (state: RootState) =>
   state.webcontainer.isAborting;
 
-export const { setIsRunning, setIsAborting } = webcontainerSlice.actions;
+export const selectIsDeploying = (state: RootState) =>
+  state.webcontainer.isDeploying;
+
+export const selectDeploymentMessage = (state: RootState) =>
+  state.webcontainer.deploymentMessage;
+
+export const {
+  setIsRunning,
+  setIsAborting,
+  setIsDeploying,
+  setDeploymentMessage,
+} = webcontainerSlice.actions;
 export default webcontainerSlice.reducer;
