@@ -14,9 +14,15 @@ import ProjectFileExplorer from "@/features/project/ProjectFileExplorer";
 import CodeEditorWithSave from "@/features/project/CodeEditorWithSave";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { setDockApi } from "@/features/dockView/dockViewSlice";
+import Section from "@/components/section/Section";
+import SectionItem from "@/components/section/SectionItem";
 
 const GetStarted = () => {
-  return <h1>test</h1>;
+  return (
+    <Section>
+      <SectionItem />
+    </Section>
+  );
 };
 
 const DockView = ({

@@ -46,7 +46,7 @@ const TreeNode: FC<TreeNodeProps> = ({
   const inputFileName = inputValue.replace(/\./g, "*");
   const isDirectory = "directory" in value;
   const isSelected = currentDirectory && path === currentDirectory.path;
-  const isSelectedStyle = isSelected ? "bg-gray-800" : "";
+  const isSelectedStyle = isSelected ? "bg-[#2f3033]" : "";
   const webcontainer = isDirectory
     ? `${key || inputFileName}.directory`
     : `${key || inputFileName}.file.contents`;
@@ -75,7 +75,7 @@ const TreeNode: FC<TreeNodeProps> = ({
     <>
       <div
         onClick={handleClick}
-        className={`group new-file hover:bg-gray-800 flex flex-row items-center mb-1 cursor-pointer ${isSelectedStyle}`}
+        className={`group new-file hover:bg-[#131415] flex flex-row items-center mb-1 cursor-pointer ${isSelectedStyle}`}
       >
         <div className="flex flex-1 flex-row items-center">
           {showChevronIcon}
@@ -146,7 +146,9 @@ const TreeNode: FC<TreeNodeProps> = ({
               className="pl-2 w-36 border border-gray-500 text-gray-100 rounded-md bg-gray-800"
             />
           ) : (
-            <span className="text-sm text-gray-400">{fileName}</span>
+            <span className="p-[1px] text-sm font-light text-gray-200">
+              {fileName}
+            </span>
           )}
           {isChanged && (
             <svg width="16" height="16" fill="white" aria-hidden="true">
