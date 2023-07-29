@@ -17,7 +17,7 @@ export const transformToWebcontainerFiles = async (
     } else {
       const fileName = path.basename(item);
       const fileContent = await fs.readFile(itemPath, { encoding: "utf-8" });
-      files[fileName.replace(".", "*")] = {
+      files[fileName.replace(/\./g, "*")] = {
         file: {
           contents: fileContent,
         },
@@ -56,13 +56,13 @@ export const transformToWebcontainerFilesWithFocus = async (
       const fileName = path.basename(item);
       const fileContent = await fs.readFile(itemPath, { encoding: "utf-8" });
       if (focus.includes(itemPath.replace(basePath, ""))) {
-        focusedFiles[fileName.replaceAll(/./g, "*")] = {
+        focusedFiles[fileName.replace(/\./g, "*")] = {
           file: {
             contents: fileContent,
           },
         };
       } else {
-        files[fileName.replace(/./g, "*")] = {
+        files[fileName.replace(/\./g, "*")] = {
           file: {
             contents: fileContent,
           },

@@ -6,7 +6,7 @@ import {
   transformToWebcontainerFilesWithFocus,
 } from "@/utils/webcontainer";
 import { remarkCodeHike } from "@code-hike/mdx";
-import theme from "shiki/themes/github-light.json";
+import theme from "shiki/themes/dark-plus.json";
 
 export const getTutorialByChapterAndSection = async (c: string, s: string) => {
   const dir = process.cwd();
