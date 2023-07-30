@@ -10,6 +10,7 @@ interface WebcontainerState {
 
   isRunning: boolean;
   isAborting: boolean;
+  isTestPassed: boolean | null;
   isDeploying: boolean;
   deploymentMessage: {
     type: "info" | "error";
@@ -25,6 +26,7 @@ const initialState: WebcontainerState = {
   shellProcessInput: null,
   isRunning: false,
   isAborting: false,
+  isTestPassed: null,
   isDeploying: false,
   deploymentMessage: null,
 };
@@ -32,63 +34,95 @@ const initialState: WebcontainerState = {
 export const initializeWebcontainer = createAsyncThunk(
   "initializeWebcontainer",
   async (
-    { fileSystemTree }: { fileSystemTree: FileSystemTree },
+    {
+      fileSystemTree,
+      initTerminal = true,
+    }: { fileSystemTree: FileSystemTree; initTerminal?: boolean },
     { dispatch }
   ) => {
-    const { FitAddon } = await import("xterm-addon-fit");
-    const fitAddon = new FitAddon();
-    const { Terminal } = await import("xterm");
-    const terminalEl = document.querySelector(".terminal");
-    const terminal = new Terminal({
-      convertEol: true,
-    });
-    terminal.loadAddon(fitAddon);
-    terminal.open(<HTMLElement>terminalEl);
-    fitAddon.fit();
+    if (initTerminal) {
+      const { FitAddon } = await import("xterm-addon-fit");
+      const fitAddon = new FitAddon();
+      const { Terminal } = await import("xterm");
+      const terminalEl = document.querySelector(".terminal");
+      const terminal = new Terminal({
+        convertEol: true,
+      });
+      terminal.loadAddon(fitAddon);
+      terminal.open(<HTMLElement>terminalEl);
+      fitAddon.fit();
+
+      const { WebContainer } = await import("@webcontainer/api");
+      const webcontainer = await WebContainer.boot();
+      await webcontainer.mount(fileSystemTree);
+
+      const installProcess = await webcontainer.spawn("npm", ["install"]);
+      installProcess.output.pipeTo(
+        new WritableStream({
+          write(data) {
+            terminal.write(data);
+          },
+        })
+      );
+
+      if ((await installProcess.exit) !== 0) {
+        throw new Error("Installation failed");
+      }
+
+      const shellProcess = await webcontainer.spawn("jsh", {
+        terminal: {
+          cols: terminal.cols,
+          rows: terminal.rows,
+        },
+      });
+
+      const xterm_resize_ob = new ResizeObserver(function (entries) {
+        fitAddon.fit();
+        shellProcess.resize({
+          cols: terminal.cols,
+          rows: terminal.rows,
+        });
+      });
+      xterm_resize_ob.observe(<HTMLElement>terminalEl);
+
+      const input = shellProcess.input.getWriter();
+
+      terminal.onData((data) => {
+        input.write(data);
+      });
+
+      shellProcess.output.pipeTo(
+        new WritableStream({
+          write(data) {
+            terminal.write(data);
+            if (data === "^C") {
+              dispatch(setIsAborting(true));
+            }
+            if (data.endsWith("[3G")) {
+              dispatch(setIsRunning(false));
+              dispatch(setIsAborting(false));
+            }
+          },
+        })
+      );
+      return { webcontainer, input };
+    }
 
     const { WebContainer } = await import("@webcontainer/api");
     const webcontainer = await WebContainer.boot();
     await webcontainer.mount(fileSystemTree);
 
     const installProcess = await webcontainer.spawn("npm", ["install"]);
-    installProcess.output.pipeTo(
-      new WritableStream({
-        write(data) {
-          terminal.write(data);
-        },
-      })
-    );
-
     if ((await installProcess.exit) !== 0) {
       throw new Error("Installation failed");
     }
 
-    const shellProcess = await webcontainer.spawn("jsh", {
-      terminal: {
-        cols: terminal.cols,
-        rows: terminal.rows,
-      },
-    });
-
-    const xterm_resize_ob = new ResizeObserver(function (entries) {
-      fitAddon.fit();
-      shellProcess.resize({
-        cols: terminal.cols,
-        rows: terminal.rows,
-      });
-    });
-    xterm_resize_ob.observe(<HTMLElement>terminalEl);
-
+    const shellProcess = await webcontainer.spawn("jsh");
     const input = shellProcess.input.getWriter();
-
-    terminal.onData((data) => {
-      input.write(data);
-    });
 
     shellProcess.output.pipeTo(
       new WritableStream({
         write(data) {
-          terminal.write(data);
           if (data === "^C") {
             dispatch(setIsAborting(true));
           }
@@ -97,12 +131,11 @@ export const initializeWebcontainer = createAsyncThunk(
             dispatch(setIsAborting(false));
           }
           if (data.includes("Tests")) {
-            // setTerminalOutput(!data.includes("failed"));
+            dispatch(setIsTestPassed(!data.includes("failed")));
           }
         },
       })
     );
-
     return { webcontainer, input };
   }
 );
@@ -146,7 +179,6 @@ export const deploySmartContract = createAsyncThunk(
     process2?.output.pipeTo(
       new WritableStream({
         write(data) {
-          console.log(data);
           if (data.startsWith("{")) {
             dispatch(setDeploymentMessage(JSON.parse(data)));
           }
@@ -168,6 +200,9 @@ export const webcontainerSlice = createSlice({
     },
     setIsAborting: (state, action: PayloadAction<boolean>) => {
       state.isAborting = action.payload;
+    },
+    setIsTestPassed: (state, action: PayloadAction<boolean | null>) => {
+      state.isTestPassed = action.payload;
     },
     setIsDeploying: (state, action: PayloadAction<boolean>) => {
       state.isDeploying = action.payload;
@@ -206,6 +241,9 @@ export const selectIsRunning = (state: RootState) =>
 export const selectIsAborting = (state: RootState) =>
   state.webcontainer.isAborting;
 
+export const selectIsTestPassed = (state: RootState) =>
+  state.webcontainer.isTestPassed;
+
 export const selectIsDeploying = (state: RootState) =>
   state.webcontainer.isDeploying;
 
@@ -217,5 +255,6 @@ export const {
   setIsAborting,
   setIsDeploying,
   setDeploymentMessage,
+  setIsTestPassed,
 } = webcontainerSlice.actions;
 export default webcontainerSlice.reducer;
