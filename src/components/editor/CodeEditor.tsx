@@ -1,10 +1,7 @@
 import { FC, useCallback } from "react";
 import Editor from "@monaco-editor/react";
-import {
-  getWorker,
-  MonacoJsxSyntaxHighlight,
-} from "monaco-jsx-syntax-highlight";
 import Loader from "@/components/Loader";
+import dracula from "@/styles/dracula.json";
 
 const CodeEditor: FC<CodeEditorProps> = ({ code, setCodeChange }) => {
   const handleEditorDidMount = useCallback((editor: any, monaco: any) => {
@@ -15,14 +12,7 @@ const CodeEditor: FC<CodeEditorProps> = ({ code, setCodeChange }) => {
   }, []);
 
   const setEditorTheme = (monaco: any) => {
-    monaco.editor.defineTheme("dark", {
-      base: "vs-dark",
-      inherit: true,
-      rules: [],
-      colors: {
-        "editor.background": "#131415",
-      },
-    });
+    monaco.editor.defineTheme("dark", dracula);
   };
 
   return (

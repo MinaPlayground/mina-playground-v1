@@ -6,7 +6,6 @@ import {
   transformToWebcontainerFilesWithFocus,
 } from "@/utils/webcontainer";
 import { remarkCodeHike } from "@code-hike/mdx";
-import theme from "shiki/themes/dark-plus.json";
 
 export const getTutorialByChapterAndSection = async (c: string, s: string) => {
   const dir = process.cwd();
@@ -33,7 +32,7 @@ export const getTutorialByChapterAndSection = async (c: string, s: string) => {
   const tutorial = await serialize(tutorialFileContent, {
     mdxOptions: {
       remarkPlugins: [
-        [remarkCodeHike, { autoImport: false, theme, showCopyButton: true }],
+        [remarkCodeHike, { autoImport: false, showCopyButton: true }],
       ],
       useDynamicImport: true,
     },

@@ -23,7 +23,7 @@ const BreadcrumbItem: FC<BreadcrumbItemProps> = ({
     <div className="relative max-w-42 sm:w-64 px-2 text-base z-10">
       <button
         ref={selectMenuRef}
-        className="flex items-center justify-between gap-2 w-full px-3 py-2 text-gray-200 border rounded-md shadow-sm cursor-default outline-none focus:border-gray-400"
+        className="flex items-center justify-between gap-2 w-full px-3 py-2 text-gray-200 bg-gray-700 rounded-md shadow-sm cursor-default outline-none focus:border-gray-400"
         aria-haspopup="true"
         aria-expanded="true"
         aria-labelledby="listbox-label"
