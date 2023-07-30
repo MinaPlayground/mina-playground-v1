@@ -19,6 +19,14 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  webpack(config) {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      snarkyjs: require("path").resolve("node_modules/snarkyjs"),
+    };
+    config.experiments = { ...config.experiments, topLevelAwait: true };
+    return config;
+  },
   experimental: {
     outputFileTracingIncludes: {
       "/api/sectionFiles": ["./tutorials/**"],

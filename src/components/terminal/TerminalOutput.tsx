@@ -1,11 +1,12 @@
 import { FC } from "react";
 import Loader from "@/components/Loader";
 import TerminalStatus from "@/components/terminal/TerminalStatus";
+import { useAppSelector } from "@/hooks/useAppSelector";
+import { selectIsRunning } from "@/features/webcontainer/webcontainerSlice";
 
-const TerminalOutput: FC<TerminalOutputProps> = ({
-  isRunning,
-  terminalOutput,
-}) => {
+const TerminalOutput: FC = () => {
+  const isRunning = useAppSelector(selectIsRunning);
+
   return (
     <div className="bg-black h-[125px] p-2">
       {isRunning ? (
@@ -15,15 +16,10 @@ const TerminalOutput: FC<TerminalOutputProps> = ({
           spinnerColor={"fill-orange-500"}
         />
       ) : (
-        <TerminalStatus terminalOutput={terminalOutput} />
+        <TerminalStatus />
       )}
     </div>
   );
 };
-
-interface TerminalOutputProps {
-  isRunning: boolean;
-  terminalOutput: boolean | null;
-}
 
 export default TerminalOutput;

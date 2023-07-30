@@ -1,9 +1,11 @@
 import { FC } from "react";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import {
+  selectInitializingEsbuild,
   selectIsAborting,
   selectIsRunning,
 } from "@/features/webcontainer/webcontainerSlice";
+import Loader from "@/components/Loader";
 
 const RunScriptButton: FC<RunScriptButtonProps> = ({
   runTitle,
@@ -14,6 +16,7 @@ const RunScriptButton: FC<RunScriptButtonProps> = ({
 }) => {
   const isRunning = useAppSelector(selectIsRunning);
   const isAborting = useAppSelector(selectIsAborting);
+  const isInitializing = useAppSelector(selectInitializingEsbuild);
 
   const onClick = isRunning ? onAbort : onRun;
   const { style, title } = isRunning
@@ -22,7 +25,14 @@ const RunScriptButton: FC<RunScriptButtonProps> = ({
         style: "from-green-400 via-green-500 to-green-600",
         title: runTitle,
       };
-  return (
+
+  return isInitializing ? (
+    <Loader
+      text="Initializing"
+      circleColor={"text-gray-400"}
+      spinnerColor={"fill-white"}
+    />
+  ) : (
     <button
       disabled={disabled}
       type="button"

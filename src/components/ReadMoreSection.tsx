@@ -4,10 +4,10 @@ const ReadMoreSection: FC = () => {
   return (
     <section>
       <div className="px-4 mx-auto max-w-screen-xl mb-12">
-        <div className="shadow-2xl bg-[#252728] rounded-lg p-8 md:p-12 mb-8">
+        <div className="shadow-2xl opacity-90 bg-gradient-to-br from-pink-500 to-orange-400 rounded-lg p-8 md:p-12 mb-8">
           <a
             href="#"
-            className="bg-gradient-to-br from-pink-500 to-orange-400 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mb-2"
+            className="bg-white text-black text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mb-2"
           >
             <svg
               className="w-3 h-3 mr-1"
@@ -20,10 +20,10 @@ const ReadMoreSection: FC = () => {
             </svg>
             Tutorials
           </a>
-          <h1 className="text-gray-200 text-3xl md:text-5xl font-extrabold mb-2">
+          <h1 className="text-white text-3xl md:text-5xl font-extrabold mb-2">
             How to setup and create a zkApp
           </h1>
-          <p className="text-lg font-normal text-gray-400 mb-6">
+          <p className="text-lg font-normal text-white mb-6">
             Follow our interactive tutorial and learn how to setup and create
             your own zkApp with a step-to-step guide.
           </p>

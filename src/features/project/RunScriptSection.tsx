@@ -1,14 +1,9 @@
 import { ChangeEvent, FC, useState } from "react";
 import SelectList from "@/components/select/SelectList";
-import Loader from "@/components/Loader";
 import { FileNode, FileSystemTree } from "@webcontainer/api";
 import { isEmpty } from "lodash";
-import {
-  selectInitializingEsbuild,
-  writeCommand,
-} from "@/features/webcontainer/webcontainerSlice";
+import { writeCommand } from "@/features/webcontainer/webcontainerSlice";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
-import { useAppSelector } from "@/hooks/useAppSelector";
 import RunScriptButton from "@/components/terminal/RunScriptButton";
 
 const getScripts = (fileSystemTree: FileSystemTree) => {
@@ -23,7 +18,6 @@ const getScripts = (fileSystemTree: FileSystemTree) => {
 const RunScriptSection: FC<RunScriptSectionProps> = ({ fileSystemTree }) => {
   const [script, setScript] = useState("");
   const dispatch = useAppDispatch();
-  const isInitializing = useAppSelector(selectInitializingEsbuild);
 
   const abortTest = async () => {
     dispatch(writeCommand("\u0003"));
@@ -44,21 +38,13 @@ const RunScriptSection: FC<RunScriptSectionProps> = ({ fileSystemTree }) => {
         items={getScripts(fileSystemTree)}
         onChange={onChange}
       />
-      {isInitializing ? (
-        <Loader
-          text="Initializing"
-          circleColor={"text-gray-400"}
-          spinnerColor={"fill-white"}
-        />
-      ) : (
-        <RunScriptButton
-          disabled={!script}
-          onRun={runTest}
-          abortTitle={"Abort"}
-          onAbort={abortTest}
-          runTitle={"Run"}
-        />
-      )}
+      <RunScriptButton
+        disabled={!script}
+        onRun={runTest}
+        abortTitle={"Abort"}
+        onAbort={abortTest}
+        runTitle={"Run"}
+      />
     </div>
   );
 };
