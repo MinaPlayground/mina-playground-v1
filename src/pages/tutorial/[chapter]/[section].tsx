@@ -25,7 +25,7 @@ import {
 } from "@/features/webcontainer/webcontainerSlice";
 import RunScriptButton from "@/components/terminal/RunScriptButton";
 import { useAppSelector } from "@/hooks/useAppSelector";
-
+import { setCurrentTreeItem } from "@/features/fileTree/fileTreeSlice";
 const components = { CH };
 
 export const getStaticPaths: GetStaticPaths = async () => {
@@ -103,7 +103,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   useEffect(() => {
     const fileCode = getFileContentByPath(highlight, focusedFiles);
     setCode(fileCode);
-    setCurrentDirectory(highlight);
+    // setCurrentDirectory(highlight);
     resetTerminalOutput();
   }, [tutorialItem]);
 
@@ -115,8 +115,17 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
 
   const resetTerminalOutput = () => dispatch(setIsTestPassed(null));
 
-  const onClick = (code: string, dir: string) => {
-    setCodeChange(code, dir);
+  const onClick = (
+    code: string,
+    { path, webcontainerPath }: { path: string; webcontainerPath: string }
+  ) => {
+    dispatch(
+      setCurrentTreeItem({
+        currentDirectory: { path, webcontainerPath },
+        code: code as string,
+      })
+    );
+    setCodeChange(code, path);
   };
 
   const setCodeChange = (code: string | undefined, dir?: string) => {
@@ -139,34 +148,6 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
         `node --experimental-vm-modules --experimental-wasm-threads node_modules/jest/bin/jest.js ${test} \r`
       )
     );
-  };
-
-  const requestSection = async (chapter: string, section: string) => {
-    try {
-      const response = await axios.post(
-        "/api/sectionFiles",
-        { chapter, section },
-        { headers: { "Content-Type": "application/json" } }
-      );
-      const { files, tutorial, focusedFiles, testFiles, test, highlight } =
-        response.data;
-      setTutorialItem({
-        ...tutorialItem,
-        tutorial,
-        focusedFiles,
-        test,
-        highlight,
-      });
-      const mountFiles = getCombinedFiles(
-        srcFiles,
-        files,
-        focusedFiles,
-        testFiles
-      );
-      await webcontainerInstance?.mount(mountFiles);
-    } catch (error) {
-      console.error(error);
-    }
   };
 
   useEffect(() => {
@@ -200,11 +181,27 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
     };
   }, []);
 
-  const onSetSection = (section: string) => {
+  const onSetSection = async (section: string) => {
     setSection(section);
     setCode("");
     setCurrentDirectory("");
-    void requestSection(chapter, section);
+    const { files, tutorial, focusedFiles, testFiles, test, highlight } = (
+      await import(`../../../../tutorials/json/${section}.json`)
+    ).default;
+    setTutorialItem({
+      ...tutorialItem,
+      tutorial,
+      focusedFiles,
+      test,
+      highlight,
+    });
+    const mountFiles = getCombinedFiles(
+      srcFiles,
+      files,
+      focusedFiles,
+      testFiles
+    );
+    await webcontainerInstance?.mount(mountFiles);
   };
 
   return (
@@ -237,13 +234,12 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
           </div>
           <div className="flex flex-col">
             <div className="flex flex-1 border-b-2 flex-row">
-              {/*<Tree*/}
-              {/*  data={focusedFiles}*/}
-              {/*  onBlur={() => null}*/}
-              {/*  onClick={onClick}*/}
-              {/*  setCurrentDirectory={setCurrentDirectory}*/}
-              {/*  currentDirectory={currentDirectory}*/}
-              {/*/>*/}
+              <Tree
+                data={focusedFiles}
+                onBlur={() => null}
+                onChange={() => null}
+                onClick={onClick}
+              />
               <CodeEditor code={code} setCodeChange={setCodeChange} />
             </div>
             <div>

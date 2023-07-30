@@ -60,9 +60,6 @@ export const FileTreeSlice = createSlice({
 export const selectCurrentDirectory = (state: RootState) =>
   state.fileTree.currentTreeItem.currentDirectory;
 
-export const selectCurrentTreeItem = (state: RootState) =>
-  state.fileTree.currentTreeItem;
-
 export const selectChangedFields = (state: RootState) =>
   state.fileTree.changedFields;
 
