@@ -42,11 +42,11 @@ const TreeNode: FC<TreeNodeType> = ({
   const [inputValue, setInputValue] = useState(fileName);
   const [isEditing, setIsEditing] = useState(false);
   const [showChildren, setShowChildren] = useState(
-    currentDirectory.path.startsWith(path)
+    currentDirectory.startsWith(path)
   );
   const inputFileName = inputValue.replace(/\./g, "*");
   const isDirectory = "directory" in value;
-  const isSelected = currentDirectory && path === currentDirectory.path;
+  const isSelected = path === currentDirectory;
   const isSelectedStyle = isSelected ? "bg-[#2f3033]" : "";
   const webcontainer = isDirectory
     ? `${key || inputFileName}.directory`
