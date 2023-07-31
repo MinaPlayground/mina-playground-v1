@@ -5,7 +5,6 @@ import { FileSystemTree } from "@webcontainer/api";
 import Breadcrumb from "@/components/breadcrumb/Breadcrumb";
 import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import { MDXRemote, MDXRemoteSerializeResult } from "next-mdx-remote";
-import axios from "axios";
 import Tree from "@/components/file-explorer/Tree";
 import { getCombinedFiles, getFileContentByPath } from "@/utils/objects";
 import tutorials from "@/tutorials.json";
@@ -236,9 +235,8 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
             <div className="flex flex-1 border-b-2 flex-row">
               <Tree
                 data={focusedFiles}
-                onBlur={() => null}
-                onChange={() => null}
                 onClick={onClick}
+                enableActions={false}
               />
               <CodeEditor code={code} setCodeChange={setCodeChange} />
             </div>

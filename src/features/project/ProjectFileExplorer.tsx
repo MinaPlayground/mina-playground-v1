@@ -181,6 +181,7 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
         onBlur={onBlur}
         onChange={onChange}
         onClick={onClick}
+        enableActions={true}
       />
     </div>
   );
