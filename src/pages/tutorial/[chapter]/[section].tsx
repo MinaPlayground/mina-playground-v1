@@ -24,7 +24,10 @@ import {
 } from "@/features/webcontainer/webcontainerSlice";
 import RunScriptButton from "@/components/terminal/RunScriptButton";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { setCurrentTreeItem } from "@/features/fileTree/fileTreeSlice";
+import {
+  selectCurrentDirectory,
+  setCurrentTreeItem,
+} from "@/features/fileTree/fileTreeSlice";
 const components = { CH };
 
 export const getStaticPaths: GetStaticPaths = async () => {
@@ -88,7 +91,13 @@ export const getStaticProps: GetStaticProps<
 
 const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const [tutorialItem, setTutorialItem] = useState(item);
+  const [code, setCode] = useState<string | undefined>("");
+  const [chapter, setChapter] = useState(c);
+  const [section, setSection] = useState(s);
+  const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
+  const currentDirectory = useAppSelector(selectCurrentDirectory);
   const dispatch = useAppDispatch();
+
   const {
     tutorial,
     test,
@@ -99,31 +108,22 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
     highlight,
   } = tutorialItem;
 
+  const resetTerminalOutput = () => dispatch(setIsTestPassed(null));
+
   useEffect(() => {
     const fileCode = getFileContentByPath(highlight, focusedFiles);
     setCode(fileCode);
-    // setCurrentDirectory(highlight);
+    dispatch(setCurrentTreeItem(highlight.replace(/\./g, "*")));
     resetTerminalOutput();
   }, [tutorialItem]);
 
-  const [code, setCode] = useState<string | undefined>("");
-  const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
-  const [chapter, setChapter] = useState(c);
-  const [section, setSection] = useState(s);
-  const [currentDirectory, setCurrentDirectory] = useState("");
+  // trigger when section changes during navigation
+  useEffect(() => {
+    void onSetSection(s);
+  }, [s]);
 
-  const resetTerminalOutput = () => dispatch(setIsTestPassed(null));
-
-  const onClick = (
-    code: string,
-    { path, webcontainerPath }: { path: string; webcontainerPath: string }
-  ) => {
-    dispatch(
-      setCurrentTreeItem({
-        currentDirectory: { path, webcontainerPath },
-        code: code as string,
-      })
-    );
+  const onClick = (code: string, { path }: { path: string }) => {
+    dispatch(setCurrentTreeItem(path));
     setCodeChange(code, path);
   };
 
@@ -131,7 +131,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
     if (!code) return;
     setCode(code);
     webcontainerInstance?.fs.writeFile(
-      `/src/${dir ?? currentDirectory}`.replaceAll(/\*/g, "."),
+      `/src/${dir ?? currentDirectory}`.replace(/\*/g, "."),
       code
     );
   };
@@ -157,33 +157,10 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
       testFiles
     );
     dispatch(initializeWebcontainer({ fileSystemTree, initTerminal: false }));
-
-    let keysPressed: Record<string, any> = {};
-
-    const onKeydown = (event: KeyboardEvent) => {
-      keysPressed[event.key] = true;
-
-      if (keysPressed["Control"] && event.key == "s") {
-        runTest();
-      }
-    };
-
-    const onKeyup = (event: KeyboardEvent) => {
-      delete keysPressed[event.key];
-    };
-
-    document.addEventListener("keydown", onKeydown);
-    document.addEventListener("keyup", onKeyup);
-    return () => {
-      document.removeEventListener("keydown", onKeydown);
-      document.removeEventListener("keyup", onKeyup);
-    };
   }, []);
 
   const onSetSection = async (section: string) => {
     setSection(section);
-    setCode("");
-    setCurrentDirectory("");
     const { files, tutorial, focusedFiles, testFiles, test, highlight } = (
       await import(`../../../../tutorials/json/${section}.json`)
     ).default;
@@ -233,11 +210,13 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
           </div>
           <div className="flex flex-col">
             <div className="flex flex-1 border-b-2 flex-row">
-              <Tree
-                data={focusedFiles}
-                onClick={onClick}
-                enableActions={false}
-              />
+              <div className="w-40 p-4">
+                <Tree
+                  data={focusedFiles}
+                  onClick={onClick}
+                  enableActions={false}
+                />
+              </div>
               <CodeEditor code={code} setCodeChange={setCodeChange} />
             </div>
             <div>
