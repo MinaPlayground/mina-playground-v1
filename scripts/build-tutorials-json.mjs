@@ -1,5 +1,8 @@
-const path = require("path");
-const { readdirSync, readFileSync, writeFileSync } = require("fs");
+import path from 'path'
+import { readdirSync, readFileSync, writeFileSync } from 'fs'
+import {getTutorialByChapterAndSection} from "./build/tutorial.mjs";
+import {writeFile} from "fs/promises";
+import {transformToWebcontainerFiles} from "./build/webcontainer.mjs";
 
 const excluded = ["base", "meta.json"];
 
@@ -16,6 +19,11 @@ for (const item of projectDir) {
     name,
     sections: {},
   };
+  const webContainerFiles = await transformToWebcontainerFiles(
+    `${dir}/tutorials/${item}/base`
+  );
+  await writeFile(`${dir}/src/json/${item}-base.json`, JSON.stringify(webContainerFiles));
+
   const currentPath = path.join(`${dir}/tutorials/${item}`);
   const sections = readdirSync(currentPath).filter(
     (item) => !excluded.includes(item)
@@ -27,6 +35,10 @@ for (const item of projectDir) {
         encoding: "utf-8",
       })
     ).name;
+
+    const response = await getTutorialByChapterAndSection(item, section);
+    await writeFile(`${dir}/src/json/${item}-${section}.json`, JSON.stringify(response));
+
     data[item].sections[section] = {
       name,
     };

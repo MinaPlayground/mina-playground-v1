@@ -3,11 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "NODE_ENV=development npm run build-tutorials && next dev",
+    "build": "npm run build-tutorials && next build",
     "start": "next start",
     "lint": "next lint",
-    "build-tutorials": "node ./scripts/build-tutorials-json.js"
+    "build-tutorials": "node scripts/build-tutorials-json.mjs",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@code-hike/mdx": "^0.8.3",
@@ -54,6 +55,7 @@
   "devDependencies": {
     "@types/lodash": "^4.14.194",
     "autoprefixer": "^10.4.13",
+    "patch-package": "^8.0.0",
     "postcss": "^8.4.21",
     "prettier": "^2.8.4",
     "tailwindcss": "^3.2.7"
