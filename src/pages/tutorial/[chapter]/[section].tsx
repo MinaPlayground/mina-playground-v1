@@ -45,12 +45,6 @@ export const getStaticPaths: GetStaticPaths = async () => {
           section: "02-private-inputs",
         },
       },
-      {
-        params: {
-          chapter: "02-zkapps",
-          section: "01-zkapp",
-        },
-      },
     ],
     fallback: false,
   };
