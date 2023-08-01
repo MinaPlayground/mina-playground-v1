@@ -8,7 +8,6 @@ import { MDXRemote, MDXRemoteSerializeResult } from "next-mdx-remote";
 import Tree from "@/components/file-explorer/Tree";
 import { getCombinedFiles, getFileContentByPath } from "@/utils/objects";
 import tutorials from "@/tutorials.json";
-import { transformToWebcontainerFiles } from "@/utils/webcontainer";
 import { TutorialParams } from "@/types";
 import { CH } from "@code-hike/mdx/components";
 import CodeEditor from "@/components/editor/CodeEditor";
@@ -58,9 +57,8 @@ export const getStaticProps: GetStaticProps<
     await import(`../../../json/${c}-${s}.json`)
   ).default;
 
-  const webContainerFiles = await transformToWebcontainerFiles(
-    `${process.cwd()}/tutorials/${c}/base`
-  );
+  const webContainerFiles = (await import(`../../../json/${c}-base.json`))
+    .default;
 
   return {
     props: {
