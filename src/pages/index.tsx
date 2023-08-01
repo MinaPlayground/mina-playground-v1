@@ -1,5 +1,4 @@
 import Head from "next/head";
-import styles from "@/styles/Home.module.css";
 
 const Home = () => {
   return (
@@ -10,13 +9,13 @@ const Home = () => {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/icon.svg" />
       </Head>
-      <main className={styles.main}>
-        <section className="bg-white">
+      <main>
+        <section>
           <div className="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16">
-            <h1 className="mb-4 text-4xl font-extrabold tracking-tight leading-none text-gray-900 md:text-5xl lg:text-6xl">
+            <h1 className="mb-4 text-4xl font-extrabold tracking-tight leading-none text-gray-200 md:text-5xl lg:text-6xl">
               Coming soon!
             </h1>
-            <p className="mb-8 text-lg font-normal text-gray-500 lg:text-xl sm:px-16 lg:px-48">
+            <p className="mb-8 text-lg font-normal text-gray-300 lg:text-xl sm:px-16 lg:px-48">
               With Mina Playground you can create, test and run zkApps, deploy
               and test Smart Contracts or follow interactive tutorials.
             </p>

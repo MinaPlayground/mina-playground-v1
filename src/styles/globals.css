@@ -1,3 +1,29 @@
+@import 'dockview/dist/styles/dockview.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+body {
+    background-color: #202123;
+}
+
+.xterm {
+    padding: 10px;
+}
+
+.dockview-theme-abyss {
+    --dv-group-view-background-color: #202123;
+    --dv-background-color: #202123;
+    --dv-activegroup-hiddenpanel-tab-background-color: #1a1a1c;
+    --dv-activegroup-visiblepanel-tab-background-color: #131415;
+    --dv-tabs-and-actions-container-background-color: #1d1e20;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+}

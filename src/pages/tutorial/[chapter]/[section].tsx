@@ -1,25 +1,30 @@
 import Head from "next/head";
-import styles from "@/styles/Home.module.css";
 import Header from "@/components/Header";
-import { useEffect, useRef, useState } from "react";
-import Loader from "@/components/Loader";
-import { FileSystemTree, WebContainer } from "@webcontainer/api";
+import { useEffect, useState } from "react";
+import { FileSystemTree } from "@webcontainer/api";
 import Breadcrumb from "@/components/breadcrumb/Breadcrumb";
 import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import { MDXRemote, MDXRemoteSerializeResult } from "next-mdx-remote";
-import axios from "axios";
 import Tree from "@/components/file-explorer/Tree";
 import { getCombinedFiles, getFileContentByPath } from "@/utils/objects";
 import tutorials from "@/tutorials.json";
-import { getTutorialByChapterAndSection } from "@/utils/tutorial";
-import { transformToWebcontainerFiles } from "@/utils/webcontainer";
-import { isValidChapterAndSection } from "@/utils/validation";
 import { TutorialParams } from "@/types";
 import { CH } from "@code-hike/mdx/components";
 import CodeEditor from "@/components/editor/CodeEditor";
 import TerminalOutput from "@/components/terminal/TerminalOutput";
-import TestSection from "@/components/test/TestSection";
-
+import { useAppDispatch } from "@/hooks/useAppDispatch";
+import {
+  initializeWebcontainer,
+  selectWebcontainerInstance,
+  setIsTestPassed,
+  writeCommand,
+} from "@/features/webcontainer/webcontainerSlice";
+import RunScriptButton from "@/components/terminal/RunScriptButton";
+import { useAppSelector } from "@/hooks/useAppSelector";
+import {
+  selectCurrentDirectory,
+  setCurrentTreeItem,
+} from "@/features/fileTree/fileTreeSlice";
 const components = { CH };
 
 export const getStaticPaths: GetStaticPaths = async () => {
@@ -47,22 +52,13 @@ export const getStaticProps: GetStaticProps<
   TutorialParams
 > = async ({ params }) => {
   const { chapter: c, section: s } = params!;
-  const isValid = isValidChapterAndSection(c as string, s as string);
-  if (!isValid) {
-    return {
-      redirect: {
-        destination: "/",
-        permanent: false,
-      },
-    };
-  }
 
-  const { name, test, tutorial, files, focusedFiles, testFiles, highlight } =
-    await getTutorialByChapterAndSection(c as string, s as string);
+  const { name, test, tutorial, files, focusedFiles, testFiles, highlight } = (
+    await import(`../../../json/${c}-${s}.json`)
+  ).default;
 
-  const webContainerFiles = await transformToWebcontainerFiles(
-    `${process.cwd()}/tutorials/${c}/base`
-  );
+  const webContainerFiles = (await import(`../../../json/${c}-base.json`))
+    .default;
 
   return {
     props: {
@@ -83,6 +79,11 @@ export const getStaticProps: GetStaticProps<
 
 const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const [tutorialItem, setTutorialItem] = useState(item);
+  const [code, setCode] = useState<string | undefined>("");
+  const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
+  const currentDirectory = useAppSelector(selectCurrentDirectory);
+  const dispatch = useAppDispatch();
+
   const {
     tutorial,
     test,
@@ -93,183 +94,75 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
     highlight,
   } = tutorialItem;
 
+  const resetTerminalOutput = () => dispatch(setIsTestPassed(null));
+
   useEffect(() => {
     const fileCode = getFileContentByPath(highlight, focusedFiles);
     setCode(fileCode);
-    setCurrentDirectory(highlight);
-    setTerminalOutput(null);
+    dispatch(setCurrentTreeItem(highlight.replace(/\./g, "*")));
+    resetTerminalOutput();
   }, [tutorialItem]);
 
-  const [isInitializing, setIsInitializing] = useState(true);
-  const [code, setCode] = useState<string | undefined>("");
-  const [isRunning, setIsRunning] = useState(false);
-  const [isAborting, setIsAborting] = useState(false);
-  const webcontainerInstance = useRef<WebContainer | null>(null);
-  const terminalInstance = useRef<any>(null);
-  const inputRef = useRef<any>(null);
-  const shellRef = useRef<any>(null);
-  const [chapter, setChapter] = useState(c);
-  const [section, setSection] = useState(s);
-  const [currentDirectory, setCurrentDirectory] = useState("");
-  const [terminalOutput, setTerminalOutput] = useState<boolean | null>(null);
-
-  const onClick = (code: string, dir: string) => {
-    setCodeChange(code, dir);
+  const onClick = (code: string, { path }: { path: string }) => {
+    dispatch(setCurrentTreeItem(path));
+    setCodeChange(code, path);
   };
 
   const setCodeChange = (code: string | undefined, dir?: string) => {
     if (!code) return;
     setCode(code);
-    webcontainerInstance.current?.fs.writeFile(
-      `/src/${dir ?? currentDirectory}`,
+    webcontainerInstance?.fs.writeFile(
+      `/src/${dir ?? currentDirectory}`.replace(/\*/g, "."),
       code
     );
   };
 
-  const installDependencies = async () => {
-    if (!webcontainerInstance.current) return;
-    const installProcess = await webcontainerInstance.current.spawn("npm", [
-      "install",
-    ]);
-    installProcess.output.pipeTo(
-      new WritableStream({
-        write(data) {
-          console.log(data);
-        },
-      })
-    );
-    return installProcess.exit;
-  };
-
   const abortTest = async () => {
-    setIsAborting(true);
-    inputRef.current.write("\u0003");
-    setTerminalOutput(null);
+    dispatch(writeCommand("\u0003"));
+    resetTerminalOutput();
   };
 
   const runTest = async () => {
-    setIsRunning(true);
-    inputRef.current.write(
-      `node --experimental-vm-modules --experimental-wasm-threads node_modules/jest/bin/jest.js ${test} \r`
+    dispatch(
+      writeCommand(
+        `node --experimental-vm-modules --experimental-wasm-threads node_modules/jest/bin/jest.js ${test} \r`
+      )
     );
   };
 
-  const createProcess = async () => {
-    if (!webcontainerInstance.current) return;
-    const shellProcess = await webcontainerInstance.current.spawn("jsh");
-
-    const input = shellProcess.input.getWriter();
-
-    inputRef.current = input;
-    shellRef.current = shellProcess;
-    shellRef.current.output.pipeTo(
-      new WritableStream({
-        write(data) {
-          if (data.endsWith("[3G")) {
-            setIsRunning(false);
-            setIsAborting(false);
-          }
-          if (data.includes("Tests")) {
-            setTerminalOutput(!data.includes("failed"));
-          }
-        },
-      })
+  useEffect(() => {
+    const fileSystemTree = getCombinedFiles(
+      srcFiles,
+      files,
+      focusedFiles,
+      testFiles
     );
-    return {
-      input,
-      shellProcess,
-    };
-  };
+    dispatch(initializeWebcontainer({ fileSystemTree, initTerminal: false }));
+  }, []);
 
-  const requestSection = async (chapter: string, section: string) => {
-    try {
-      const response = await axios.post(
-        "/api/sectionFiles",
-        { chapter, section },
-        { headers: { "Content-Type": "application/json" } }
-      );
-      const { files, tutorial, focusedFiles, testFiles, test, highlight } =
-        response.data;
-      setTutorialItem({
-        ...tutorialItem,
-        tutorial,
-        focusedFiles,
-        test,
-        highlight,
-      });
-      const mountFiles = getCombinedFiles(
-        srcFiles,
-        files,
-        focusedFiles,
-        testFiles
-      );
-      await webcontainerInstance.current?.mount(mountFiles);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const startWebContainer = async () => {
-    const { WebContainer } = await import("@webcontainer/api");
-    if (webcontainerInstance.current) return;
-    webcontainerInstance.current = await WebContainer.boot();
+  const setItem = async (chapter: string, section: string) => {
+    const { files, tutorial, focusedFiles, testFiles, test, highlight } = (
+      await import(`../../../json/${chapter}-${section}.json`)
+    ).default;
+    setTutorialItem({
+      ...tutorialItem,
+      tutorial,
+      focusedFiles,
+      test,
+      highlight,
+    });
     const mountFiles = getCombinedFiles(
       srcFiles,
       files,
       focusedFiles,
       testFiles
     );
-    await webcontainerInstance.current.mount(mountFiles);
-
-    const exitCode = await installDependencies();
-    if (exitCode !== 0) {
-      throw new Error("Installation failed");
-    }
-
-    await createProcess();
-    setIsInitializing(false);
-  };
-
-  const initialize = async () => {
-    setIsInitializing(true);
-    await startWebContainer();
+    await webcontainerInstance?.mount(mountFiles);
   };
 
   useEffect(() => {
-    void initialize();
-    let keysPressed: Record<string, any> = {};
-
-    const onKeydown = (event: KeyboardEvent) => {
-      keysPressed[event.key] = true;
-
-      if (keysPressed["Control"] && event.key == "s") {
-        runTest();
-      }
-    };
-
-    const onKeyup = (event: KeyboardEvent) => {
-      delete keysPressed[event.key];
-    };
-
-    document.addEventListener("keydown", onKeydown);
-    document.addEventListener("keyup", onKeyup);
-    return () => {
-      document.removeEventListener("keydown", onKeydown);
-      document.removeEventListener("keyup", onKeyup);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (isAborting || !terminalInstance.current) return;
-    setTerminalOutput(null);
-  }, [isAborting]);
-
-  const onSetSection = (section: string) => {
-    setSection(section);
-    setCode("");
-    setCurrentDirectory("");
-    void requestSection(chapter, section);
-  };
+    void setItem(c, s);
+  }, [s, c]);
 
   return (
     <>
@@ -282,17 +175,11 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/icon.svg" />
       </Head>
-      <main className={styles.main}>
+      <main>
         <Header />
         <div className="flex flex-1 grid lg:grid-cols-2">
-          <div className="bg-[#eee] min-w-0">
-            <Breadcrumb
-              chapterIndex={chapter}
-              sectionIndex={section}
-              setChapter={setChapter}
-              setSection={onSetSection}
-              items={tutorials}
-            />
+          <div className="min-w-0">
+            <Breadcrumb chapterIndex={c} sectionIndex={s} items={tutorials} />
             <div className="px-4 pb-4 lg:h-[calc(100vh-120px)] overflow-y-auto">
               <div id="tutorial">
                 <MDXRemote {...tutorial} components={components} />
@@ -301,36 +188,25 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
           </div>
           <div className="flex flex-col">
             <div className="flex flex-1 border-b-2 flex-row">
-              <Tree
-                data={focusedFiles}
-                onBlur={() => null}
-                onClick={onClick}
-                setCurrentDirectory={setCurrentDirectory}
-                currentDirectory={currentDirectory}
-              />
+              <div className="w-40 p-4">
+                <Tree
+                  data={focusedFiles}
+                  onClick={onClick}
+                  enableActions={false}
+                />
+              </div>
               <CodeEditor code={code} setCodeChange={setCodeChange} />
             </div>
             <div>
               <div className="p-2">
-                {isInitializing ? (
-                  <Loader
-                    text="Initializing Smart contract"
-                    circleColor={"text-black"}
-                    spinnerColor={"fill-orange-500"}
-                  />
-                ) : (
-                  <TestSection
-                    isAborting={isAborting}
-                    isRunning={isRunning}
-                    runTest={runTest}
-                    abortTest={abortTest}
-                  />
-                )}
+                <RunScriptButton
+                  onRun={runTest}
+                  abortTitle={"Abort"}
+                  onAbort={abortTest}
+                  runTitle={"Run"}
+                />
               </div>
-              <TerminalOutput
-                isRunning={isRunning}
-                terminalOutput={terminalOutput}
-              />
+              <TerminalOutput />
             </div>
           </div>
         </div>

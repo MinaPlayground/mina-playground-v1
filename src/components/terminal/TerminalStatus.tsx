@@ -1,8 +1,12 @@
 import { FC } from "react";
+import { useAppSelector } from "@/hooks/useAppSelector";
+import { selectIsTestPassed } from "@/features/webcontainer/webcontainerSlice";
 
-const TerminalStatus: FC<TerminalStatusProps> = ({ terminalOutput }) => {
-  if (terminalOutput === null) return null;
-  const { style, title, message } = terminalOutput
+const TerminalStatus: FC = () => {
+  const isTestPassed = useAppSelector(selectIsTestPassed);
+
+  if (isTestPassed === null) return null;
+  const { style, title, message } = isTestPassed
     ? {
         style: "text-green-800 bg-green-100",
         title: "Success!",
@@ -19,9 +23,5 @@ const TerminalStatus: FC<TerminalStatusProps> = ({ terminalOutput }) => {
     </div>
   );
 };
-
-interface TerminalStatusProps {
-  terminalOutput: boolean | null;
-}
 
 export default TerminalStatus;

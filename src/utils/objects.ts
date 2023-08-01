@@ -21,6 +21,7 @@ export const getFileContentByPath = (
     if (!i.includes(".")) {
       return ((o as FileSystemTree)[i] as DirectoryNode).directory;
     }
-    return ((o as FileSystemTree)[i] as FileNode).file.contents;
+    return ((o as FileSystemTree)[i.replace(/\./g, "*")] as FileNode).file
+      .contents;
   }, object) as string;
 };
