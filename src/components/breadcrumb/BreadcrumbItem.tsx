@@ -23,7 +23,7 @@ const BreadcrumbItem: FC<BreadcrumbItemProps> = ({
     <div className="relative max-w-42 sm:w-64 px-2 text-base z-10">
       <button
         ref={selectMenuRef}
-        className="flex items-center justify-between gap-2 w-full px-3 py-2 text-gray-200 bg-gray-700 rounded-md shadow-sm cursor-default outline-none focus:border-gray-400"
+        className="flex items-center justify-between gap-2 w-full px-3 py-2 text-gray-200 bg-gray-700 rounded-md shadow-sm cursor-default focus:border-gray-400"
         aria-haspopup="true"
         aria-expanded="true"
         aria-labelledby="listbox-label"
@@ -61,15 +61,15 @@ const BreadcrumbItem: FC<BreadcrumbItemProps> = ({
                   onClick={() => onClick(key)}
                   role="option"
                   aria-selected={isSelected}
-                  className={`${
-                    isSelected ? "text-indigo-600 bg-indigo-50" : ""
-                  } flex items-center justify-between gap-2 px-3 cursor-default py-2 duration-150 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50`}
+                  className={`flex items-center justify-between gap-2 px-3 cursor-default py-2 duration-150 text-gray-200  ${
+                    isSelected ? "bg-gray-800" : "bg-gray-700"
+                  } hover:text-gray-100 hover:bg-secondary`}
                 >
                   <div className="flex items-center gap-x-3">{name}</div>
                   {isSelected ? (
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      className="w-5 h-5 text-indigo-600"
+                      className="w-5 h-5 text-gray-200"
                       viewBox="0 0 20 20"
                       fill="currentColor"
                     >

@@ -8,12 +8,13 @@ import {
   FileSystemOnClickHandler,
 } from "@/types";
 
-const Tree: FC<TreeProps> = ({
+const Tree: FC<TreeType> = ({
   data,
   onBlur,
   onChange,
   onClick,
   directory = { path: "", webcontainerPath: "" },
+  enableActions,
 }) => {
   const newData = Object.entries(data).sort(function (a, b) {
     const isADirectory = "directory" in a[1];
@@ -35,7 +36,7 @@ const Tree: FC<TreeProps> = ({
   return (
     <ul>
       {newData.map((node) => {
-        return (
+        return enableActions ? (
           <TreeNode
             node={node}
             key={`${directory.path}/${node[0]}`}
@@ -43,6 +44,15 @@ const Tree: FC<TreeProps> = ({
             onChange={onChange}
             onClick={onClick}
             directory={directory}
+            enableActions={enableActions}
+          />
+        ) : (
+          <TreeNode
+            node={node}
+            key={`${directory.path}/${node[0]}`}
+            onClick={onClick}
+            directory={directory}
+            enableActions={enableActions}
           />
         );
       })}
@@ -52,10 +62,22 @@ const Tree: FC<TreeProps> = ({
 
 interface TreeProps {
   data: FileSystemTree;
+  onBlur?: never;
+  onChange?: never;
+  onClick: FileSystemOnClickHandler;
+  directory?: Directory;
+  enableActions: false;
+}
+
+interface TreePropsWithActions {
+  data: FileSystemTree;
   onBlur: FileSystemOnBlurHandler;
   onChange: FileSystemOnChangeHandler;
   onClick: FileSystemOnClickHandler;
   directory?: Directory;
+  enableActions: true;
 }
+
+type TreeType = TreeProps | TreePropsWithActions;
 
 export default Tree;

@@ -24,13 +24,14 @@ import {
   selectChangedFields,
   selectCurrentDirectory,
 } from "@/features/fileTree/fileTreeSlice";
-
-const TreeNode: FC<TreeNodeProps> = ({
+// TODO refactor this component
+const TreeNode: FC<TreeNodeType> = ({
   node,
   onBlur,
   onChange,
   onClick,
   directory,
+  enableActions,
 }) => {
   const [key, value] = node;
   const currentDirectory = useAppSelector(selectCurrentDirectory);
@@ -41,11 +42,11 @@ const TreeNode: FC<TreeNodeProps> = ({
   const [inputValue, setInputValue] = useState(fileName);
   const [isEditing, setIsEditing] = useState(false);
   const [showChildren, setShowChildren] = useState(
-    currentDirectory.path.startsWith(path)
+    currentDirectory.startsWith(path)
   );
   const inputFileName = inputValue.replace(/\./g, "*");
   const isDirectory = "directory" in value;
-  const isSelected = currentDirectory && path === currentDirectory.path;
+  const isSelected = path === currentDirectory;
   const isSelectedStyle = isSelected ? "bg-[#2f3033]" : "";
   const webcontainer = isDirectory
     ? `${key || inputFileName}.directory`
@@ -71,6 +72,9 @@ const TreeNode: FC<TreeNodeProps> = ({
   const isChanged = changedField && !changedField.saved;
   const type = isDirectory ? "directory" : "file";
 
+  const isEmptyKey = key === "";
+  const showInputField = isEmptyKey || isEditing;
+  const showActions = !isEmptyKey && !isEditing;
   return (
     <>
       <div
@@ -80,7 +84,7 @@ const TreeNode: FC<TreeNodeProps> = ({
         <div className="flex flex-1 flex-row items-center">
           {showChevronIcon}
           {icon}
-          {key === "" || isEditing ? (
+          {showInputField && enableActions ? (
             <input
               autoFocus
               onFocus={(e) => {
@@ -157,7 +161,7 @@ const TreeNode: FC<TreeNodeProps> = ({
             </svg>
           )}
         </div>
-        {key !== "" && !isEditing && (
+        {showActions && enableActions && (
           <div className="hidden group-hover:block">
             <div className="flex flex-row gap-1">
               {isDirectory && (
@@ -202,15 +206,24 @@ const TreeNode: FC<TreeNodeProps> = ({
       </div>
       {isDirectory && (
         <ul className="pl-4">
-          {showChildren && (
-            <Tree
-              data={value.directory}
-              onBlur={onBlur}
-              onChange={onChange}
-              onClick={onClick}
-              directory={{ path, webcontainerPath }}
-            />
-          )}
+          {showChildren &&
+            (enableActions ? (
+              <Tree
+                data={value.directory}
+                onBlur={onBlur}
+                onChange={onChange}
+                onClick={onClick}
+                directory={{ path, webcontainerPath }}
+                enableActions={enableActions}
+              />
+            ) : (
+              <Tree
+                data={value.directory}
+                onClick={onClick}
+                directory={{ path, webcontainerPath }}
+                enableActions={enableActions}
+              />
+            ))}
         </ul>
       )}
     </>
@@ -219,10 +232,22 @@ const TreeNode: FC<TreeNodeProps> = ({
 
 interface TreeNodeProps {
   node: [string, DirectoryNode | FileNode];
+  onBlur?: never;
+  onChange?: never;
+  onClick: FileSystemOnClickHandler;
+  directory: Directory;
+  enableActions: false;
+}
+
+interface TreeNodePropsWithActions {
+  node: [string, DirectoryNode | FileNode];
   onBlur: FileSystemOnBlurHandler;
   onChange: FileSystemOnChangeHandler;
   onClick: FileSystemOnClickHandler;
   directory: Directory;
+  enableActions: true;
 }
+
+type TreeNodeType = TreeNodeProps | TreeNodePropsWithActions;
 
 export default TreeNode;

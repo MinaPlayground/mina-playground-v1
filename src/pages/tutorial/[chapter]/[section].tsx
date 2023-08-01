@@ -5,13 +5,11 @@ import { FileSystemTree } from "@webcontainer/api";
 import Breadcrumb from "@/components/breadcrumb/Breadcrumb";
 import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import { MDXRemote, MDXRemoteSerializeResult } from "next-mdx-remote";
-import axios from "axios";
 import Tree from "@/components/file-explorer/Tree";
 import { getCombinedFiles, getFileContentByPath } from "@/utils/objects";
 import tutorials from "@/tutorials.json";
 import { getTutorialByChapterAndSection } from "@/utils/tutorial";
 import { transformToWebcontainerFiles } from "@/utils/webcontainer";
-import { isValidChapterAndSection } from "@/utils/validation";
 import { TutorialParams } from "@/types";
 import { CH } from "@code-hike/mdx/components";
 import CodeEditor from "@/components/editor/CodeEditor";
@@ -25,7 +23,11 @@ import {
 } from "@/features/webcontainer/webcontainerSlice";
 import RunScriptButton from "@/components/terminal/RunScriptButton";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { setCurrentTreeItem } from "@/features/fileTree/fileTreeSlice";
+import {
+  selectCurrentDirectory,
+  setCurrentTreeItem,
+} from "@/features/fileTree/fileTreeSlice";
+import { writeFile } from "fs/promises";
 const components = { CH };
 
 export const getStaticPaths: GetStaticPaths = async () => {
@@ -53,18 +55,17 @@ export const getStaticProps: GetStaticProps<
   TutorialParams
 > = async ({ params }) => {
   const { chapter: c, section: s } = params!;
-  const isValid = isValidChapterAndSection(c as string, s as string);
-  if (!isValid) {
-    return {
-      redirect: {
-        destination: "/",
-        permanent: false,
-      },
-    };
-  }
+
+  const response = await getTutorialByChapterAndSection(
+    c as string,
+    s as string
+  );
+
+  const dir = process.cwd();
+  await writeFile(`${dir}/src/json/${c}-${s}.json`, JSON.stringify(response));
 
   const { name, test, tutorial, files, focusedFiles, testFiles, highlight } =
-    await getTutorialByChapterAndSection(c as string, s as string);
+    response;
 
   const webContainerFiles = await transformToWebcontainerFiles(
     `${process.cwd()}/tutorials/${c}/base`
@@ -89,7 +90,11 @@ export const getStaticProps: GetStaticProps<
 
 const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const [tutorialItem, setTutorialItem] = useState(item);
+  const [code, setCode] = useState<string | undefined>("");
+  const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
+  const currentDirectory = useAppSelector(selectCurrentDirectory);
   const dispatch = useAppDispatch();
+
   const {
     tutorial,
     test,
@@ -100,31 +105,17 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
     highlight,
   } = tutorialItem;
 
+  const resetTerminalOutput = () => dispatch(setIsTestPassed(null));
+
   useEffect(() => {
     const fileCode = getFileContentByPath(highlight, focusedFiles);
     setCode(fileCode);
-    // setCurrentDirectory(highlight);
+    dispatch(setCurrentTreeItem(highlight.replace(/\./g, "*")));
     resetTerminalOutput();
   }, [tutorialItem]);
 
-  const [code, setCode] = useState<string | undefined>("");
-  const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
-  const [chapter, setChapter] = useState(c);
-  const [section, setSection] = useState(s);
-  const [currentDirectory, setCurrentDirectory] = useState("");
-
-  const resetTerminalOutput = () => dispatch(setIsTestPassed(null));
-
-  const onClick = (
-    code: string,
-    { path, webcontainerPath }: { path: string; webcontainerPath: string }
-  ) => {
-    dispatch(
-      setCurrentTreeItem({
-        currentDirectory: { path, webcontainerPath },
-        code: code as string,
-      })
-    );
+  const onClick = (code: string, { path }: { path: string }) => {
+    dispatch(setCurrentTreeItem(path));
     setCodeChange(code, path);
   };
 
@@ -132,7 +123,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
     if (!code) return;
     setCode(code);
     webcontainerInstance?.fs.writeFile(
-      `/src/${dir ?? currentDirectory}`.replaceAll(/\*/g, "."),
+      `/src/${dir ?? currentDirectory}`.replace(/\*/g, "."),
       code
     );
   };
@@ -158,35 +149,11 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
       testFiles
     );
     dispatch(initializeWebcontainer({ fileSystemTree, initTerminal: false }));
-
-    let keysPressed: Record<string, any> = {};
-
-    const onKeydown = (event: KeyboardEvent) => {
-      keysPressed[event.key] = true;
-
-      if (keysPressed["Control"] && event.key == "s") {
-        runTest();
-      }
-    };
-
-    const onKeyup = (event: KeyboardEvent) => {
-      delete keysPressed[event.key];
-    };
-
-    document.addEventListener("keydown", onKeydown);
-    document.addEventListener("keyup", onKeyup);
-    return () => {
-      document.removeEventListener("keydown", onKeydown);
-      document.removeEventListener("keyup", onKeyup);
-    };
   }, []);
 
-  const onSetSection = async (section: string) => {
-    setSection(section);
-    setCode("");
-    setCurrentDirectory("");
+  const setItem = async (chapter: string, section: string) => {
     const { files, tutorial, focusedFiles, testFiles, test, highlight } = (
-      await import(`../../../../tutorials/json/${section}.json`)
+      await import(`../../../json/${chapter}-${section}.json`)
     ).default;
     setTutorialItem({
       ...tutorialItem,
@@ -204,6 +171,10 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
     await webcontainerInstance?.mount(mountFiles);
   };
 
+  useEffect(() => {
+    void setItem(c, s);
+  }, [s, c]);
+
   return (
     <>
       <Head>
@@ -219,13 +190,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
         <Header />
         <div className="flex flex-1 grid lg:grid-cols-2">
           <div className="min-w-0">
-            <Breadcrumb
-              chapterIndex={chapter}
-              sectionIndex={section}
-              setChapter={setChapter}
-              setSection={onSetSection}
-              items={tutorials}
-            />
+            <Breadcrumb chapterIndex={c} sectionIndex={s} items={tutorials} />
             <div className="px-4 pb-4 lg:h-[calc(100vh-120px)] overflow-y-auto">
               <div id="tutorial">
                 <MDXRemote {...tutorial} components={components} />
@@ -234,12 +199,13 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
           </div>
           <div className="flex flex-col">
             <div className="flex flex-1 border-b-2 flex-row">
-              <Tree
-                data={focusedFiles}
-                onBlur={() => null}
-                onChange={() => null}
-                onClick={onClick}
-              />
+              <div className="w-40 p-4">
+                <Tree
+                  data={focusedFiles}
+                  onClick={onClick}
+                  enableActions={false}
+                />
+              </div>
               <CodeEditor code={code} setCodeChange={setCodeChange} />
             </div>
             <div>

@@ -41,25 +41,20 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
 
   const onClick = async (
     code: string,
-    path: { path: string; webcontainerPath: string }
+    { path, webcontainerPath }: { path: string; webcontainerPath: string }
   ) => {
-    dispatch(
-      setCurrentTreeItem({
-        currentDirectory: path,
-        code: code as string,
-      })
-    );
+    dispatch(setCurrentTreeItem(path));
 
-    const panel = dockApi?.getPanel(path.path);
+    const panel = dockApi?.getPanel(path);
     if (panel) {
       panel.api.setActive();
       return;
     }
     dockApi?.addPanel({
-      id: path.path,
-      title: path.path.replace(/\*/g, "."),
+      id: path,
+      title: path.replace(/\*/g, "."),
       component: "editor",
-      params: { id, value: code, directory: path },
+      params: { id, value: code, directory: { path, webcontainerPath } },
     });
   };
 
@@ -181,6 +176,7 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
         onBlur={onBlur}
         onChange={onChange}
         onClick={onClick}
+        enableActions={true}
       />
     </div>
   );
