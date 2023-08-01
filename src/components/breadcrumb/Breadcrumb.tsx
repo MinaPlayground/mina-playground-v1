@@ -5,8 +5,6 @@ import BreadcrumbItem from "@/components/breadcrumb/BreadcrumbItem";
 const Breadcrumb: FC<BreadCrumbProps> = ({
   chapterIndex,
   sectionIndex,
-  setChapter,
-  setSection,
   items,
 }) => {
   const { name: chapterName, sections } = items[chapterIndex];
@@ -19,15 +17,17 @@ const Breadcrumb: FC<BreadCrumbProps> = ({
         name={chapterName}
         activeIndex={chapterIndex}
         items={items}
-        onClick={(key) => {}}
+        onClick={async (key) => {
+          const firstSection = Object.keys(items[key].sections)[0];
+          await router.push(`/tutorial/${key}/${firstSection}`);
+        }}
       />
       <BreadcrumbItem
         name={sectionName}
         activeIndex={sectionIndex}
         items={sections}
-        onClick={(key) => {
-          setSection(key);
-          router.push(`/tutorial/${chapterIndex}/${key}`);
+        onClick={async (key) => {
+          await router.push(`/tutorial/${chapterIndex}/${key}`);
         }}
       />
     </div>
@@ -49,8 +49,6 @@ interface BreadCrumbProps {
       >;
     }
   >;
-  setChapter(chapter: string): void;
-  setSection(section: string): void;
 }
 
 export default Breadcrumb;

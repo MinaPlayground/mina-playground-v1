@@ -10,7 +10,6 @@ import { getCombinedFiles, getFileContentByPath } from "@/utils/objects";
 import tutorials from "@/tutorials.json";
 import { getTutorialByChapterAndSection } from "@/utils/tutorial";
 import { transformToWebcontainerFiles } from "@/utils/webcontainer";
-import { isValidChapterAndSection } from "@/utils/validation";
 import { TutorialParams } from "@/types";
 import { CH } from "@code-hike/mdx/components";
 import CodeEditor from "@/components/editor/CodeEditor";
@@ -28,6 +27,7 @@ import {
   selectCurrentDirectory,
   setCurrentTreeItem,
 } from "@/features/fileTree/fileTreeSlice";
+import { writeFile } from "fs/promises";
 const components = { CH };
 
 export const getStaticPaths: GetStaticPaths = async () => {
@@ -45,6 +45,12 @@ export const getStaticPaths: GetStaticPaths = async () => {
           section: "02-private-inputs",
         },
       },
+      {
+        params: {
+          chapter: "02-zkapps",
+          section: "01-zkapp",
+        },
+      },
     ],
     fallback: false,
   };
@@ -55,18 +61,17 @@ export const getStaticProps: GetStaticProps<
   TutorialParams
 > = async ({ params }) => {
   const { chapter: c, section: s } = params!;
-  const isValid = isValidChapterAndSection(c as string, s as string);
-  if (!isValid) {
-    return {
-      redirect: {
-        destination: "/",
-        permanent: false,
-      },
-    };
-  }
+
+  const response = await getTutorialByChapterAndSection(
+    c as string,
+    s as string
+  );
+
+  const dir = process.cwd();
+  await writeFile(`${dir}/src/json/${c}-${s}.json`, JSON.stringify(response));
 
   const { name, test, tutorial, files, focusedFiles, testFiles, highlight } =
-    await getTutorialByChapterAndSection(c as string, s as string);
+    response;
 
   const webContainerFiles = await transformToWebcontainerFiles(
     `${process.cwd()}/tutorials/${c}/base`
@@ -92,8 +97,6 @@ export const getStaticProps: GetStaticProps<
 const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const [tutorialItem, setTutorialItem] = useState(item);
   const [code, setCode] = useState<string | undefined>("");
-  const [chapter, setChapter] = useState(c);
-  const [section, setSection] = useState(s);
   const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
   const currentDirectory = useAppSelector(selectCurrentDirectory);
   const dispatch = useAppDispatch();
@@ -116,11 +119,6 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
     dispatch(setCurrentTreeItem(highlight.replace(/\./g, "*")));
     resetTerminalOutput();
   }, [tutorialItem]);
-
-  // trigger when section changes during navigation
-  useEffect(() => {
-    void onSetSection(s);
-  }, [s]);
 
   const onClick = (code: string, { path }: { path: string }) => {
     dispatch(setCurrentTreeItem(path));
@@ -159,10 +157,9 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
     dispatch(initializeWebcontainer({ fileSystemTree, initTerminal: false }));
   }, []);
 
-  const onSetSection = async (section: string) => {
-    setSection(section);
+  const setItem = async (chapter: string, section: string) => {
     const { files, tutorial, focusedFiles, testFiles, test, highlight } = (
-      await import(`../../../../tutorials/json/${section}.json`)
+      await import(`../../../json/${chapter}-${section}.json`)
     ).default;
     setTutorialItem({
       ...tutorialItem,
@@ -180,6 +177,10 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
     await webcontainerInstance?.mount(mountFiles);
   };
 
+  useEffect(() => {
+    void setItem(c, s);
+  }, [s, c]);
+
   return (
     <>
       <Head>
@@ -195,13 +196,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
         <Header />
         <div className="flex flex-1 grid lg:grid-cols-2">
           <div className="min-w-0">
-            <Breadcrumb
-              chapterIndex={chapter}
-              sectionIndex={section}
-              setChapter={setChapter}
-              setSection={onSetSection}
-              items={tutorials}
-            />
+            <Breadcrumb chapterIndex={c} sectionIndex={s} items={tutorials} />
             <div className="px-4 pb-4 lg:h-[calc(100vh-120px)] overflow-y-auto">
               <div id="tutorial">
                 <MDXRemote {...tutorial} components={components} />
