@@ -8,7 +8,6 @@ import { MDXRemote, MDXRemoteSerializeResult } from "next-mdx-remote";
 import Tree from "@/components/file-explorer/Tree";
 import { getCombinedFiles, getFileContentByPath } from "@/utils/objects";
 import tutorials from "@/tutorials.json";
-import { getTutorialByChapterAndSection } from "@/utils/tutorial";
 import { transformToWebcontainerFiles } from "@/utils/webcontainer";
 import { TutorialParams } from "@/types";
 import { CH } from "@code-hike/mdx/components";
@@ -27,7 +26,6 @@ import {
   selectCurrentDirectory,
   setCurrentTreeItem,
 } from "@/features/fileTree/fileTreeSlice";
-import { writeFile } from "fs/promises";
 const components = { CH };
 
 export const getStaticPaths: GetStaticPaths = async () => {
@@ -56,16 +54,9 @@ export const getStaticProps: GetStaticProps<
 > = async ({ params }) => {
   const { chapter: c, section: s } = params!;
 
-  const response = await getTutorialByChapterAndSection(
-    c as string,
-    s as string
-  );
-
-  const dir = process.cwd();
-  await writeFile(`${dir}/src/json/${c}-${s}.json`, JSON.stringify(response));
-
-  const { name, test, tutorial, files, focusedFiles, testFiles, highlight } =
-    response;
+  const { name, test, tutorial, files, focusedFiles, testFiles, highlight } = (
+    await import(`../../../json/${c}-${s}.json`)
+  ).default;
 
   const webContainerFiles = await transformToWebcontainerFiles(
     `${process.cwd()}/tutorials/${c}/base`
