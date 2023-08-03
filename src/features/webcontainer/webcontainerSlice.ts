@@ -17,6 +17,7 @@ interface WebcontainerState {
     message: string;
     details?: string;
   } | null;
+  serverUrl: string | null;
 }
 
 const initialState: WebcontainerState = {
@@ -29,6 +30,7 @@ const initialState: WebcontainerState = {
   isTestPassed: null,
   isDeploying: false,
   deploymentMessage: null,
+  serverUrl: null,
 };
 
 export const initializeWebcontainer = createAsyncThunk(
@@ -55,6 +57,10 @@ export const initializeWebcontainer = createAsyncThunk(
       const { WebContainer } = await import("@webcontainer/api");
       const webcontainer = await WebContainer.boot();
       await webcontainer.mount(fileSystemTree);
+
+      webcontainer.on("server-ready", (port, url) => {
+        dispatch(setServerUrl(url));
+      });
 
       const installProcess = await webcontainer.spawn("npm", ["install"]);
       installProcess.output.pipeTo(
@@ -210,6 +216,9 @@ export const webcontainerSlice = createSlice({
     setDeploymentMessage: (state, action: PayloadAction<any>) => {
       state.deploymentMessage = action.payload;
     },
+    setServerUrl: (state, action: PayloadAction<any>) => {
+      state.serverUrl = action.payload;
+    },
   },
   extraReducers(builder) {
     builder
@@ -250,11 +259,15 @@ export const selectIsDeploying = (state: RootState) =>
 export const selectDeploymentMessage = (state: RootState) =>
   state.webcontainer.deploymentMessage;
 
+export const selectServerUrl = (state: RootState) =>
+  state.webcontainer.serverUrl;
+
 export const {
   setIsRunning,
   setIsAborting,
   setIsDeploying,
   setDeploymentMessage,
   setIsTestPassed,
+  setServerUrl,
 } = webcontainerSlice.actions;
 export default webcontainerSlice.reducer;
