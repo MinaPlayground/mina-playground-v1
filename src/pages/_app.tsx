@@ -10,6 +10,7 @@ import TutorialHeader from "@/components/tutorial/TutorialHeader";
 import TutorialText from "@/components/tutorial/TutorialText";
 import TutorialHighlightedText from "@/components/tutorial/TutorialHighlightedText";
 import { Components } from "@mdx-js/react/lib";
+import NextNProgress from "nextjs-progressbar";
 
 const components: Components = {
   h1: TutorialHeader,
@@ -21,6 +22,12 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <MDXProvider components={components}>
       <Provider store={store}>
+        <NextNProgress
+          startPosition={0.3}
+          stopDelayMs={200}
+          height={3}
+          showOnShallow={true}
+        />
         <Component {...pageProps} />
       </Provider>
     </MDXProvider>
