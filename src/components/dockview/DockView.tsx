@@ -62,6 +62,17 @@ const DockView = ({
       },
       params: { fileSystemTree },
     });
+    // event.api.addPanel({
+    //   id: "terminal",
+    //   component: "preview",
+    //   minimumHeight: 100,
+    //   size: 150,
+    //   position: {
+    //     direction: "below",
+    //     referencePanel: "dock",
+    //   },
+    //   params: { fileSystemTree },
+    // });
   };
 
   return (
@@ -88,7 +99,7 @@ const gridComponents: PanelCollection<IGridviewPanelProps> = {
     const dispatch = useAppDispatch();
     return (
       <DockviewReact
-        watermarkComponent={GetStarted}
+        watermarkComponent={() => null}
         components={dockComponents}
         onReady={(event) => {
           dispatch(setDockApi(event.api));
@@ -119,6 +130,9 @@ const gridComponents: PanelCollection<IGridviewPanelProps> = {
   terminal: (
     props: IGridviewPanelProps<{ fileSystemTree: FileSystemTree }>
   ) => <div className="terminal h-full bg-black" />,
+  // preview: (props: IGridviewPanelProps<{ fileSystemTree: FileSystemTree }>) => (
+  //   <Iframe />
+  // ),
 };
 
 const paneComponents: PanelCollection<
