@@ -16,7 +16,7 @@ const Tree: FC<TreeType> = ({
   directory = { path: "", webcontainerPath: "" },
   enableActions,
 }) => {
-  const newData = Object.entries(data).sort(function (a, b) {
+  const sortedTree = Object.entries(data).sort(function (a, b) {
     const isADirectory = "directory" in a[1];
     const isBDirectory = "directory" in b[1];
     if (!isADirectory && isBDirectory) {
@@ -35,7 +35,7 @@ const Tree: FC<TreeType> = ({
   });
   return (
     <ul>
-      {newData.map((node) => {
+      {sortedTree.map((node) => {
         return enableActions ? (
           <TreeNode
             node={node}

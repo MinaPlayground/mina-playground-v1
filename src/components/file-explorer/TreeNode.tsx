@@ -170,7 +170,11 @@ const TreeNode: FC<TreeNodeType> = ({
                     onClick={(event) => {
                       event.stopPropagation();
                       setShowChildren(true);
-                      onChange("create", "file", { path: webcontainerPath });
+                      onChange("create", "file", {
+                        path: webcontainerPath,
+                        value: inputFileName,
+                        directoryPath: directory.path,
+                      });
                     }}
                   />
                   <CreateDirectoryActionIcon
@@ -179,6 +183,8 @@ const TreeNode: FC<TreeNodeType> = ({
                       setShowChildren(true);
                       onChange("create", "directory", {
                         path: webcontainerPath,
+                        value: inputFileName,
+                        directoryPath: directory.path,
                       });
                     }}
                   />
@@ -197,6 +203,8 @@ const TreeNode: FC<TreeNodeType> = ({
                   onChange("delete", "file", {
                     path: directory.webcontainerPath,
                     key,
+                    value: inputFileName,
+                    directoryPath: directory.path,
                   });
                 }}
               />

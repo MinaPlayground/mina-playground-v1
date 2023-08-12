@@ -19,8 +19,14 @@ type FileSystemHandlerParam<A, P> = [
 ];
 
 export type FileSystemOnChangeParams =
-  | FileSystemHandlerParam<"create", { path: string }>
-  | FileSystemHandlerParam<"delete", { path: string; key: string }>;
+  | FileSystemHandlerParam<
+      "create",
+      { path: string; value: string; directoryPath: string }
+    >
+  | FileSystemHandlerParam<
+      "delete",
+      { path: string; key: string; value: string; directoryPath: string }
+    >;
 
 export type FileSystemOnBlurParams =
   | FileSystemHandlerParam<
