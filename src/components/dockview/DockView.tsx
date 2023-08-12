@@ -16,6 +16,7 @@ import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { setDockApi } from "@/features/dockView/dockViewSlice";
 import Section from "@/components/section/Section";
 import SectionItem from "@/components/section/SectionItem";
+import ProjectTerminal from "@/components/terminal/ProjectTerminal";
 
 const GetStarted = () => {
   return (
@@ -129,7 +130,7 @@ const gridComponents: PanelCollection<IGridviewPanelProps> = {
   ),
   terminal: (
     props: IGridviewPanelProps<{ fileSystemTree: FileSystemTree }>
-  ) => <div className="terminal h-full bg-black" />,
+  ) => <ProjectTerminal />,
   // preview: (props: IGridviewPanelProps<{ fileSystemTree: FileSystemTree }>) => (
   //   <Iframe />
   // ),

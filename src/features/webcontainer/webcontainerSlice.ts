@@ -4,7 +4,7 @@ import { FileSystemTree, WebContainer } from "@webcontainer/api";
 
 interface WebcontainerState {
   initializingWebcontainer: boolean;
-  initializingWebcontainerError: boolean;
+  initializingWebcontainerError: string | null;
   webcontainerInstance: WebContainer | null;
   shellProcessInput: WritableStreamDefaultWriter | null;
 
@@ -21,8 +21,8 @@ interface WebcontainerState {
 }
 
 const initialState: WebcontainerState = {
-  initializingWebcontainer: false,
-  initializingWebcontainerError: false,
+  initializingWebcontainer: true,
+  initializingWebcontainerError: null,
   webcontainerInstance: null,
   shellProcessInput: null,
   isRunning: false,
@@ -232,7 +232,8 @@ export const webcontainerSlice = createSlice({
       })
       .addCase(initializeWebcontainer.rejected, (state, action) => {
         state.initializingWebcontainer = false;
-        state.initializingWebcontainerError = true;
+        state.initializingWebcontainerError =
+          action.error.message ?? "An unexpected error has occurred";
       });
     //TODO add reject case for write command
   },
@@ -240,6 +241,9 @@ export const webcontainerSlice = createSlice({
 
 export const selectInitializingEsbuild = (state: RootState) =>
   state.webcontainer.initializingWebcontainer;
+
+export const selectInitializingWebContainerError = (state: RootState) =>
+  state.webcontainer.initializingWebcontainerError;
 
 export const selectWebcontainerInstance = (state: RootState) =>
   state.webcontainer.webcontainerInstance;
