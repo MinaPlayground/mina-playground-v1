@@ -180,7 +180,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
         <div className="flex flex-1 grid lg:grid-cols-2">
           <div className="min-w-0">
             <Breadcrumb chapterIndex={c} sectionIndex={s} items={tutorials} />
-            <div className="px-4 pb-4 lg:h-[calc(100vh-120px)] overflow-y-auto">
+            <div className="px-4 pb-4 lg:h-[calc(100vh-125px)] overflow-y-auto">
               <div id="tutorial">
                 <MDXRemote {...tutorial} components={components} />
               </div>
