@@ -42,7 +42,7 @@ const Header: FC = () => {
                 </span>
               </a>
             </div>
-            <div className="flex-none hidden lg:block">
+            <div className="flex-none hidden lg:block pr-6">
               <ul className="menu text-white menu-horizontal">
                 <li>
                   <Link href={"/"}>Home</Link>
