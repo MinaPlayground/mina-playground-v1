@@ -1,8 +1,8 @@
-import fs from "fs/promises";
+import {readFileSync} from "fs";
 
-export const json = async (
+export const json = (
     file
 ) => {
-    const fileContent = await fs.readFile(file, "utf-8");
+    const fileContent = readFileSync(file, "utf-8");
     return JSON.parse(fileContent);
 };
