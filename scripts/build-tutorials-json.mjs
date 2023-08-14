@@ -7,6 +7,7 @@ import {transformToWebcontainerFiles} from "./build/webcontainer.mjs";
 const excluded = ["base", "meta.json"];
 
 let data = {};
+const tutorialPaths = []
 const dir = process.cwd();
 const projectDir = readdirSync(`${dir}/tutorials`);
 for (const item of projectDir) {
@@ -38,6 +39,13 @@ for (const item of projectDir) {
 
     const response = await getTutorialByChapterAndSection(item, section);
     await writeFile(`${dir}/src/json/${item}-${section}.json`, JSON.stringify(response));
+    tutorialPaths.push({
+      "params": {
+        "chapter": item,
+        "section": section
+      }
+    })
+
 
     data[item].sections[section] = {
       name,
@@ -45,3 +53,7 @@ for (const item of projectDir) {
   }
 }
 writeFileSync(`${dir}/src/tutorials.json`, JSON.stringify(data));
+writeFileSync(`${dir}/src/tutorialPaths.json`, JSON.stringify({
+  "paths": tutorialPaths,
+  "fallback": false
+}));

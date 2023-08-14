@@ -25,26 +25,11 @@ import {
   selectCurrentDirectory,
   setCurrentTreeItem,
 } from "@/features/fileTree/fileTreeSlice";
+import tutorialsPath from "@/tutorialPaths.json";
 const components = { CH };
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  return {
-    paths: [
-      {
-        params: {
-          chapter: "01-introduction",
-          section: "01-smart-contracts",
-        },
-      },
-      {
-        params: {
-          chapter: "01-introduction",
-          section: "02-private-inputs",
-        },
-      },
-    ],
-    fallback: false,
-  };
+  return tutorialsPath;
 };
 
 export const getStaticProps: GetStaticProps<

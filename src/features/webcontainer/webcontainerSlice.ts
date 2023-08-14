@@ -42,7 +42,6 @@ export const initializeWebcontainer = createAsyncThunk(
     }: {
       fileSystemTree: FileSystemTree;
       initTerminal?: boolean;
-      chapter?: string;
     },
     { dispatch, getState, rejectWithValue }
   ) => {
