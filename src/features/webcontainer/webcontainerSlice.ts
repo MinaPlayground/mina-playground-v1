@@ -39,9 +39,22 @@ export const initializeWebcontainer = createAsyncThunk(
     {
       fileSystemTree,
       initTerminal = true,
-    }: { fileSystemTree: FileSystemTree; initTerminal?: boolean },
-    { dispatch }
+    }: {
+      fileSystemTree: FileSystemTree;
+      initTerminal?: boolean;
+      chapter?: string;
+    },
+    { dispatch, getState, rejectWithValue }
   ) => {
+    const { webcontainer: webcontainerState } = getState() as {
+      webcontainer: WebcontainerState;
+    };
+    const { webcontainerInstance } = webcontainerState;
+    if (webcontainerInstance) {
+      await webcontainerInstance.mount(fileSystemTree);
+      return rejectWithValue("Already mounted");
+    }
+
     if (initTerminal) {
       const { FitAddon } = await import("xterm-addon-fit");
       const fitAddon = new FitAddon();
@@ -232,6 +245,7 @@ export const webcontainerSlice = createSlice({
       })
       .addCase(initializeWebcontainer.rejected, (state, action) => {
         state.initializingWebcontainer = false;
+        if (action.payload) return;
         state.initializingWebcontainerError =
           action.error.message ?? "An unexpected error has occurred";
       });

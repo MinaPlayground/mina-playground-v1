@@ -11,6 +11,7 @@ import TutorialText from "@/components/tutorial/TutorialText";
 import TutorialHighlightedText from "@/components/tutorial/TutorialHighlightedText";
 import { Components } from "@mdx-js/react/lib";
 import NextNProgress from "nextjs-progressbar";
+import { useRouter } from "next/router";
 
 const components: Components = {
   h1: TutorialHeader,
@@ -19,6 +20,7 @@ const components: Components = {
 };
 
 export default function App({ Component, pageProps }: AppProps) {
+  const router = useRouter();
   return (
     <MDXProvider components={components}>
       <Provider store={store}>
@@ -28,7 +30,7 @@ export default function App({ Component, pageProps }: AppProps) {
           height={3}
           showOnShallow={true}
         />
-        <Component {...pageProps} />
+        <Component key={router.asPath} {...pageProps} />
       </Provider>
     </MDXProvider>
   );

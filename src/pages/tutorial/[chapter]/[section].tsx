@@ -78,7 +78,6 @@ export const getStaticProps: GetStaticProps<
 };
 
 const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
-  const [tutorialItem, setTutorialItem] = useState(item);
   const [code, setCode] = useState<string | undefined>("");
   const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
   const currentDirectory = useAppSelector(selectCurrentDirectory);
@@ -92,16 +91,9 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
     files,
     testFiles,
     highlight,
-  } = tutorialItem;
+  } = item;
 
   const resetTerminalOutput = () => dispatch(setIsTestPassed(null));
-
-  useEffect(() => {
-    const fileCode = getFileContentByPath(highlight, focusedFiles);
-    setCode(fileCode);
-    dispatch(setCurrentTreeItem(highlight.replace(/\./g, "*")));
-    resetTerminalOutput();
-  }, [tutorialItem]);
 
   const onClick = (code: string, { path }: { path: string }) => {
     dispatch(setCurrentTreeItem(path));
@@ -131,6 +123,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   };
 
   useEffect(() => {
+    resetTerminalOutput();
     const fileSystemTree = getCombinedFiles(
       srcFiles,
       files,
@@ -138,31 +131,10 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
       testFiles
     );
     dispatch(initializeWebcontainer({ fileSystemTree, initTerminal: false }));
+    const fileCode = getFileContentByPath(highlight, focusedFiles);
+    setCode(fileCode);
+    dispatch(setCurrentTreeItem(highlight.replace(/\./g, "*")));
   }, []);
-
-  const setItem = async (chapter: string, section: string) => {
-    const { files, tutorial, focusedFiles, testFiles, test, highlight } = (
-      await import(`../../../json/${chapter}-${section}.json`)
-    ).default;
-    setTutorialItem({
-      ...tutorialItem,
-      tutorial,
-      focusedFiles,
-      test,
-      highlight,
-    });
-    const mountFiles = getCombinedFiles(
-      srcFiles,
-      files,
-      focusedFiles,
-      testFiles
-    );
-    await webcontainerInstance?.mount(mountFiles);
-  };
-
-  useEffect(() => {
-    void setItem(c, s);
-  }, [s, c]);
 
   return (
     <>
