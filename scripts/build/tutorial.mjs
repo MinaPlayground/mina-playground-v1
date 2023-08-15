@@ -5,9 +5,11 @@ import {
     transformToWebcontainerFilesWithFocus,
 } from "./webcontainer.mjs";
 import { remarkCodeHike } from "@code-hike/mdx";
-import {readdirSync, readFileSync} from "fs";
+import {existsSync, readdirSync, readFileSync} from "fs";
 
 export const getTutorialByChapterAndSection = async (c, s) => {
+    let testFiles = []
+    let test = ""
     const dir = process.cwd();
     const { name, focus, highlight } = json(
         `${dir}/tutorials/${c}/${s}/meta.json`
@@ -17,10 +19,13 @@ export const getTutorialByChapterAndSection = async (c, s) => {
         focus
     );
 
-    const testFiles = await transformToWebcontainerFiles(
-        `${dir}/tutorials/${c}/${s}/tests/`
-    );
-    const test = readdirSync(`${dir}/tutorials/${c}/${s}/tests`).toString();
+    if (existsSync(`${dir}/tutorials/${c}/${s}/tests/`)) {
+
+        testFiles = transformToWebcontainerFiles(
+            `${dir}/tutorials/${c}/${s}/tests/`
+        );
+        test = readdirSync(`${dir}/tutorials/${c}/${s}/tests`).toString();
+    }
 
     const tutorialFileContent = readFileSync(
         `${dir}/tutorials/${c}/${s}/tutorial.mdx`,

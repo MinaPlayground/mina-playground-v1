@@ -36,7 +36,7 @@ for (const item of projectDir) {
       })
     ).name;
 
-    const response = getTutorialByChapterAndSection(item, section);
+    const response = await getTutorialByChapterAndSection(item, section);
     writeFileSync(`${dir}/src/json/${item}-${section}.json`, JSON.stringify(response));
     tutorialPaths.push({
       "params": {
