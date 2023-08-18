@@ -6,7 +6,6 @@ import Breadcrumb from "@/components/breadcrumb/Breadcrumb";
 import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import { MDXRemote, MDXRemoteSerializeResult } from "next-mdx-remote";
 import Tree from "@/components/file-explorer/Tree";
-import { getCombinedFiles, getFileContentByPath } from "@/utils/objects";
 import tutorials from "@/tutorials.json";
 import { TutorialParams } from "@/types";
 import { CH } from "@code-hike/mdx/components";
@@ -38,12 +37,9 @@ export const getStaticProps: GetStaticProps<
 > = async ({ params }) => {
   const { chapter: c, section: s } = params!;
 
-  const { name, test, tutorial, files, focusedFiles, testFiles, highlight } = (
+  const { tutorial, files, focusedFiles, highlightedItem } = (
     await import(`../../../json/${c}-${s}.json`)
   ).default;
-
-  const webContainerFiles = (await import(`../../../json/${c}-base.json`))
-    .default;
 
   return {
     props: {
@@ -51,11 +47,8 @@ export const getStaticProps: GetStaticProps<
       s,
       item: {
         tutorial,
-        test,
-        srcFiles: webContainerFiles,
         focusedFiles,
-        highlight,
-        testFiles,
+        highlightedItem,
         files,
       },
     },
@@ -63,20 +56,13 @@ export const getStaticProps: GetStaticProps<
 };
 
 const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
-  const [code, setCode] = useState<string | undefined>("");
+  const { tutorial, focusedFiles, files, highlightedItem } = item;
+  const { highlightedName, highlightedCode } = highlightedItem;
+
+  const [code, setCode] = useState<string | undefined>(highlightedCode);
   const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
   const currentDirectory = useAppSelector(selectCurrentDirectory);
   const dispatch = useAppDispatch();
-
-  const {
-    tutorial,
-    test,
-    srcFiles,
-    focusedFiles,
-    files,
-    testFiles,
-    highlight,
-  } = item;
 
   const resetTerminalOutput = () => dispatch(setIsTestPassed(null));
 
@@ -102,23 +88,17 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const runTest = async () => {
     dispatch(
       writeCommand(
-        `node --experimental-vm-modules --experimental-wasm-threads node_modules/jest/bin/jest.js ${test} \r`
+        `node --experimental-vm-modules --experimental-wasm-threads node_modules/jest/bin/jest.js \r`
       )
     );
   };
 
   useEffect(() => {
     resetTerminalOutput();
-    const fileSystemTree = getCombinedFiles(
-      srcFiles,
-      files,
-      focusedFiles,
-      testFiles
+    dispatch(
+      initializeWebcontainer({ fileSystemTree: files, initTerminal: false })
     );
-    dispatch(initializeWebcontainer({ fileSystemTree, initTerminal: false }));
-    const fileCode = getFileContentByPath(highlight, focusedFiles);
-    setCode(fileCode);
-    dispatch(setCurrentTreeItem(highlight.replace(/\./g, "*")));
+    dispatch(setCurrentTreeItem(highlightedName));
   }, []);
 
   return (
@@ -177,11 +157,11 @@ interface IHomeProps {
   s: string;
   item: {
     tutorial: MDXRemoteSerializeResult;
-    test: string;
-    srcFiles: FileSystemTree;
     focusedFiles: FileSystemTree;
-    highlight: string;
-    testFiles: FileSystemTree;
+    highlightedItem: {
+      highlightedName: string;
+      highlightedCode: string;
+    };
     files: FileSystemTree;
   };
 }

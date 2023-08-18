@@ -1,31 +1,21 @@
 import { json } from "./fileSystem.mjs";
 import { serialize } from "next-mdx-remote/serialize";
 import {
-    transformToWebcontainerFiles,
-    transformToWebcontainerFilesWithFocus,
+    transformFocusedFiles,
+    transformToWebcontainerFiles
 } from "./webcontainer.mjs";
 import { remarkCodeHike } from "@code-hike/mdx";
-import {existsSync, readdirSync, readFileSync} from "fs";
+import {readFileSync} from "fs";
+import path from "path";
 
 export const getTutorialByChapterAndSection = async (c, s) => {
-    let testFiles = []
-    let test = ""
     const dir = process.cwd();
     const { name, focus, highlight } = json(
         `${dir}/tutorials/${c}/${s}/meta.json`
     );
-    const { files, focusedFiles } = transformToWebcontainerFilesWithFocus(
-        `${dir}/tutorials/${c}/${s}/src/`,
-        focus
-    );
 
-    if (existsSync(`${dir}/tutorials/${c}/${s}/tests/`)) {
-
-        testFiles = transformToWebcontainerFiles(
-            `${dir}/tutorials/${c}/${s}/tests/`
-        );
-        test = readdirSync(`${dir}/tutorials/${c}/${s}/tests`).toString();
-    }
+    const files = transformToWebcontainerFiles(`${dir}/tutorials/${c}/${s}/source/`)
+    const {focusedFiles, highlightedCode} = transformFocusedFiles(`${dir}/tutorials/${c}/${s}/source/`, focus, highlight)
 
     const tutorialFileContent = readFileSync(
         `${dir}/tutorials/${c}/${s}/tutorial.mdx`,
@@ -43,11 +33,9 @@ export const getTutorialByChapterAndSection = async (c, s) => {
 
     return {
         name,
-        test,
         tutorial,
         files,
-        highlight,
+        highlightedItem: {highlightedName: path.basename(highlight.replace(/\./g, "*")), highlightedCode},
         focusedFiles,
-        testFiles,
     };
 };

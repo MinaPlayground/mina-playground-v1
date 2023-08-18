@@ -1,5 +1,5 @@
 import path from 'path'
-import { readdirSync, readFileSync, writeFileSync } from 'fs'
+import {existsSync, readdirSync, readFileSync, writeFileSync} from 'fs'
 import {getTutorialByChapterAndSection} from "./build/tutorial.mjs";
 import {transformToWebcontainerFiles} from "./build/webcontainer.mjs";
 
@@ -9,7 +9,9 @@ let data = {};
 const tutorialPaths = []
 const dir = process.cwd();
 const projectDir = readdirSync(`${dir}/tutorials`);
+
 for (const item of projectDir) {
+  let baseFiles = {}
   const name = JSON.parse(
     readFileSync(`${dir}/tutorials/${item}/meta.json`, {
       encoding: "utf-8",
@@ -19,10 +21,13 @@ for (const item of projectDir) {
     name,
     sections: {},
   };
-  const webContainerFiles = transformToWebcontainerFiles(
-    `${dir}/tutorials/${item}/base`
-  );
-  writeFileSync(`${dir}/src/json/${item}-base.json`, JSON.stringify(webContainerFiles));
+
+  const baseFolderExists = existsSync(`${dir}/tutorials/${item}/base`)
+  if (baseFolderExists) {
+    baseFiles = transformToWebcontainerFiles(
+        `${dir}/tutorials/${item}/base`
+    );
+  }
 
   const currentPath = path.join(`${dir}/tutorials/${item}`);
   const sections = readdirSync(currentPath).filter(
@@ -30,11 +35,11 @@ for (const item of projectDir) {
   );
 
   for (const section of sections) {
-    const name = JSON.parse(
+    const {name, base} = JSON.parse(
       readFileSync(`${dir}/tutorials/${item}/${section}/meta.json`, {
         encoding: "utf-8",
       })
-    ).name;
+    )
 
     const response = await getTutorialByChapterAndSection(item, section);
     writeFileSync(`${dir}/src/json/${item}-${section}.json`, JSON.stringify(response));
