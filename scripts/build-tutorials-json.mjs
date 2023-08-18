@@ -51,7 +51,7 @@ for (const item of projectDir) {
     const response = await mapTypeToResponse(type, item, section, options)
 
     const jsonData = {
-      name,
+      type,
       ...response
     }
 
