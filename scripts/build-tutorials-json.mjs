@@ -17,7 +17,7 @@ const mapTypeToResponse = async (type, c, s, options) => {
     case "playground":
       return await getTutorialAndFiles(c, s, options);
     case "theory":
-      const tutorial = await getTutorial(c, section);
+      const tutorial = await getTutorial(c, s);
       return {tutorial}
   }
 }
