@@ -1,4 +1,6 @@
 import { ParsedUrlQuery } from "querystring";
+import { MDXRemoteSerializeResult } from "next-mdx-remote";
+import { FileSystemTree } from "@webcontainer/api";
 
 export type Directory = { path: string; webcontainerPath: string };
 export type KeyValueObj = Record<string, any>;
@@ -92,3 +94,19 @@ export interface TutorialParams extends ParsedUrlQuery {
   chapter: string;
   section: string;
 }
+
+export type TutorialResponse =
+  | {
+      type: "unit" | "playground";
+      tutorial: MDXRemoteSerializeResult;
+      focusedFiles: FileSystemTree;
+      highlightedItem: {
+        highlightedName: string;
+        highlightedCode: string;
+      };
+      files: FileSystemTree;
+    }
+  | {
+      type: "theory";
+      tutorial: MDXRemoteSerializeResult;
+    };
