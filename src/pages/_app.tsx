@@ -12,10 +12,16 @@ import TutorialHighlightedText from "@/components/tutorial/TutorialHighlightedTe
 import { Components } from "@mdx-js/react/lib";
 import NextNProgress from "nextjs-progressbar";
 import { useRouter } from "next/router";
+import TutorialList from "@/components/tutorial/TutorialList";
+import TutorialSectionHeader from "@/components/tutorial/TutorialSectionHeader";
+import TutorialOrderedList from "@/components/tutorial/TutorialOrderedList";
 
 const components: Components = {
   h1: TutorialHeader,
+  h2: TutorialSectionHeader,
   p: TutorialText,
+  ul: TutorialList,
+  ol: TutorialOrderedList,
   strong: TutorialHighlightedText,
 };
 

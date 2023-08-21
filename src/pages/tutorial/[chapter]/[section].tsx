@@ -7,7 +7,7 @@ import tutorials from "@/tutorials.json";
 import { TutorialParams, TutorialResponse } from "@/types";
 import { CH } from "@code-hike/mdx/components";
 import tutorialsPath from "@/tutorialPaths.json";
-import Unit from "@/components/tutorial-types/Unit";
+import { mapTypeToTutorialComponent } from "@/mappers/mapTypeToTutorialComponent";
 const components = { CH };
 
 export const getStaticPaths: GetStaticPaths = async () => {
@@ -34,7 +34,9 @@ export const getStaticProps: GetStaticProps<
 };
 
 const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
-  const { tutorial, focusedFiles, files, highlightedItem } = item;
+  const { tutorial } = item;
+  const Component = mapTypeToTutorialComponent(item);
+
   return (
     <>
       <Head>
@@ -57,13 +59,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
               </div>
             </div>
           </div>
-          <div className="flex flex-col">
-            <Unit
-              files={files}
-              focusedFiles={focusedFiles}
-              highlightedItem={highlightedItem}
-            />
-          </div>
+          <div className="flex flex-col">{Component}</div>
         </div>
       </main>
     </>
