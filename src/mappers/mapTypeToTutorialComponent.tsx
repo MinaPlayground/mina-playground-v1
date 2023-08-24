@@ -1,5 +1,5 @@
 import { TutorialResponse } from "@/types";
-import Unit from "@/components/tutorial-types/Unit";
+import InteractiveTutorial from "@/components/tutorial-types/InteractiveTutorial";
 
 export const mapTypeToTutorialComponent = (item: TutorialResponse) => {
   const { type } = item;
@@ -8,7 +8,8 @@ export const mapTypeToTutorialComponent = (item: TutorialResponse) => {
     case "playground":
       const { files, focusedFiles, highlightedItem } = item;
       return (
-        <Unit
+        <InteractiveTutorial
+          type={type}
           highlightedItem={highlightedItem}
           files={files}
           focusedFiles={focusedFiles}

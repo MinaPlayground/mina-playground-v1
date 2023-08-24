@@ -1,0 +1,9 @@
+{
+  "name": "Interact",
+  "type": "unit",
+  "options": {
+    "focus": ["src/Add.ts"],
+    "highlight": "src/Add.ts",
+    "base": true
+  }
+}

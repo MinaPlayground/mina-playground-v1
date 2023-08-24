@@ -2,7 +2,6 @@ import { ParsedUrlQuery } from "querystring";
 import { MDXRemoteSerializeResult } from "next-mdx-remote";
 import { FileSystemTree } from "@webcontainer/api";
 
-export type Directory = { path: string; webcontainerPath: string };
 export type KeyValueObj = Record<string, any>;
 export type FileSystemType = "directory" | "file";
 export type FileSystemOnChangePayload = { path: string; key?: string };
@@ -21,13 +20,10 @@ type FileSystemHandlerParam<A, P> = [
 ];
 
 export type FileSystemOnChangeParams =
-  | FileSystemHandlerParam<
-      "create",
-      { path: string; value: string; directoryPath: string }
-    >
+  | FileSystemHandlerParam<"create", { path: string; value: string }>
   | FileSystemHandlerParam<
       "delete",
-      { path: string; key: string; value: string; directoryPath: string }
+      { path: string; key: string; value: string }
     >;
 
 export type FileSystemOnBlurParams =
@@ -35,10 +31,8 @@ export type FileSystemOnBlurParams =
       "create",
       {
         path: string;
-        fullPath: string;
         key: string;
         value: string;
-        directoryPath: string;
       }
     >
   | FileSystemHandlerParam<
@@ -47,7 +41,6 @@ export type FileSystemOnBlurParams =
         path: string;
         key: string;
         value: string;
-        directoryPath: string;
       }
     >;
 
@@ -74,10 +67,7 @@ export type UpdateFileTree =
     }>
   | UpdateFileTreeItem<{ location: string; rename: string }>;
 
-export type FileSystemOnClickHandler = (
-  code: string,
-  path: { path: string; webcontainerPath: string }
-) => void;
+export type FileSystemOnClickHandler = (code: string, path: string) => void;
 
 type MapFileSystemAction = {
   action(data: KeyValueObj, payload: FileSystemOnChangePayload): void;

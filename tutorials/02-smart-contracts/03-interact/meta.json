@@ -1,0 +1,9 @@
+{
+  "name": "Interact",
+  "type": "playground",
+  "options": {
+    "focus": ["src/main.ts", "src/Square.ts"],
+    "highlight": "src/main.ts",
+    "base": true
+  }
+}

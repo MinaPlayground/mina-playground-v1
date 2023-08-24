@@ -1,9 +1,4 @@
 {
   "name": "Basic concepts",
-  "type": "unit",
-  "options": {
-    "focus": ["src/Concepts.ts"],
-    "highlight": "src/Concepts.ts",
-    "base": true
-  }
+  "type": "theory"
 }
