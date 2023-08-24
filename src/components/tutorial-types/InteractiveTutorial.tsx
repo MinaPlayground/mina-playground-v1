@@ -11,14 +11,20 @@ import {
 } from "@/features/webcontainer/webcontainerSlice";
 import {
   selectCurrentDirectory,
+  setChangedFields,
   setCurrentTreeItem,
 } from "@/features/fileTree/fileTreeSlice";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { FileSystemTree } from "@webcontainer/api";
+import * as React from "react";
 
-// TODO make dynamic to support unit/playground type
-const Unit: FC<UnitProps> = ({ files, focusedFiles, highlightedItem }) => {
+const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
+  type,
+  files,
+  focusedFiles,
+  highlightedItem,
+}) => {
   const { highlightedName, highlightedCode } = highlightedItem;
   const [code, setCode] = useState<string | undefined>(highlightedCode);
   const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
@@ -27,26 +33,33 @@ const Unit: FC<UnitProps> = ({ files, focusedFiles, highlightedItem }) => {
 
   const resetTerminalOutput = () => dispatch(setIsTestPassed(null));
 
+  const { initTerminal } =
+    type === "unit"
+      ? {
+          initTerminal: false,
+        }
+      : {
+          initTerminal: true,
+        };
+
   useEffect(() => {
     resetTerminalOutput();
-    dispatch(
-      initializeWebcontainer({ fileSystemTree: files, initTerminal: false })
-    );
+    dispatch(initializeWebcontainer({ fileSystemTree: files, initTerminal }));
     dispatch(setCurrentTreeItem(highlightedName));
   }, []);
 
-  const onClick = (code: string, { path }: { path: string }) => {
-    dispatch(setCurrentTreeItem(path));
-    setCodeChange(code, path);
+  const onClick = (code: string, path: string) => {
+    setCode(code);
   };
 
-  const setCodeChange = (code: string | undefined, dir?: string) => {
-    if (!code) return;
+  const onCodeChange = (value: string | undefined) => {
+    const code = value || "";
     setCode(code);
     webcontainerInstance?.fs.writeFile(
-      `/src/${dir ?? currentDirectory}`.replace(/\*/g, "."),
+      `/src/${currentDirectory}`.replace(/\*/g, "."),
       code
     );
+    dispatch(setChangedFields({ location: currentDirectory, code }));
   };
 
   const abortTest = async () => {
@@ -68,7 +81,7 @@ const Unit: FC<UnitProps> = ({ files, focusedFiles, highlightedItem }) => {
         <div className="w-40 p-4">
           <Tree data={focusedFiles} onClick={onClick} enableActions={false} />
         </div>
-        <CodeEditor code={code} setCodeChange={setCodeChange} />
+        <CodeEditor code={code} setCodeChange={onCodeChange} />
       </div>
       <div>
         <div className="p-2">
@@ -79,13 +92,18 @@ const Unit: FC<UnitProps> = ({ files, focusedFiles, highlightedItem }) => {
             runTitle={"Run"}
           />
         </div>
-        <TerminalOutput />
+        {initTerminal ? (
+          <div className="terminal h-[150px] bg-black" />
+        ) : (
+          <TerminalOutput />
+        )}
       </div>
     </>
   );
 };
 
-interface UnitProps {
+interface InteractiveTutorialProps {
+  type: "unit" | "playground";
   highlightedItem: {
     highlightedName: string;
     highlightedCode: string;
@@ -94,4 +112,4 @@ interface UnitProps {
   focusedFiles: FileSystemTree;
 }
 
-export default Unit;
+export default InteractiveTutorial;
