@@ -2,7 +2,6 @@ import { FC } from "react";
 import TreeNode from "@/components/file-explorer/TreeNode";
 import type { FileSystemTree } from "@webcontainer/api";
 import {
-  Directory,
   FileSystemOnBlurHandler,
   FileSystemOnChangeHandler,
   FileSystemOnClickHandler,
@@ -13,7 +12,7 @@ const Tree: FC<TreeType> = ({
   onBlur,
   onChange,
   onClick,
-  directory = { path: "", webcontainerPath: "" },
+  directory,
   enableActions,
 }) => {
   const sortedTree = Object.entries(data).sort(function (a, b) {
@@ -39,7 +38,7 @@ const Tree: FC<TreeType> = ({
         return enableActions ? (
           <TreeNode
             node={node}
-            key={`${directory.path}/${node[0]}`}
+            key={`${directory}/${node[0]}`}
             onBlur={onBlur}
             onChange={onChange}
             onClick={onClick}
@@ -49,7 +48,7 @@ const Tree: FC<TreeType> = ({
         ) : (
           <TreeNode
             node={node}
-            key={`${directory.path}/${node[0]}`}
+            key={`${directory}/${node[0]}`}
             onClick={onClick}
             directory={directory}
             enableActions={enableActions}
@@ -65,7 +64,7 @@ interface TreeProps {
   onBlur?: never;
   onChange?: never;
   onClick: FileSystemOnClickHandler;
-  directory?: Directory;
+  directory?: string;
   enableActions: false;
 }
 
@@ -74,7 +73,7 @@ interface TreePropsWithActions {
   onBlur: FileSystemOnBlurHandler;
   onChange: FileSystemOnChangeHandler;
   onClick: FileSystemOnClickHandler;
-  directory?: Directory;
+  directory?: string;
   enableActions: true;
 }
 

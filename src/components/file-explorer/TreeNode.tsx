@@ -2,7 +2,6 @@ import { FC, useState } from "react";
 import Tree from "@/components/file-explorer/Tree";
 import { DirectoryNode, FileNode } from "@webcontainer/api";
 import {
-  Directory,
   FileSystemOnBlurHandler,
   FileSystemOnChangeHandler,
   FileSystemOnClickHandler,
@@ -21,9 +20,11 @@ import {
 } from "@/icons/FileSystemActionIcons";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import {
-  selectChangedFields,
+  selectChangedField,
   selectCurrentDirectory,
+  setCurrentTreeItem,
 } from "@/features/fileTree/fileTreeSlice";
+import { useAppDispatch } from "@/hooks/useAppDispatch";
 // TODO refactor this component
 const TreeNode: FC<TreeNodeType> = ({
   node,
@@ -35,9 +36,9 @@ const TreeNode: FC<TreeNodeType> = ({
 }) => {
   const [key, value] = node;
   const currentDirectory = useAppSelector(selectCurrentDirectory);
-  const changedFields = useAppSelector(selectChangedFields);
+  const dispatch = useAppDispatch();
 
-  const path = directory.path ? `${directory.path}/${key}` : `${key}`;
+  const path = directory ? `${directory}/${key}` : `${key}`;
   const fileName = key.replace(/\*/g, ".");
   const [inputValue, setInputValue] = useState(fileName);
   const [isEditing, setIsEditing] = useState(false);
@@ -48,17 +49,17 @@ const TreeNode: FC<TreeNodeType> = ({
   const isDirectory = "directory" in value;
   const isSelected = path === currentDirectory;
   const isSelectedStyle = isSelected ? "bg-[#2f3033]" : "";
-  const webcontainer = isDirectory
-    ? `${key || inputFileName}.directory`
-    : `${key || inputFileName}.file.contents`;
-  const webcontainerPath = directory.webcontainerPath
-    ? `${directory.webcontainerPath}.${webcontainer}`
-    : webcontainer;
+
+  const changedField = useAppSelector((state) =>
+    selectChangedField(state, path)
+  );
 
   const handleClick = () => {
     if (!isDirectory) {
       const code = (value as FileNode).file.contents;
-      onClick(code as string, { path, webcontainerPath });
+      dispatch(setCurrentTreeItem(path));
+      const changedStoredCode = changedField?.code;
+      onClick(changedStoredCode || (code as string), path);
       return;
     }
     setShowChildren(!showChildren);
@@ -68,7 +69,6 @@ const TreeNode: FC<TreeNodeType> = ({
     isDirectory && (showChildren ? <ChevronDownIcon /> : <ChevronRightIcon />);
   const icon = isDirectory ? <DirectoryIcon /> : <FileIcon />;
 
-  const changedField = changedFields[webcontainerPath];
   const isChanged = changedField && !changedField.saved;
   const type = isDirectory ? "directory" : "file";
 
@@ -100,20 +100,17 @@ const TreeNode: FC<TreeNodeType> = ({
 
                 if (isEditing) {
                   onBlur("rename", type, {
-                    path: directory.webcontainerPath,
+                    path,
                     key,
                     value: inputFileName,
-                    directoryPath: directory.path,
                   });
                   return;
                 }
 
                 onBlur("create", type, {
-                  path: directory.webcontainerPath,
+                  path,
                   key,
                   value: inputFileName,
-                  fullPath: webcontainerPath,
-                  directoryPath: directory.path,
                 });
                 setIsEditing(false);
                 setShowChildren(false);
@@ -129,20 +126,17 @@ const TreeNode: FC<TreeNodeType> = ({
 
                 if (isEditing) {
                   onBlur("rename", type, {
-                    path: directory.webcontainerPath,
+                    path,
                     key,
                     value: inputFileName,
-                    directoryPath: directory.path,
                   });
                   return;
                 }
 
                 onBlur("create", type, {
-                  path: directory.webcontainerPath,
+                  path,
                   key,
                   value: inputFileName,
-                  fullPath: webcontainerPath,
-                  directoryPath: directory.path,
                 });
                 setIsEditing(false);
                 setShowChildren(false);
@@ -171,9 +165,8 @@ const TreeNode: FC<TreeNodeType> = ({
                       event.stopPropagation();
                       setShowChildren(true);
                       onChange("create", "file", {
-                        path: webcontainerPath,
+                        path,
                         value: inputFileName,
-                        directoryPath: directory.path,
                       });
                     }}
                   />
@@ -182,9 +175,8 @@ const TreeNode: FC<TreeNodeType> = ({
                       event.stopPropagation();
                       setShowChildren(true);
                       onChange("create", "directory", {
-                        path: webcontainerPath,
+                        path,
                         value: inputFileName,
-                        directoryPath: directory.path,
                       });
                     }}
                   />
@@ -201,10 +193,9 @@ const TreeNode: FC<TreeNodeType> = ({
                 onClick={(event) => {
                   event.stopPropagation();
                   onChange("delete", "file", {
-                    path: directory.webcontainerPath,
+                    path,
                     key,
                     value: inputFileName,
-                    directoryPath: directory.path,
                   });
                 }}
               />
@@ -221,14 +212,14 @@ const TreeNode: FC<TreeNodeType> = ({
                 onBlur={onBlur}
                 onChange={onChange}
                 onClick={onClick}
-                directory={{ path, webcontainerPath }}
+                directory={path}
                 enableActions={enableActions}
               />
             ) : (
               <Tree
                 data={value.directory}
                 onClick={onClick}
-                directory={{ path, webcontainerPath }}
+                directory={path}
                 enableActions={enableActions}
               />
             ))}
@@ -243,7 +234,7 @@ interface TreeNodeProps {
   onBlur?: never;
   onChange?: never;
   onClick: FileSystemOnClickHandler;
-  directory: Directory;
+  directory: string | undefined;
   enableActions: false;
 }
 
@@ -252,7 +243,7 @@ interface TreeNodePropsWithActions {
   onBlur: FileSystemOnBlurHandler;
   onChange: FileSystemOnChangeHandler;
   onClick: FileSystemOnClickHandler;
-  directory: Directory;
+  directory: string | undefined;
   enableActions: true;
 }
 
