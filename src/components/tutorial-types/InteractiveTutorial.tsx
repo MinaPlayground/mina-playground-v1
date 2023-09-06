@@ -4,8 +4,10 @@ import CodeEditor from "@/components/editor/CodeEditor";
 import RunScriptButton from "@/components/terminal/RunScriptButton";
 import TerminalOutput from "@/components/terminal/TerminalOutput";
 import {
-  initializeWebcontainer,
+  initializeTerminal,
+  installDependencies,
   selectWebcontainerInstance,
+  selectWebcontainerStarted,
   setIsTestPassed,
   writeCommand,
 } from "@/features/webcontainer/webcontainerSlice";
@@ -28,6 +30,7 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
   const { highlightedName, highlightedCode } = highlightedItem;
   const [code, setCode] = useState<string | undefined>(highlightedCode);
   const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
+  const webcontainerStarted = useAppSelector(selectWebcontainerStarted);
   const currentDirectory = useAppSelector(selectCurrentDirectory);
   const dispatch = useAppDispatch();
 
@@ -44,11 +47,24 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
 
   useEffect(() => {
     resetTerminalOutput();
-    dispatch(initializeWebcontainer({ fileSystemTree: files, initTerminal }));
     dispatch(setCurrentTreeItem(highlightedName));
+    dispatch(initializeTerminal());
   }, []);
 
-  const onClick = (code: string, path: string) => {
+  // TODO create webcontainer hook
+  useEffect(() => {
+    if (!webcontainerStarted) {
+      dispatch(installDependencies({ fileSystemTree: files, initTerminal }));
+      return;
+    }
+  }, [webcontainerStarted]);
+
+  useEffect(() => {
+    if (!webcontainerInstance) return;
+    void webcontainerInstance.mount(files);
+  }, [webcontainerInstance]);
+
+  const onClick = (code: string) => {
     setCode(code);
   };
 
