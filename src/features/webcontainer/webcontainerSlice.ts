@@ -9,6 +9,7 @@ interface WebcontainerState {
   webcontainerInstance: WebContainer | null;
   terminalInstance: any;
   shellProcessInput: WritableStreamDefaultWriter | null;
+  xtermResizeOb: any;
 
   isRunning: boolean;
   isAborting: boolean;
@@ -35,6 +36,7 @@ const initialState: WebcontainerState = {
   isDeploying: false,
   deploymentMessage: null,
   serverUrl: null,
+  xtermResizeOb: null,
 };
 
 export const installDependencies = createAsyncThunk(
@@ -63,8 +65,6 @@ export const installDependencies = createAsyncThunk(
       convertEol: true,
     });
     terminal.loadAddon(fitAddon);
-    terminal.open(<HTMLElement>terminalEl);
-    fitAddon.fit();
 
     const installProcess = await webcontainer.spawn("npm", ["install"]);
     installProcess.output.pipeTo(
@@ -83,6 +83,14 @@ export const installDependencies = createAsyncThunk(
         cols: terminal.cols,
         rows: terminal.rows,
       },
+    });
+
+    const xtermResizeOb = new ResizeObserver(function (entries) {
+      fitAddon.fit();
+      shellProcess.resize({
+        cols: terminal.cols,
+        rows: terminal.rows,
+      });
     });
 
     const input = shellProcess.input.getWriter();
@@ -109,7 +117,7 @@ export const installDependencies = createAsyncThunk(
       })
     );
 
-    return { webcontainer, input, terminal };
+    return { webcontainer, input, terminal, xtermResizeOb };
   }
 );
 
@@ -128,6 +136,7 @@ export const initializeTerminal = createAsyncThunk(
     const { webcontainer } = getState() as { webcontainer: WebcontainerState };
     const terminalEl = document.querySelector(".terminal");
     webcontainer.terminalInstance.open(<HTMLElement>terminalEl);
+    webcontainer.xtermResizeOb.observe(<HTMLElement>terminalEl);
   }
 );
 
@@ -211,6 +220,7 @@ export const webcontainerSlice = createSlice({
         state.initializingWebcontainer = false;
         state.shellProcessInput = action.payload.input;
         state.terminalInstance = action.payload.terminal;
+        state.xtermResizeOb = action.payload.xtermResizeOb;
       })
       .addCase(installDependencies.rejected, (state, action) => {
         if (action.payload) return;
@@ -226,6 +236,9 @@ export const selectInitializingEsbuild = (state: RootState) =>
 
 export const selectInitializingWebContainerError = (state: RootState) =>
   state.webcontainer.initializingWebcontainerError;
+
+export const selectTerminalInstance = (state: RootState) =>
+  state.webcontainer.terminalInstance;
 
 export const selectWebcontainerInstance = (state: RootState) =>
   state.webcontainer.webcontainerInstance;
