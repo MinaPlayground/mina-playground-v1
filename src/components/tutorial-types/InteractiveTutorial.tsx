@@ -6,6 +6,7 @@ import TerminalOutput from "@/components/terminal/TerminalOutput";
 import {
   initializeTerminal,
   installDependencies,
+  selectTerminalInstance,
   selectWebcontainerInstance,
   selectWebcontainerStarted,
   setIsTestPassed,
@@ -31,10 +32,14 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
   const [code, setCode] = useState<string | undefined>(highlightedCode);
   const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
   const webcontainerStarted = useAppSelector(selectWebcontainerStarted);
+  const terminalInstance = useAppSelector(selectTerminalInstance);
+
   const currentDirectory = useAppSelector(selectCurrentDirectory);
   const dispatch = useAppDispatch();
 
   const resetTerminalOutput = () => dispatch(setIsTestPassed(null));
+  const terminalEl =
+    typeof document !== "undefined" && document.querySelector(".terminal");
 
   const { initTerminal } =
     type === "unit"
@@ -46,15 +51,24 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
         };
 
   useEffect(() => {
+    if (!terminalEl || !terminalInstance) return;
+    dispatch(initializeTerminal());
+  }, [terminalInstance, terminalEl]);
+
+  useEffect(() => {
     resetTerminalOutput();
     dispatch(setCurrentTreeItem(highlightedName));
-    dispatch(initializeTerminal());
   }, []);
 
   // TODO create webcontainer hook
   useEffect(() => {
     if (!webcontainerStarted) {
-      dispatch(installDependencies({ fileSystemTree: files, initTerminal }));
+      dispatch(
+        installDependencies({
+          fileSystemTree: { "package*json": files["package*json"] },
+          initTerminal,
+        })
+      );
       return;
     }
   }, [webcontainerStarted]);
