@@ -38,8 +38,6 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
   const dispatch = useAppDispatch();
 
   const resetTerminalOutput = () => dispatch(setIsTestPassed(null));
-  const terminalEl =
-    typeof document !== "undefined" && document.querySelector(".terminal");
 
   const { initTerminal } =
     type === "unit"
@@ -51,9 +49,9 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
         };
 
   useEffect(() => {
-    if (!terminalEl || !terminalInstance) return;
+    if (!initTerminal || !terminalInstance) return;
     dispatch(initializeTerminal());
-  }, [terminalInstance, terminalEl]);
+  }, [terminalInstance]);
 
   useEffect(() => {
     resetTerminalOutput();
