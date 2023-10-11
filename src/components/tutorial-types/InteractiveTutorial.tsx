@@ -23,6 +23,7 @@ import { useAppSelector } from "@/hooks/useAppSelector";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { FileSystemTree } from "@webcontainer/api";
 import * as React from "react";
+import WebcontainerLoader from "@/features/webcontainer/WebcontainerLoader";
 
 const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
   type,
@@ -114,10 +115,22 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
   return (
     <>
       <div className="flex flex-1 border-b-2 flex-row">
-        <div className="w-40 p-4">
-          <Tree data={focusedFiles} onClick={onClick} enableActions={false} />
-        </div>
-        <CodeEditor code={code} setCodeChange={onCodeChange} />
+        {initializingWebcontainer ? (
+          <div className="flex flex-1 justify-center">
+            <WebcontainerLoader />
+          </div>
+        ) : (
+          <>
+            <div className="w-40 p-4">
+              <Tree
+                data={focusedFiles}
+                onClick={onClick}
+                enableActions={false}
+              />
+            </div>
+            <CodeEditor code={code} setCodeChange={onCodeChange} />
+          </>
+        )}
       </div>
       <div>
         <div className="p-2">
