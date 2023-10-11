@@ -7,9 +7,7 @@ interface WebcontainerState {
   initializingWebcontainerError: string | null;
   webcontainerStarted: boolean;
   webcontainerInstance: WebContainer | null;
-  terminalInstance: any;
   shellProcessInput: WritableStreamDefaultWriter | null;
-  xtermResizeOb: any;
 
   isRunning: boolean;
   isAborting: boolean;
@@ -28,7 +26,6 @@ const initialState: WebcontainerState = {
   initializingWebcontainerError: null,
   webcontainerStarted: false,
   webcontainerInstance: null,
-  terminalInstance: null,
   shellProcessInput: null,
   isRunning: false,
   isAborting: false,
@@ -36,7 +33,6 @@ const initialState: WebcontainerState = {
   isDeploying: false,
   deploymentMessage: null,
   serverUrl: null,
-  xtermResizeOb: null,
 };
 
 export const installDependencies = createAsyncThunk(
@@ -57,6 +53,28 @@ export const installDependencies = createAsyncThunk(
     // TODO only pass down package.json file
     await webcontainer.mount(fileSystemTree);
 
+    const installProcess = await webcontainer.spawn("npm", ["install"]);
+    if ((await installProcess.exit) !== 0) {
+      throw new Error("Installation failed");
+    }
+
+    return { webcontainer };
+  }
+);
+
+export const writeCommand = createAsyncThunk(
+  "writeCommand",
+  async (command: string, { getState, dispatch }) => {
+    dispatch(setIsRunning(true));
+    const { webcontainer } = getState() as { webcontainer: WebcontainerState };
+    await webcontainer.shellProcessInput?.write(command);
+  }
+);
+
+export const initializeTerminal = createAsyncThunk(
+  "initTerminal",
+  async (_: void, { getState, dispatch }) => {
+    const { webcontainer } = getState() as { webcontainer: WebcontainerState };
     const { FitAddon } = await import("xterm-addon-fit");
     const fitAddon = new FitAddon();
     const { Terminal } = await import("xterm");
@@ -64,21 +82,11 @@ export const installDependencies = createAsyncThunk(
     const terminal = new Terminal({
       convertEol: true,
     });
+    terminal.open(<HTMLElement>terminalEl);
     terminal.loadAddon(fitAddon);
 
-    const installProcess = await webcontainer.spawn("npm", ["install"]);
-    installProcess.output.pipeTo(
-      new WritableStream({
-        write(data) {
-          terminal.write(data);
-        },
-      })
-    );
-    if ((await installProcess.exit) !== 0) {
-      throw new Error("Installation failed");
-    }
-
-    const shellProcess = await webcontainer.spawn("jsh", {
+    // @ts-ignore
+    const shellProcess = await webcontainer.webcontainerInstance.spawn("jsh", {
       terminal: {
         cols: terminal.cols,
         rows: terminal.rows,
@@ -92,6 +100,8 @@ export const installDependencies = createAsyncThunk(
         rows: terminal.rows,
       });
     });
+
+    xtermResizeOb.observe(<HTMLElement>terminalEl);
 
     const input = shellProcess.input.getWriter();
 
@@ -110,6 +120,33 @@ export const installDependencies = createAsyncThunk(
             dispatch(setIsRunning(false));
             dispatch(setIsAborting(false));
           }
+        },
+      })
+    );
+
+    return { input };
+  }
+);
+
+export const initializeShellProcess = createAsyncThunk(
+  "initShellProcess",
+  async (_: void, { getState, dispatch }) => {
+    const { webcontainer } = getState() as { webcontainer: WebcontainerState };
+
+    // @ts-ignore
+    const shellProcess = await webcontainer.webcontainerInstance.spawn("jsh");
+    const input = shellProcess.input.getWriter();
+
+    shellProcess.output.pipeTo(
+      new WritableStream({
+        write(data) {
+          if (data === "^C") {
+            dispatch(setIsAborting(true));
+          }
+          if (data.endsWith("[3G")) {
+            dispatch(setIsRunning(false));
+            dispatch(setIsAborting(false));
+          }
           if (data.includes("Tests")) {
             dispatch(setIsTestPassed(!data.includes("failed")));
           }
@@ -117,26 +154,7 @@ export const installDependencies = createAsyncThunk(
       })
     );
 
-    return { webcontainer, input, terminal, xtermResizeOb };
-  }
-);
-
-export const writeCommand = createAsyncThunk(
-  "writeCommand",
-  async (command: string, { getState, dispatch }) => {
-    dispatch(setIsRunning(true));
-    const { webcontainer } = getState() as { webcontainer: WebcontainerState };
-    await webcontainer.shellProcessInput?.write(command);
-  }
-);
-
-export const initializeTerminal = createAsyncThunk(
-  "initTerminal",
-  async (_: void, { getState, dispatch }) => {
-    const { webcontainer } = getState() as { webcontainer: WebcontainerState };
-    const terminalEl = document.querySelector(".terminal");
-    webcontainer.terminalInstance.open(<HTMLElement>terminalEl);
-    webcontainer.xtermResizeOb.observe(<HTMLElement>terminalEl);
+    return { input };
   }
 );
 
@@ -186,6 +204,19 @@ export const webcontainerSlice = createSlice({
   name: "webcontainer",
   initialState,
   reducers: {
+    reset: (state) => {
+      /* keep webcontainer state since we are re-using the current webcontainer process */
+      const webContainerState = {
+        webcontainerInstance: state.webcontainerInstance,
+        webcontainerStarted: state.webcontainerStarted,
+        initializingWebcontainer: state.initializingWebcontainer,
+      };
+
+      return {
+        ...initialState,
+        ...webContainerState,
+      };
+    },
     setIsRunning: (state, action: PayloadAction<boolean>) => {
       state.isRunning = action.payload;
     },
@@ -215,17 +246,21 @@ export const webcontainerSlice = createSlice({
     builder
       .addCase(installDependencies.pending, (state, action) => {
         state.webcontainerStarted = true;
+        state.initializingWebcontainerError = null;
       })
       .addCase(installDependencies.fulfilled, (state, action) => {
         state.initializingWebcontainer = false;
-        state.shellProcessInput = action.payload.input;
-        state.terminalInstance = action.payload.terminal;
-        state.xtermResizeOb = action.payload.xtermResizeOb;
       })
       .addCase(installDependencies.rejected, (state, action) => {
         if (action.payload) return;
         state.initializingWebcontainerError =
           action.error.message ?? "An unexpected error has occurred";
+      })
+      .addCase(initializeTerminal.fulfilled, (state, action) => {
+        state.shellProcessInput = action.payload.input;
+      })
+      .addCase(initializeShellProcess.fulfilled, (state, action) => {
+        state.shellProcessInput = action.payload.input;
       });
     //TODO add reject case for write command
   },
@@ -236,9 +271,6 @@ export const selectInitializingEsbuild = (state: RootState) =>
 
 export const selectInitializingWebContainerError = (state: RootState) =>
   state.webcontainer.initializingWebcontainerError;
-
-export const selectTerminalInstance = (state: RootState) =>
-  state.webcontainer.terminalInstance;
 
 export const selectWebcontainerInstance = (state: RootState) =>
   state.webcontainer.webcontainerInstance;
@@ -271,5 +303,6 @@ export const {
   setDeploymentMessage,
   setIsTestPassed,
   setWebcontainerInstance,
+  reset,
 } = webcontainerSlice.actions;
 export default webcontainerSlice.reducer;

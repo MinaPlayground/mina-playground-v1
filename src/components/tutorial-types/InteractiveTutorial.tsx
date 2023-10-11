@@ -4,9 +4,11 @@ import CodeEditor from "@/components/editor/CodeEditor";
 import RunScriptButton from "@/components/terminal/RunScriptButton";
 import TerminalOutput from "@/components/terminal/TerminalOutput";
 import {
+  initializeShellProcess,
   initializeTerminal,
   installDependencies,
-  selectTerminalInstance,
+  reset,
+  selectInitializingEsbuild,
   selectWebcontainerInstance,
   selectWebcontainerStarted,
   setIsTestPassed,
@@ -32,7 +34,7 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
   const [code, setCode] = useState<string | undefined>(highlightedCode);
   const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
   const webcontainerStarted = useAppSelector(selectWebcontainerStarted);
-  const terminalInstance = useAppSelector(selectTerminalInstance);
+  const initializingWebcontainer = useAppSelector(selectInitializingEsbuild);
 
   const currentDirectory = useAppSelector(selectCurrentDirectory);
   const dispatch = useAppDispatch();
@@ -49,13 +51,10 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
         };
 
   useEffect(() => {
-    if (!initTerminal || !terminalInstance) return;
-    dispatch(initializeTerminal());
-  }, [terminalInstance]);
-
-  useEffect(() => {
-    resetTerminalOutput();
     dispatch(setCurrentTreeItem(highlightedName));
+    return () => {
+      dispatch(reset());
+    };
   }, []);
 
   // TODO create webcontainer hook
@@ -75,6 +74,15 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
     if (!webcontainerInstance) return;
     void webcontainerInstance.mount(files);
   }, [webcontainerInstance]);
+
+  useEffect(() => {
+    if (initializingWebcontainer) return;
+    if (initTerminal) {
+      dispatch(initializeTerminal());
+      return;
+    }
+    dispatch(initializeShellProcess());
+  }, [initializingWebcontainer]);
 
   const onClick = (code: string) => {
     setCode(code);
