@@ -42,13 +42,16 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
 
   const resetTerminalOutput = () => dispatch(setIsTestPassed(null));
 
-  const { initTerminal } =
+  const { initTerminal, command } =
     type === "unit"
       ? {
           initTerminal: false,
+          command:
+            "node --experimental-vm-modules --experimental-wasm-threads node_modules/jest/bin/jest.js \r",
         }
       : {
           initTerminal: true,
+          command: "npm run build && node build/src/main.js \r",
         };
 
   useEffect(() => {
@@ -105,11 +108,7 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
   };
 
   const runTest = async () => {
-    dispatch(
-      writeCommand(
-        `node --experimental-vm-modules --experimental-wasm-threads node_modules/jest/bin/jest.js \r`
-      )
-    );
+    dispatch(writeCommand(command));
   };
 
   return (

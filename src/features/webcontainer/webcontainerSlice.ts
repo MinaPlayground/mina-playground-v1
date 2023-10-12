@@ -48,9 +48,10 @@ export const installDependencies = createAsyncThunk(
     { dispatch, getState, rejectWithValue }
   ) => {
     const { WebContainer } = await import("@webcontainer/api");
-    const webcontainer = await WebContainer.boot();
+    const webcontainer = await WebContainer.boot({
+      workdirName: "mina",
+    });
     dispatch(setWebcontainerInstance(webcontainer));
-    // TODO only pass down package.json file
     await webcontainer.mount(fileSystemTree);
 
     const installProcess = await webcontainer.spawn("npm", ["install"]);

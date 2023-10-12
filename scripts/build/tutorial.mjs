@@ -16,7 +16,7 @@ export const getTutorial = async (c, s) => {
     return await serialize(tutorialFileContent, {
         mdxOptions: {
             remarkPlugins: [
-                [remarkCodeHike, { autoImport: false, showCopyButton: true }],
+                [remarkCodeHike, { autoImport: false, showCopyButton: true, theme: 'github-dark' }],
             ],
             useDynamicImport: true,
         },

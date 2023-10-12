@@ -3,7 +3,7 @@ Next, write a script that interacts with your smart contract. Follow these steps
 
 
 # Imports
-For this tutorial, the ***import*** statement brings in items from ***snarkyjs*** that you use to interact with your smart contract.
+For this tutorial, the ***import*** statement brings in items from ***o1js*** that you use to interact with your smart contract.
 
 Copy the following lines into the ***main.ts*** file:
 
@@ -19,9 +19,9 @@ import {
 
 These import items are:
 
-* ***isReady***: An asynchronous promise that resolves when SnarkyJS is loaded and ready. This field is required because SnarkyJS contains WebAssembly (Wasm).
+* ***isReady***: An asynchronous promise that resolves when o1js is loaded and ready. This field is required because o1js contains WebAssembly (Wasm).
 * ***shutdown***: A function that closes the program.
-* ***Field***: The same SnarkyJS unsigned integer type that you learned earlier.
+* ***Field***: The same o1js unsigned integer type that you learned earlier.
 * ***Mina***: A local Mina blockchain to deploy the smart contract to so you can interact with it as a user would.
 * ***PrivateKey***: A class with functions for manipulating private keys.
 * ***AccountUpdate***: A class that generates a data structure that can update zkApp accounts.
@@ -32,7 +32,7 @@ Using a local blockchain speeds up development and tests the behavior of your sm
 To initialize your local blockchain, add the following code to ***main.ts***:
 
 ```ts
-console.log('SnarkyJS loaded');
+console.log('o1js loaded');
 const useProof = false;
 const Local = Mina.LocalBlockchain({ proofsEnabled: useProof });
 Mina.setActiveInstance(Local);

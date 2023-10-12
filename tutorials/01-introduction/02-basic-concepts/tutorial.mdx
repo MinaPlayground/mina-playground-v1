@@ -1,4 +1,4 @@
-# SnarkyJS Basic Concepts
+# o1js Basic Concepts
 
 ## Field
 
@@ -8,7 +8,7 @@ For example, in typical programming, you might use:
 ```ts
 const sum = 1 + 3.
 ```
-In SnarkyJS, you write this as:
+In o1js, you write this as:
 ```ts
 const sum = new Field(1).add(new Field(3))
 ```
@@ -39,7 +39,7 @@ In the case of ***Field*** and ***Bool***, you can also call the constructor wit
 
 ## Conditionals
 
-Traditional conditional statements are not supported by SnarkyJS:
+Traditional conditional statements are not supported by o1js:
 
 ```ts
 // this will NOT work
@@ -48,7 +48,7 @@ if (foo) {
 }
 ```
 
-Instead, use the SnarkyJS built-in Circuit.if() method, which is a ternary operator:
+Instead, use the o1js built-in Circuit.if() method, which is a ternary operator:
 
 ```ts
 const x = Circuit.if(new Bool(foo), a, b); // behaves like `foo ? a : b`
@@ -91,4 +91,4 @@ let sig = Signature.create(privKey, msg); // sign a message
 sig.verify(pubKey, msg); // Bool(true)
 ```
 
-For a full list, see the [SnarkyJS reference](https://docs.minaprotocol.com/zkapps/snarkyjs-reference "SnarkyJS reference").
+For a full list, see the [o1js reference](https://docs.minaprotocol.com/zkapps/o1js-reference "o1js reference").

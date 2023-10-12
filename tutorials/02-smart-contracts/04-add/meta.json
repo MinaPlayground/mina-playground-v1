@@ -1,5 +1,5 @@
 {
-  "name": "Interact",
+  "name": "Update state",
   "type": "unit",
   "options": {
     "focus": ["src/Add.ts"],
