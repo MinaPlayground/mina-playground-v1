@@ -8,26 +8,26 @@ const Header: FC = () => {
         <input id="my-drawer-3" type="checkbox" className="drawer-toggle" />
         <div className="drawer-content flex flex-col">
           <div className="w-full navbar bg-gray-800">
-            <div className="flex-none lg:hidden">
-              <label
-                htmlFor="my-drawer-3"
-                className="btn text-white btn-square btn-ghost"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  className="inline-block w-6 h-6 stroke-current"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  ></path>
-                </svg>
-              </label>
-            </div>
+            {/*<div className="flex-none lg:hidden">*/}
+            {/*  <label*/}
+            {/*    htmlFor="my-drawer-3"*/}
+            {/*    className="btn text-white btn-square btn-ghost"*/}
+            {/*  >*/}
+            {/*    <svg*/}
+            {/*      xmlns="http://www.w3.org/2000/svg"*/}
+            {/*      fill="none"*/}
+            {/*      viewBox="0 0 24 24"*/}
+            {/*      className="inline-block w-6 h-6 stroke-current"*/}
+            {/*    >*/}
+            {/*      <path*/}
+            {/*        strokeLinecap="round"*/}
+            {/*        strokeLinejoin="round"*/}
+            {/*        strokeWidth="2"*/}
+            {/*        d="M4 6h16M4 12h16M4 18h16"*/}
+            {/*      ></path>*/}
+            {/*    </svg>*/}
+            {/*  </label>*/}
+            {/*</div>*/}
             <div className="flex-1 px-2 mx-2">
               <a href="/" className="btn btn-ghost normal-case text-xl">
                 <img
@@ -44,17 +44,17 @@ const Header: FC = () => {
             </div>
             <div className="flex-none hidden lg:block pr-6">
               <ul className="menu text-white menu-horizontal">
-                <li>
-                  <Link href={"/"}>Home</Link>
-                </li>
-                <li>
-                  <Link href="/tutorial/01-introduction/01-smart-contracts">
-                    Tutorials
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/project">Projects</Link>
-                </li>
+                {/*<li>*/}
+                {/*  <Link href={"/"}>Home</Link>*/}
+                {/*</li>*/}
+                {/*<li>*/}
+                {/*  <Link href="/tutorial/01-introduction/01-snarkyjs">*/}
+                {/*    Tutorials*/}
+                {/*  </Link>*/}
+                {/*</li>*/}
+                {/*<li>*/}
+                {/*  <Link href="/project">Projects</Link>*/}
+                {/*</li>*/}
               </ul>
             </div>
           </div>
@@ -66,13 +66,13 @@ const Header: FC = () => {
               <Link href={"/"}>Home</Link>
             </li>
             <li>
-              <Link href="/tutorial/01-introduction/01-smart-contracts">
+              <Link href="/tutorial/01-introduction/01-snarkyjs">
                 Tutorials
               </Link>
             </li>
-            <li>
-              <Link href="/project">Projects</Link>
-            </li>
+            {/*<li>*/}
+            {/*  <Link href="/project">Projects</Link>*/}
+            {/*</li>*/}
           </ul>
         </div>
       </div>

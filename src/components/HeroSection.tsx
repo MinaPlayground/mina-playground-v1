@@ -16,7 +16,7 @@ const HeroSection: FC = () => {
         <div className="flex flex-col space-y-4 sm:flex-row sm:justify-center sm:space-y-0 sm:space-x-4">
           <Link
             className="inline-flex justify-center items-center py-3 px-5 text-base font-medium text-center text-white rounded-lg bg-gradient-to-br from-pink-500 to-orange-400 hover:bg-blue-800 focus:ring-4 focus:ring-white"
-            href="/tutorial/01-introduction/01-smart-contracts"
+            href="/tutorial/01-introduction/01-o1js"
           >
             Follow a tutorial
             <svg
@@ -33,12 +33,12 @@ const HeroSection: FC = () => {
               />
             </svg>
           </Link>
-          <Link
-            href="/project"
-            className="inline-flex justify-center items-center py-3 px-5 text-base font-medium text-center text-gray-400 rounded-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-600 focus:ring-4 focus:ring-gray-100"
-          >
-            Create a project
-          </Link>
+          {/*<Link*/}
+          {/*  href="/project"*/}
+          {/*  className="inline-flex justify-center items-center py-3 px-5 text-base font-medium text-center text-gray-400 rounded-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-600 focus:ring-4 focus:ring-gray-100"*/}
+          {/*>*/}
+          {/*  Create a project*/}
+          {/*</Link>*/}
         </div>
       </div>
     </section>

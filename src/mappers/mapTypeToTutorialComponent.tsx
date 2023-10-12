@@ -16,6 +16,6 @@ export const mapTypeToTutorialComponent = (item: TutorialResponse) => {
         />
       );
     case "theory":
-      return <h1>Theory</h1>;
+      return <h1></h1>;
   }
 };

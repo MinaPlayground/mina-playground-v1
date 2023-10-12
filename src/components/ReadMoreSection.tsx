@@ -26,7 +26,7 @@ const ReadMoreSection: FC = () => {
             Smart Contract on Mina Protocol with a step-to-step guide.
           </p>
           <Link
-            href="/tutorial/01-introduction/01-smart-contracts"
+            href="/tutorial/01-introduction/01-o1js"
             className="inline-flex justify-center items-center py-2.5 px-5 text-base font-medium text-center rounded-lg bg-gray-100 text-black hover:bg-gray-200"
           >
             Read more
@@ -69,11 +69,8 @@ const ReadMoreSection: FC = () => {
             <p className="text-lg font-normal text-gray-400 mb-4">
               Create, test and run Smart Contract projects online.
             </p>
-            <Link
-              href="/project"
-              className="text-white hover:underline font-medium text-lg inline-flex items-center"
-            >
-              Try it out
+            <div className="text-white font-medium text-lg inline-flex items-center">
+              Coming soon!
               <svg
                 aria-hidden="true"
                 className="w-4 h-4 ml-2"
@@ -89,7 +86,7 @@ const ReadMoreSection: FC = () => {
                   d="M17 8l4 4m0 0l-4 4m4-4H3"
                 />
               </svg>
-            </Link>
+            </div>
           </div>
           <div className="shadow-2xl bg-[#252728] rounded-lg p-8 md:p-12">
             <div className="bg-gradient-to-br from-pink-500 to-orange-400 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mb-2">
@@ -115,11 +112,8 @@ const ReadMoreSection: FC = () => {
               Deploy Smart Contracts easily and directly using our web
               interface.
             </p>
-            <Link
-              href="/project"
-              className="text-white hover:underline font-medium text-lg inline-flex items-center"
-            >
-              Try it out
+            <div className="text-white font-medium text-lg inline-flex items-center">
+              Coming soon!
               <svg
                 aria-hidden="true"
                 className="w-4 h-4 ml-2"
@@ -135,7 +129,7 @@ const ReadMoreSection: FC = () => {
                   d="M17 8l4 4m0 0l-4 4m4-4H3"
                 />
               </svg>
-            </Link>
+            </div>
           </div>
         </div>
       </div>
