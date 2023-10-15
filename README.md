@@ -37,6 +37,12 @@ Welcome to Mina Playground, an innovative interactive learning platform that all
 
 4. **Manage Projects**: Create, edit, and manage your Mina projects directly in the Playground. Easily deploy Smart Contracts and track your project's progress.
 
+## Architecture
+
+**Build tutorials script:**
+![build-tutorials](https://github.com/devarend/mina-playground/assets/116919663/5e259db9-0ca5-4ff1-8649-abdde89f9b9e)
+
+
 ## Feedback and Support
 
 Have questions, feedback, or need assistance? Reach out to us through [discord](https://discord.gg/PmFq7jYPVP) or create an issue on this GitHub repository.
