@@ -40,7 +40,7 @@ Welcome to Mina Playground, an innovative interactive learning platform that all
 ## Architecture
 
 **Build tutorials script:**
-![build-tutorials](https://github.com/devarend/mina-playground/assets/116919663/5e259db9-0ca5-4ff1-8649-abdde89f9b9e)
+![build-tutorials](https://github.com/devarend/mina-playground/assets/116919663/742fc4a1-7e08-4bbf-b828-42c4a87822f6)
 
 
 ## Feedback and Support
