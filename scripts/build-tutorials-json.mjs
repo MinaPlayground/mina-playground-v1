@@ -23,7 +23,6 @@ const mapTypeToResponse = async (type, c, s, options) => {
 }
 
 for (const item of projectDir) {
-  let baseFiles = {}
   const name = JSON.parse(
     readFileSync(`${dir}/tutorials/${item}/meta.json`, {
       encoding: "utf-8",
@@ -36,9 +35,10 @@ for (const item of projectDir) {
 
   const baseFolderExists = existsSync(`${dir}/tutorials/${item}/base`)
   if (baseFolderExists) {
-    baseFiles = transformToWebcontainerFiles(
+    const baseFiles = transformToWebcontainerFiles(
         `${dir}/tutorials/${item}/base`
     );
+    writeFileSync(`${dir}/src/json/${item}-base.json`, JSON.stringify(baseFiles));
   }
 
   const currentPath = path.join(`${dir}/tutorials/${item}`);
@@ -56,7 +56,7 @@ for (const item of projectDir) {
     }
 
     if (options?.base) {
-      jsonData['files'] = {...response.files, ...baseFiles}
+      jsonData['files'] = response.files
     }
 
     writeFileSync(`${dir}/src/json/${item}-${section}.json`, JSON.stringify(jsonData));
