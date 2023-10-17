@@ -38,13 +38,7 @@ const initialState: WebcontainerState = {
 export const installDependencies = createAsyncThunk(
   "installDependencies",
   async (
-    {
-      fileSystemTree,
-      initTerminal = true,
-    }: {
-      fileSystemTree: FileSystemTree;
-      initTerminal?: boolean;
-    },
+    { chapter }: { chapter: string },
     { dispatch, getState, rejectWithValue }
   ) => {
     const { WebContainer } = await import("@webcontainer/api");
@@ -52,7 +46,10 @@ export const installDependencies = createAsyncThunk(
       workdirName: "mina",
     });
     dispatch(setWebcontainerInstance(webcontainer));
-    await webcontainer.mount(fileSystemTree);
+
+    // TODO make sure it only loads the specific base file
+    const baseFiles = (await import(`@/json/${chapter}-base.json`)).default;
+    await webcontainer.mount(baseFiles);
 
     const installProcess = await webcontainer.spawn("npm", ["install"]);
     if ((await installProcess.exit) !== 0) {

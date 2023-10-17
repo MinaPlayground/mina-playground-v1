@@ -24,6 +24,7 @@ import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { FileSystemTree } from "@webcontainer/api";
 import * as React from "react";
 import WebcontainerLoader from "@/features/webcontainer/WebcontainerLoader";
+import { useRouter } from "next/router";
 
 const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
   type,
@@ -36,6 +37,8 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
   const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
   const webcontainerStarted = useAppSelector(selectWebcontainerStarted);
   const initializingWebcontainer = useAppSelector(selectInitializingEsbuild);
+  const router = useRouter();
+  const { chapter } = router.query;
 
   const currentDirectory = useAppSelector(selectCurrentDirectory);
   const dispatch = useAppDispatch();
@@ -64,12 +67,7 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
   // TODO create webcontainer hook
   useEffect(() => {
     if (!webcontainerStarted) {
-      dispatch(
-        installDependencies({
-          fileSystemTree: { "package*json": files["package*json"] },
-          initTerminal,
-        })
-      );
+      dispatch(installDependencies({ chapter: chapter as string }));
       return;
     }
   }, [webcontainerStarted]);
