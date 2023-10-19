@@ -72,9 +72,30 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
     }
   }, [webcontainerStarted]);
 
+  const remove = async () => {
+    if (!webcontainerInstance) return;
+    console.log("removing");
+    // TODO for now remove directories, might want to delete separate files if we want to support the same dir as the base
+    await Promise.all(
+      Object.keys(files).map(async (item) => {
+        return await webcontainerInstance.fs.rm(item, { recursive: true });
+      })
+    );
+    console.log("removed");
+  };
+
+  const mount = async () => {
+    if (!webcontainerInstance) return;
+    await webcontainerInstance.mount(files);
+    console.log("mounted");
+  };
+
   useEffect(() => {
     if (!webcontainerInstance) return;
-    void webcontainerInstance.mount(files);
+    void mount();
+    return () => {
+      void remove();
+    };
   }, [webcontainerInstance]);
 
   useEffect(() => {
@@ -84,6 +105,9 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
       return;
     }
     dispatch(initializeShellProcess());
+    // return () => {
+    //   void remove();
+    // };
   }, [initializingWebcontainer]);
 
   const onClick = (code: string) => {
