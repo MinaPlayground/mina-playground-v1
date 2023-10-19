@@ -15,10 +15,12 @@ import { useRouter } from "next/router";
 import TutorialList from "@/components/tutorial/TutorialList";
 import TutorialSectionHeader from "@/components/tutorial/TutorialSectionHeader";
 import TutorialOrderedList from "@/components/tutorial/TutorialOrderedList";
+import RunHeader from "@/components/tutorial/RunHeader";
 
 const components: Components = {
   h1: TutorialHeader,
   h2: TutorialSectionHeader,
+  h3: RunHeader,
   p: TutorialText,
   ul: TutorialList,
   ol: TutorialOrderedList,
