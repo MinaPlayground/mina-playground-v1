@@ -26,13 +26,14 @@ export const getTutorial = async (c, s) => {
 
 export const getTutorialAndFiles = async (c, s, {focus, highlight}) => {
     const dir = process.cwd();
-    const files = transformToWebcontainerFiles(`${dir}/tutorials/${c}/${s}/source/`)
+    const {files, filesArray} = transformToWebcontainerFiles(`${dir}/tutorials/${c}/${s}/source/`)
     const {focusedFiles, highlightedCode} = transformFocusedFiles(`${dir}/tutorials/${c}/${s}/source/`, focus, highlight)
     const tutorial = await getTutorial(c, s)
 
     return {
         tutorial,
         files,
+        filesArray,
         highlightedItem: {highlightedName: path.basename(highlight.replace(/\./g, "*")), highlightedCode},
         focusedFiles,
     };

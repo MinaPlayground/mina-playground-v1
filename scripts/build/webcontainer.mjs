@@ -3,7 +3,9 @@ import {readdirSync, readFileSync, statSync} from "fs";
 
 export const transformToWebcontainerFiles = (
     dir,
-    files = {}
+    files = {},
+    filesArray = [],
+    originalDir = dir
 ) => {
     const projectDir = readdirSync(dir);
     for (const item of projectDir) {
@@ -13,18 +15,19 @@ export const transformToWebcontainerFiles = (
             files[item] = {
                 directory: {},
             };
-            transformToWebcontainerFiles(itemPath, files[item].directory);
+            transformToWebcontainerFiles(itemPath, files[item].directory, filesArray, originalDir);
         } else {
-            const fileName = path.basename(item);
             const fileContent = readFileSync(itemPath, { encoding: "utf-8" });
-            files[fileName.replace(/\./g, "*")] = {
+            files[item.replace(/\./g, "*")] = {
                 file: {
                     contents: fileContent,
                 },
             };
+            const fileNameWithPath = itemPath.replace(originalDir, '')
+            filesArray.push(fileNameWithPath)
         }
     }
-    return files;
+    return {files, filesArray};
 };
 
 export const transformFocusedFiles = (

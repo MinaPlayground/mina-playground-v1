@@ -35,7 +35,7 @@ for (const item of projectDir) {
 
   const baseFolderExists = existsSync(`${dir}/tutorials/${item}/base`)
   if (baseFolderExists) {
-    const baseFiles = transformToWebcontainerFiles(
+    const {files: baseFiles} = transformToWebcontainerFiles(
         `${dir}/tutorials/${item}/base`
     );
     writeFileSync(`${dir}/src/json/${item}-base.json`, JSON.stringify(baseFiles));
@@ -53,10 +53,6 @@ for (const item of projectDir) {
     const jsonData = {
       type,
       ...response
-    }
-
-    if (options?.base) {
-      jsonData['files'] = response.files
     }
 
     writeFileSync(`${dir}/src/json/${item}-${section}.json`, JSON.stringify(jsonData));
