@@ -1,0 +1,35 @@
+## Conditionals
+
+Traditional conditional statements are not supported by o1js:
+
+```ts
+// this will NOT work
+if (foo) {
+  x.assertEquals(y);
+}
+```
+
+Instead, use the o1js built-in Circuit.if() method, which is a ternary operator:
+
+```ts
+const x = Circuit.if(new Bool(foo), a, b); // behaves like `foo ? a : b`
+```
+
+### Tutorial
+
+Add the o1js built-in Circuit.if() method:
+
+```ts
+const x = Circuit.if(new Bool(foo), a, b);
+```
+
+Log the result of the ternary operator, which should now be 1:
+```ts
+Provable.log("x is now:", x)
+```
+
+Set the ***Bool*** value of the variable ***foo*** to ***false***:
+```ts
+const foo = Bool(false);
+```
+The result of the ternary operator should now be 2.

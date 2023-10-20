@@ -1,0 +1,28 @@
+## Functions
+
+Functions work as you would expect in TypeScript. For example:
+
+```ts
+function addOneAndDouble(x: Field): Field {
+  return x.add(1).mul(2);
+}
+```
+Here we take the input ***x***, add 1 to the Field value, multiply it by two and return the new Field.
+
+### Tutorial
+
+Let's first call the ***addOneAndDouble*** function with our defined Field ***x*** and call the result ***y***:
+```ts
+const y = addOneAndDouble(x);
+```
+
+Now check if our ***y*** field is equal to the value of 4:
+```ts
+const isEqual = y.equals(4);
+```
+
+Log the variables ***y*** and ***isEqual***:
+```ts
+Provable.log("y is:", y);
+Provable.log("y is equal to 4:", isEqual);
+```
