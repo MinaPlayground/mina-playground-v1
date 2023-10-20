@@ -1,0 +1,38 @@
+## Common methods
+
+Some common methods you will use often are:
+
+```ts
+let x = new Field(4); // x = 4
+x = x.add(3); // x = 7
+x = x.sub(1); // x = 6
+x = x.mul(3); // x = 18
+x = x.div(2); // x = 9
+x = x.square(); // x = 81
+x = x.sqrt(); // x = 9
+
+let b = x.equals(8); // b = Bool(false)
+b = x.greaterThan(8); // b = Bool(true)
+b = b.not().or(b).and(b); // b = Bool(true)
+b.toBoolean(); // true
+
+const hash = Poseidon.hash([x]); // takes array of Fields, returns Field
+
+const privKey = PrivateKey.random(); // create a private key
+const pubKey = PublicKey.fromPrivateKey(privKey); // derive public key
+const msg = [hash];
+const sig = Signature.create(privKey, msg); // sign a message
+const isVerified = sig.verify(pubKey, msg); // Bool(true)
+```
+
+### Tutorial
+
+We can log the value of ***x*** to check that it has been changed with the following methods: ***add***, ***sub***, ***mul***, ***div***, ***square***:
+```ts
+Provable.log('x is now:', x) // should be 81
+```
+
+We can also log the value of the ***isVerified*** variable to check that we have successfully signed and verified the message:
+```ts
+Provable.log('is signature verified:', isVerified) // should be true
+```

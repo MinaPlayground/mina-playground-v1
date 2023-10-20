@@ -1,0 +1,44 @@
+# o1js Basic Concepts
+
+## Field
+
+Field elements are the basic unit of data in zero-knowledge proof programming. Each field element can store a number up to almost 256 bits in size. You can think of it as a uint256 in Solidity.
+
+For example, in typical programming, you might use:
+```ts
+const sum = 1 + 3.
+```
+In o1js, you write this as:
+```ts
+const sum = new Field(1).add(new Field(3))
+```
+This can be simplified as:
+```ts
+const sum = new Field(1).add(3)
+```
+Note that the 3 is auto-promoted to a field type to make this cleaner.
+
+## Built-in data types
+
+Some common data types you may use are:
+
+```ts
+new Bool(x);   // accepts true or false
+new Field(x);  // accepts an integer, or a numeric string if you want to represent a number greater than JavaScript can represent but within the max value that a field can store.
+new UInt64(x); // accepts a Field - useful for constraining numbers to 64 bits
+new UInt32(x); // accepts a Field - useful for constraining numbers to 32 bits
+```
+
+In the case of ***Field*** and ***Bool***, you can also call the constructor without ***new***:
+
+### Tutorial
+In this tutorial, we will walk through the process of adding log statements for the variables: ***sum***, ***bool***, ***int32***, ***int64*** so you can see the underlying values.
+
+Add the following log statements:
+```ts
+Provable.log("sum has the value:", sum)
+Provable.log("bool has the value:", bool)
+Provable.log("int32 has the value:", int32)
+Provable.log("int64 has the value", int64)
+```
+
