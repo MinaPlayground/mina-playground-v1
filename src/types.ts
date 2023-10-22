@@ -89,6 +89,7 @@ export type TutorialResponse =
   | {
       type: "unit" | "playground";
       tutorial: MDXRemoteSerializeResult;
+      filesArray: string[];
       focusedFiles: FileSystemTree;
       highlightedItem: {
         highlightedName: string;

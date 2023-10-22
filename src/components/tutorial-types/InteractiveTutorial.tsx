@@ -29,6 +29,7 @@ import { useRouter } from "next/router";
 const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
   type,
   files,
+  filesArray,
   focusedFiles,
   highlightedItem,
 }) => {
@@ -74,14 +75,11 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
 
   const remove = async () => {
     if (!webcontainerInstance) return;
-    console.log("removing");
-    // TODO for now remove directories, might want to delete separate files if we want to support the same dir as the base
     await Promise.all(
-      Object.keys(files).map(async (item) => {
-        return await webcontainerInstance.fs.rm(item, { recursive: true });
+      filesArray.map(async (item) => {
+        return await webcontainerInstance.fs.rm(item);
       })
     );
-    console.log("removed");
   };
 
   const mount = async () => {
@@ -105,9 +103,6 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
       return;
     }
     dispatch(initializeShellProcess());
-    // return () => {
-    //   void remove();
-    // };
   }, [initializingWebcontainer]);
 
   const onClick = (code: string) => {
@@ -174,6 +169,7 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
 
 interface InteractiveTutorialProps {
   type: "unit" | "playground";
+  filesArray: string[];
   highlightedItem: {
     highlightedName: string;
     highlightedCode: string;

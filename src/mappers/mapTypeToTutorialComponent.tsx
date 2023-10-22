@@ -6,12 +6,13 @@ export const mapTypeToTutorialComponent = (item: TutorialResponse) => {
   switch (type) {
     case "unit":
     case "playground":
-      const { files, focusedFiles, highlightedItem } = item;
+      const { files, focusedFiles, highlightedItem, filesArray } = item;
       return (
         <InteractiveTutorial
           type={type}
           highlightedItem={highlightedItem}
           files={files}
+          filesArray={filesArray}
           focusedFiles={focusedFiles}
         />
       );
