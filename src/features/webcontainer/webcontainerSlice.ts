@@ -1,6 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/store";
-import { FileSystemTree, WebContainer } from "@webcontainer/api";
+import { WebContainer } from "@webcontainer/api";
 
 interface WebcontainerState {
   initializingWebcontainer: boolean;
@@ -8,7 +8,7 @@ interface WebcontainerState {
   webcontainerStarted: boolean;
   webcontainerInstance: WebContainer | null;
   shellProcessInput: WritableStreamDefaultWriter | null;
-
+  isRemovingFiles: boolean;
   isRunning: boolean;
   isAborting: boolean;
   isTestPassed: boolean | null;
@@ -27,6 +27,7 @@ const initialState: WebcontainerState = {
   webcontainerStarted: false,
   webcontainerInstance: null,
   shellProcessInput: null,
+  isRemovingFiles: false,
   isRunning: false,
   isAborting: false,
   isTestPassed: null,
@@ -66,6 +67,19 @@ export const writeCommand = createAsyncThunk(
     dispatch(setIsRunning(true));
     const { webcontainer } = getState() as { webcontainer: WebcontainerState };
     await webcontainer.shellProcessInput?.write(command);
+  }
+);
+
+export const removeFiles = createAsyncThunk(
+  "removeFiles",
+  async (files: string[], { getState, dispatch }) => {
+    const { webcontainer } = getState() as { webcontainer: WebcontainerState };
+    await Promise.all(
+      files.map(async (item) => {
+        // @ts-ignore
+        return await webcontainer.webcontainerInstance.fs.rm(item);
+      })
+    );
   }
 );
 
@@ -208,6 +222,7 @@ export const webcontainerSlice = createSlice({
         webcontainerInstance: state.webcontainerInstance,
         webcontainerStarted: state.webcontainerStarted,
         initializingWebcontainer: state.initializingWebcontainer,
+        // isRemovingFiles: true,
       };
 
       return {
@@ -259,6 +274,12 @@ export const webcontainerSlice = createSlice({
       })
       .addCase(initializeShellProcess.fulfilled, (state, action) => {
         state.shellProcessInput = action.payload.input;
+      })
+      .addCase(removeFiles.pending, (state, action) => {
+        state.isRemovingFiles = true;
+      })
+      .addCase(removeFiles.fulfilled, (state, action) => {
+        state.isRemovingFiles = false;
       });
     //TODO add reject case for write command
   },
@@ -275,6 +296,9 @@ export const selectWebcontainerInstance = (state: RootState) =>
 
 export const selectWebcontainerStarted = (state: RootState) =>
   state.webcontainer.webcontainerStarted;
+
+export const selectIsRemovingFiles = (state: RootState) =>
+  state.webcontainer.isRemovingFiles;
 
 export const selectIsRunning = (state: RootState) =>
   state.webcontainer.isRunning;
