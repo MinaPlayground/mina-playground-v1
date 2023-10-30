@@ -2,7 +2,7 @@ import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import { Provider } from "react-redux";
 import { store } from "@/store";
-import "@/styles/editor.scss";
+import "@/styles/editor.css";
 import "xterm/css/xterm.css";
 import "@code-hike/mdx/dist/index.css";
 import { MDXProvider } from "@mdx-js/react";

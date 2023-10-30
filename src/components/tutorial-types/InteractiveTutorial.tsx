@@ -161,7 +161,7 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
           />
         </div>
         {initTerminal ? (
-          <div className="terminal h-[150px] bg-black" />
+          <div className="terminal h-[150px] max-w-[100vw] bg-black" />
         ) : (
           <TerminalOutput />
         )}

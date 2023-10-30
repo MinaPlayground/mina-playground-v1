@@ -96,8 +96,9 @@ export const initializeTerminal = createAsyncThunk(
     const terminal = new Terminal({
       convertEol: true,
     });
-    terminal.open(<HTMLElement>terminalEl);
     terminal.loadAddon(fitAddon);
+    terminal.open(<HTMLElement>terminalEl);
+    fitAddon.fit();
 
     // @ts-ignore
     const shellProcess = await webcontainer.webcontainerInstance.spawn("jsh", {
