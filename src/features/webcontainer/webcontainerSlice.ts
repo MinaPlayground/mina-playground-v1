@@ -77,7 +77,9 @@ export const removeFiles = createAsyncThunk(
     await Promise.all(
       files.map(async (item) => {
         // @ts-ignore
-        return await webcontainer.webcontainerInstance.fs.rm(item);
+        return await webcontainer.webcontainerInstance.fs.rm(item, {
+          force: true,
+        });
       })
     );
   }

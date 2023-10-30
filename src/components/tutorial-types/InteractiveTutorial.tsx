@@ -7,8 +7,10 @@ import {
   initializeShellProcess,
   initializeTerminal,
   installDependencies,
+  removeFiles,
   reset,
   selectInitializingEsbuild,
+  selectIsRemovingFiles,
   selectWebcontainerInstance,
   selectWebcontainerStarted,
   setIsTestPassed,
@@ -38,8 +40,10 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
   const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
   const webcontainerStarted = useAppSelector(selectWebcontainerStarted);
   const initializingWebcontainer = useAppSelector(selectInitializingEsbuild);
+  const isRemovingFiles = useAppSelector(selectIsRemovingFiles);
+
   const router = useRouter();
-  const { chapter } = router.query;
+  const { chapter, section } = router.query;
 
   const currentDirectory = useAppSelector(selectCurrentDirectory);
   const dispatch = useAppDispatch();
@@ -75,26 +79,25 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
 
   const remove = async () => {
     if (!webcontainerInstance) return;
-    await Promise.all(
-      filesArray.map(async (item) => {
-        return await webcontainerInstance.fs.rm(item);
-      })
-    );
+    dispatch(removeFiles(filesArray));
   };
 
   const mount = async () => {
     if (!webcontainerInstance) return;
     await webcontainerInstance.mount(files);
-    console.log("mounted");
   };
 
   useEffect(() => {
     if (!webcontainerInstance) return;
-    void mount();
     return () => {
       void remove();
     };
   }, [webcontainerInstance]);
+
+  useEffect(() => {
+    if (!webcontainerInstance || isRemovingFiles) return;
+    void mount();
+  }, [webcontainerInstance, isRemovingFiles]);
 
   useEffect(() => {
     if (initializingWebcontainer) return;
