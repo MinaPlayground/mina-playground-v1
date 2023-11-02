@@ -7,16 +7,18 @@ const WebcontainerLoader: FC = () => {
   const webcontainerError = useAppSelector(selectInitializingWebContainerError);
   if (webcontainerError)
     return (
-      <h1 className="text-white">
-        {webcontainerError}.
-        <a
-          className="link"
-          href="https://developer.stackblitz.com/platform/webcontainers/browser-support"
-          target="_blank"
-        >
-          Make sure your browser is setup correctly.
-        </a>
-      </h1>
+      <div className="flex text-white m-4">
+        <h1 className="self-center bg-red-700 p-4 rounded-lg">
+          {webcontainerError}.
+          <a
+            className="link"
+            href="https://developer.stackblitz.com/platform/webcontainers/browser-support"
+            target="_blank"
+          >
+            Make sure your browser is setup correctly.
+          </a>
+        </h1>
+      </div>
     );
 
   return (

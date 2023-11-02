@@ -225,7 +225,7 @@ export const webcontainerSlice = createSlice({
         webcontainerInstance: state.webcontainerInstance,
         webcontainerStarted: state.webcontainerStarted,
         initializingWebcontainer: state.initializingWebcontainer,
-        // isRemovingFiles: true,
+        initializingWebcontainerError: state.initializingWebcontainerError,
       };
 
       return {
