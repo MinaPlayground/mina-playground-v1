@@ -15,11 +15,19 @@ let b = x.equals(8); // b = Bool(false)
 b = x.greaterThan(8); // b = Bool(true)
 b = b.not().or(b).and(b); // b = Bool(true)
 b.toBoolean(); // true
+
+const hash = Poseidon.hash([x]); // takes array of Fields, returns Field
+
+const privKey = PrivateKey.random(); // create a private key
+const pubKey = PublicKey.fromPrivateKey(privKey); // derive public key
+const msg = [hash];
+const sig = Signature.create(privKey, msg); // sign a message
+const isVerified = sig.verify(pubKey, msg); // Bool(true)
 ```
 
 ### Tutorial
 
-Create a mutable variable ***x*** for a Field that has a default value of 1:
+Create a mutable variable ***x** for a Field that has a default value of 1:
 
 ```ts
 let x = Field(1);
@@ -54,22 +62,13 @@ We can log the value of ***x*** to check that it has been changed with the follo
 Provable.log('x is now:', x) // should be 2
 ```
 
-We can also use ***equals*** to check if our variable ***x*** is equal to a specific value, add the following:
+We can log the value of ***x*** to check that it has been changed with the following methods: ***add***, ***sub***, ***mul*** and ***div***:
 ```ts
-let b = x.equals(3); // b is false since x is equal to 2
+Provable.log('x is now:', x) // should be 2
 ```
 
-Mutate the variable ***b*** using ***greaterThan***:
-```ts
-b = x.greaterThan(2) // b is false since x is not greater than 2
-```
 
-We can log the value of ***b*** to check that it has been set to ***false***:
+We can also log the value of the ***isVerified*** variable to check that we have successfully signed and verified the message:
 ```ts
-Provable.log('b is now:', b) // should be false
-```
-
-We have three essential operators: ***and***, ***or*** and ***not***. ***and*** requires both conditions to be true, ***or*** permits at least one condition to be true, and ***not*** negates a statement, flipping it from true to false or vice versa. Add the following:
-```ts
-b = b.not().or(b).and(b);
+Provable.log('is signature verified:', isVerified) // should be true
 ```
