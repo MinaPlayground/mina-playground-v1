@@ -1,23 +1,9 @@
-## Common methods
+## Other common methods
 
-Some common methods you will use often are:
+Some other common methods you will use often are:
 
 ```ts
-let x = new Field(4); // x = 4
-x = x.add(3); // x = 7
-x = x.sub(1); // x = 6
-x = x.mul(3); // x = 18
-x = x.div(2); // x = 9
-x = x.square(); // x = 81
-x = x.sqrt(); // x = 9
-
-let b = x.equals(8); // b = Bool(false)
-b = x.greaterThan(8); // b = Bool(true)
-b = b.not().or(b).and(b); // b = Bool(true)
-b.toBoolean(); // true
-
 const hash = Poseidon.hash([x]); // takes array of Fields, returns Field
-
 const privKey = PrivateKey.random(); // create a private key
 const pubKey = PublicKey.fromPrivateKey(privKey); // derive public key
 const msg = [hash];
@@ -27,48 +13,43 @@ const isVerified = sig.verify(pubKey, msg); // Bool(true)
 
 ### Tutorial
 
-Create a mutable variable ***x** for a Field that has a default value of 1:
-
+Define a variable ***x*** for a Field with a default value set to 1:
 ```ts
-let x = Field(1);
+const x = Field(1);
 ```
 
-Mutate the variable ***x*** by adding 2 to our ***Field***:
-
+Declare a variable named ***hash*** and use the Poseidon hash function, which accepts an array of Fields as input and produces a single Field as its output:
 ```ts
-x = x.add(2); // x is now 3 since 1 + 2 = 3
+const hash = Poseidon.hash([x]); // takes array of Fields, returns Field
 ```
 
-Mutate the variable ***x*** by subtracting 1 from our ***Field***:
-
+Declare a variable ***privKey*** and generate a private key using the ***random*** method on the ***PrivateKey*** class:
 ```ts
-x = x.sub(1); // x is now 2 since 3 - 1 = 2
+const privKey = PrivateKey.random(); // create a private key
 ```
 
-Mutate the variable ***x*** by multiplying our ***Field*** with 2:
-
+Declare a variable ***pubKey*** by deriving a public key from the private key using the ***fromPrivateKey*** method on the ***PublicKey*** class:
 ```ts
-x = x.mul(2); // x is now 4 since 2 * 2 = 4
+const pubKey = PublicKey.fromPrivateKey(privKey); // derive public key
 ```
 
-Mutate the variable ***x*** by dividing our ***Field*** with 2:
+Declare a variable named ***msg*** and set it to our calculated hash.
 
 ```ts
-x = x.div(2); // x is now 2 since 4 / 2 = 2
+const msg = [hash];
 ```
 
-We can log the value of ***x*** to check that it has been changed with the following methods: ***add***, ***sub***, ***mul*** and ***div***:
+Declare a variable named ***sig*** and generate a signature by signing the message with the private key.
 ```ts
-Provable.log('x is now:', x) // should be 2
+const sig = Signature.create(privKey, msg); // sign a message
 ```
 
-We can log the value of ***x*** to check that it has been changed with the following methods: ***add***, ***sub***, ***mul*** and ***div***:
+Define a variable named ***isVerified*** to validate the signature using the public key and the message.
 ```ts
-Provable.log('x is now:', x) // should be 2
+const isVerified = sig.verify(pubKey, msg); // Bool(true)
 ```
 
-
-We can also log the value of the ***isVerified*** variable to check that we have successfully signed and verified the message:
+We can log the value of the ***isVerified*** variable to check that we have successfully signed and verified the message:
 ```ts
 Provable.log('is signature verified:', isVerified) // should be true
 ```

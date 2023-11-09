@@ -69,7 +69,17 @@ We can log the value of ***b*** to check that it has been set to ***false***:
 Provable.log('b is now:', b) // should be false
 ```
 
-We have three essential operators: ***and***, ***or*** and ***not***. ***and*** requires both conditions to be true, ***or*** permits at least one condition to be true, and ***not*** negates a statement, flipping it from true to false or vice versa. Add the following:
+We have three essential operators: ***and***, ***or*** and ***not***.
+***and*** requires both conditions to be true, ***or*** permits at least one condition to be true, and ***not*** negates a statement, flipping it from true to false or vice versa. Add the following:
 ```ts
-b = b.not().or(b).and(b);
+let c = b.not()
+let d = b.not().or(b)
+let e = b.not().and(b)
+```
+
+We can now log the values of ***c***, ***d*** and ***e***:
+```ts
+Provable.log('c is now:', c) // should be true
+Provable.log('d is now:', d) // should be true
+Provable.log('e is now:', e) // should be false
 ```
