@@ -32,13 +32,36 @@ new UInt32(x); // accepts a Field - useful for constraining numbers to 32 bits
 In the case of ***Field*** and ***Bool***, you can also call the constructor without ***new***:
 
 ### Tutorial
-In this tutorial, we will walk through the process of adding log statements for the variables: ***sum***, ***bool***, ***int32***, ***int64*** so you can see the underlying values.
+Create a variable ***sum*** for a ***Field*** which adds 3 to the Field which has a value of 1:
 
-Add the following log statements:
 ```ts
-Provable.log("sum has the value:", sum)
-Provable.log("bool has the value:", bool)
-Provable.log("int32 has the value:", int32)
-Provable.log("int64 has the value", int64)
+const sum = Field(1).add(3);
+```
+
+Create a variable ***bool*** for a Bool which accepts true or false
+
+```ts
+const bool = Bool(true);
+```
+
+Create a variable ***int32*** for a UInt32 which accepts a Field - useful for constraining numbers to 32 bits
+
+```ts
+const int32 = new UInt32(123);
+```
+
+Create a variable ***int64*** for a UInt64 which accepts a Field - useful for constraining numbers to 64 bits
+
+```ts
+const int64 = new UInt64(1234);
+```
+
+Add log statements for the variables: ***sum***, ***bool***, ***int32***, ***int64*** so you can see the underlying values:
+
+```ts
+Provable.log("sum has the value:", sum);
+Provable.log("bool has the value:", bool);
+Provable.log("int32 has the value:", int32);
+Provable.log("int64 has the value", int64);
 ```
 

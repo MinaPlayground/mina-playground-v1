@@ -135,7 +135,7 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
     <>
       <div className="flex flex-1 border-b-2 flex-row">
         {initializingWebcontainer ? (
-          <div className="flex flex-1 justify-center">
+          <div className="flex flex-1 justify-center m-2">
             <WebcontainerLoader />
           </div>
         ) : (
@@ -161,7 +161,7 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
           />
         </div>
         {initTerminal ? (
-          <div className="terminal h-[150px] max-w-[100vw] bg-black" />
+          <div className="terminal h-[150px] md:h-[180px] max-w-[100vw] bg-black" />
         ) : (
           <TerminalOutput />
         )}
