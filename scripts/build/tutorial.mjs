@@ -1,50 +1,40 @@
-import { json } from "./fileSystem.mjs";
-import fs from "fs/promises";
 import { serialize } from "next-mdx-remote/serialize";
 import {
-    transformToWebcontainerFiles,
-    transformToWebcontainerFilesWithFocus,
+    transformFocusedFiles,
+    transformToWebcontainerFiles
 } from "./webcontainer.mjs";
 import { remarkCodeHike } from "@code-hike/mdx";
+import {readFileSync} from "fs";
+import path from "path";
 
-export const getTutorialByChapterAndSection = async (c, s) => {
+export const getTutorial = async (c, s) => {
     const dir = process.cwd();
-    const { name, focus, highlight } = await json(
-        `${dir}/tutorials/${c}/${s}/meta.json`
-    );
-    const { files, focusedFiles } = await transformToWebcontainerFilesWithFocus(
-        `${dir}/tutorials/${c}/${s}/src/`,
-        focus
-    );
-
-    const testFiles = await transformToWebcontainerFiles(
-        `${dir}/tutorials/${c}/${s}/tests/`
-    );
-    const test = (
-        await fs.readdir(`${dir}/tutorials/${c}/${s}/tests`)
-    ).toString();
-
-    const tutorialFileContent = await fs.readFile(
+    const tutorialFileContent = readFileSync(
         `${dir}/tutorials/${c}/${s}/tutorial.mdx`,
         "utf-8"
     );
-
-    const tutorial = await serialize(tutorialFileContent, {
+    return await serialize(tutorialFileContent, {
         mdxOptions: {
             remarkPlugins: [
-                [remarkCodeHike, { autoImport: false, showCopyButton: true }],
+                [remarkCodeHike, { autoImport: false, showCopyButton: true, theme: 'github-dark' }],
             ],
             useDynamicImport: true,
         },
     });
+};
+
+
+export const getTutorialAndFiles = async (c, s, {focus, highlight}) => {
+    const dir = process.cwd();
+    const {files, filesArray} = transformToWebcontainerFiles(`${dir}/tutorials/${c}/${s}/source/`)
+    const {focusedFiles, highlightedCode} = transformFocusedFiles(`${dir}/tutorials/${c}/${s}/source/`, focus, highlight)
+    const tutorial = await getTutorial(c, s)
 
     return {
-        name,
-        test,
         tutorial,
         files,
-        highlight,
+        filesArray,
+        highlightedItem: {highlightedName: path.basename(highlight.replace(/\./g, "*")), highlightedCode},
         focusedFiles,
-        testFiles,
     };
 };

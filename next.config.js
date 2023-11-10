@@ -49,10 +49,6 @@ const nextConfig = {
             key: "Cross-Origin-Resource-Policy",
             value: "cross-origin",
           },
-          {
-            key: "Cache-Control",
-            value: "no-cache",
-          },
         ],
       },
     ];

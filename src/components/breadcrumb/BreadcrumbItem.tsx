@@ -3,6 +3,7 @@ import { FC, useEffect, useRef, useState } from "react";
 const BreadcrumbItem: FC<BreadcrumbItemProps> = ({
   name,
   activeIndex,
+  className,
   onClick,
   items,
 }) => {
@@ -20,7 +21,9 @@ const BreadcrumbItem: FC<BreadcrumbItemProps> = ({
   }, []);
 
   return (
-    <div className="relative max-w-42 sm:w-64 px-2 text-base z-10">
+    <div
+      className={`relative max-w-42 sm:w-64 px-2 text-base z-10 ${className}`}
+    >
       <button
         ref={selectMenuRef}
         className="flex items-center justify-between gap-2 w-full px-3 py-2 text-gray-200 bg-gray-700 rounded-md shadow-sm cursor-default focus:border-gray-400"
@@ -97,6 +100,7 @@ const BreadcrumbItem: FC<BreadcrumbItemProps> = ({
 interface BreadcrumbItemProps {
   name: string;
   activeIndex: string;
+  className?: string;
   items: Record<
     string,
     {

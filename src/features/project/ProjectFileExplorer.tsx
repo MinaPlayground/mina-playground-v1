@@ -7,12 +7,7 @@ import {
   mutateFileTreeOnBlur,
 } from "@/mutations/fileTreeMutations";
 import { getCombinedPathName } from "@/utils/fileSystemWeb";
-import {
-  FileSystemAction,
-  FileSystemOnBlurHandler,
-  FileSystemOnChangePayload,
-  FileSystemType,
-} from "@/types";
+import { FileSystemOnBlurHandler, FileSystemOnChangeHandler } from "@/types";
 import { mapFileSystemAction } from "@/mappers/mapFileSystemAction";
 import {
   useDeleteFileTreeItemMutation,
@@ -74,11 +69,8 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
     );
   };
 
-  const onChange = async (
-    action: FileSystemAction,
-    type: FileSystemType,
-    payload: FileSystemOnChangePayload
-  ) => {
+  const onChange: FileSystemOnChangeHandler = async (action, type, payload) => {
+    const { path, value, directoryPath } = payload;
     setFileData(
       produce((fileData: FileSystemTree) => {
         mapFileSystemAction(action, type).action(fileData, payload);
@@ -86,14 +78,15 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
     );
 
     if (action === "delete") {
-      const location = getCombinedPathName(
-        payload.key as string,
-        payload.path,
-        "."
-      );
+      const location = getCombinedPathName(payload.key, path, ".");
       try {
+        const webcontainerPath = getCombinedPathName(
+          value,
+          directoryPath,
+          "/"
+        ).replace(/\*/g, ".");
         await deleteFileTreeItem({ id, body: { location } }).unwrap();
-        await webcontainerInstance?.fs.rm(location.replace(/\*/g, "."), {
+        await webcontainerInstance?.fs.rm(webcontainerPath, {
           recursive: true,
         });
       } catch {}

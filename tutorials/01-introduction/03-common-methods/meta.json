@@ -1,0 +1,9 @@
+{
+  "name": "Common methods",
+  "type": "playground",
+  "options": {
+    "focus": ["src/main.ts"],
+    "highlight": "src/main.ts",
+    "base": true
+  }
+}

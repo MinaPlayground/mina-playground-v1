@@ -12,8 +12,9 @@ const Breadcrumb: FC<BreadCrumbProps> = ({
   const router = useRouter();
 
   return (
-    <div className="flex m-2">
+    <div className="flex flex-col md:flex-row gap-y-2 m-2">
       <BreadcrumbItem
+        className={"z-[11]"}
         name={chapterName}
         activeIndex={chapterIndex}
         items={items}

@@ -17,7 +17,7 @@ const CodeEditor: FC<CodeEditorProps> = ({ code, setCodeChange }) => {
 
   return (
     <Editor
-      className="editor"
+      className="editor max-lg:h-[300px]"
       language={"typescript"}
       value={code}
       theme="dark"

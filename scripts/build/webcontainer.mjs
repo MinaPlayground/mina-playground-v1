@@ -1,74 +1,53 @@
-import fs from "fs/promises";
 import path from "path";
+import {readdirSync, readFileSync, statSync} from "fs";
 
-export const transformToWebcontainerFiles = async (
+export const transformToWebcontainerFiles = (
     dir,
-    files = {}
+    files = {},
+    filesArray = [],
+    originalDir = dir
 ) => {
-    const projectDir = await fs.readdir(dir);
+    const projectDir = readdirSync(dir);
     for (const item of projectDir) {
         const itemPath = path.join(dir, item);
-        const stats = await fs.stat(itemPath);
+        const stats = statSync(itemPath);
         if (stats.isDirectory()) {
             files[item] = {
                 directory: {},
             };
-            await transformToWebcontainerFiles(itemPath, files[item].directory);
+            transformToWebcontainerFiles(itemPath, files[item].directory, filesArray, originalDir);
         } else {
-            const fileName = path.basename(item);
-            const fileContent = await fs.readFile(itemPath, { encoding: "utf-8" });
-            files[fileName.replace(/\./g, "*")] = {
+            const fileContent = readFileSync(itemPath, { encoding: "utf-8" });
+            files[item.replace(/\./g, "*")] = {
                 file: {
                     contents: fileContent,
                 },
             };
+            const fileNameWithPath = itemPath.replace(originalDir, '')
+            filesArray.push(fileNameWithPath)
         }
     }
-    return files;
+    return {files, filesArray};
 };
 
-export const transformToWebcontainerFilesWithFocus = async (
+export const transformFocusedFiles = (
     dir,
-    focus,
-    files = {},
-    focusedFiles = {},
-    basePath = dir
+    items,
+    highlight
 ) => {
-    const projectDir = await fs.readdir(dir);
-    for (const item of projectDir) {
-        const itemPath = path.join(dir, item);
-        const stats = await fs.stat(itemPath);
-        if (stats.isDirectory()) {
-            files[item] = {
-                directory: {},
-            };
-            focusedFiles[item] = {
-                directory: {},
-            };
-            await transformToWebcontainerFilesWithFocus(
-                itemPath,
-                focus,
-                files[item].directory,
-                focusedFiles[item].directory,
-                basePath
-            );
-        } else {
-            const fileName = path.basename(item);
-            const fileContent = await fs.readFile(itemPath, { encoding: "utf-8" });
-            if (focus.includes(itemPath.replace(basePath, ""))) {
-                focusedFiles[fileName.replace(/\./g, "*")] = {
-                    file: {
-                        contents: fileContent,
-                    },
-                };
-            } else {
-                files[fileName.replace(/\./g, "*")] = {
-                    file: {
-                        contents: fileContent,
-                    },
-                };
+    let focusedFiles = {}
+    let highlightedCode = ''
+    for (const item of items) {
+        const name = path.basename(item)
+        const fileContent = readFileSync(`${dir}/${item}`, {encoding: "utf-8"})
+        focusedFiles[name.replace(/\./g, "*")] = {
+            file: {
+                contents: fileContent
             }
         }
+        if (item === highlight) {
+            highlightedCode = fileContent
+        }
     }
-    return { files, focusedFiles };
+    return {focusedFiles, highlightedCode}
 };

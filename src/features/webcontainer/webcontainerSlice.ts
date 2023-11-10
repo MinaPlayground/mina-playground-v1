@@ -1,13 +1,14 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/store";
-import { FileSystemTree, WebContainer } from "@webcontainer/api";
+import { WebContainer } from "@webcontainer/api";
 
 interface WebcontainerState {
   initializingWebcontainer: boolean;
-  initializingWebcontainerError: boolean;
+  initializingWebcontainerError: string | null;
+  webcontainerStarted: boolean;
   webcontainerInstance: WebContainer | null;
   shellProcessInput: WritableStreamDefaultWriter | null;
-
+  isRemovingFiles: boolean;
   isRunning: boolean;
   isAborting: boolean;
   isTestPassed: boolean | null;
@@ -21,10 +22,12 @@ interface WebcontainerState {
 }
 
 const initialState: WebcontainerState = {
-  initializingWebcontainer: false,
-  initializingWebcontainerError: false,
+  initializingWebcontainer: true,
+  initializingWebcontainerError: null,
+  webcontainerStarted: false,
   webcontainerInstance: null,
   shellProcessInput: null,
+  isRemovingFiles: false,
   isRunning: false,
   isAborting: false,
   isTestPassed: null,
@@ -33,97 +36,120 @@ const initialState: WebcontainerState = {
   serverUrl: null,
 };
 
-export const initializeWebcontainer = createAsyncThunk(
-  "initializeWebcontainer",
+export const installDependencies = createAsyncThunk(
+  "installDependencies",
   async (
-    {
-      fileSystemTree,
-      initTerminal = true,
-    }: { fileSystemTree: FileSystemTree; initTerminal?: boolean },
-    { dispatch }
+    { chapter }: { chapter: string },
+    { dispatch, getState, rejectWithValue }
   ) => {
-    if (initTerminal) {
-      const { FitAddon } = await import("xterm-addon-fit");
-      const fitAddon = new FitAddon();
-      const { Terminal } = await import("xterm");
-      const terminalEl = document.querySelector(".terminal");
-      const terminal = new Terminal({
-        convertEol: true,
-      });
-      terminal.loadAddon(fitAddon);
-      terminal.open(<HTMLElement>terminalEl);
-      fitAddon.fit();
-
-      const { WebContainer } = await import("@webcontainer/api");
-      const webcontainer = await WebContainer.boot();
-      await webcontainer.mount(fileSystemTree);
-
-      webcontainer.on("server-ready", (port, url) => {
-        dispatch(setServerUrl(url));
-      });
-
-      const installProcess = await webcontainer.spawn("npm", ["install"]);
-      installProcess.output.pipeTo(
-        new WritableStream({
-          write(data) {
-            terminal.write(data);
-          },
-        })
-      );
-
-      if ((await installProcess.exit) !== 0) {
-        throw new Error("Installation failed");
-      }
-
-      const shellProcess = await webcontainer.spawn("jsh", {
-        terminal: {
-          cols: terminal.cols,
-          rows: terminal.rows,
-        },
-      });
-
-      const xterm_resize_ob = new ResizeObserver(function (entries) {
-        fitAddon.fit();
-        shellProcess.resize({
-          cols: terminal.cols,
-          rows: terminal.rows,
-        });
-      });
-      xterm_resize_ob.observe(<HTMLElement>terminalEl);
-
-      const input = shellProcess.input.getWriter();
-
-      terminal.onData((data) => {
-        input.write(data);
-      });
-
-      shellProcess.output.pipeTo(
-        new WritableStream({
-          write(data) {
-            terminal.write(data);
-            if (data === "^C") {
-              dispatch(setIsAborting(true));
-            }
-            if (data.endsWith("[3G")) {
-              dispatch(setIsRunning(false));
-              dispatch(setIsAborting(false));
-            }
-          },
-        })
-      );
-      return { webcontainer, input };
-    }
-
     const { WebContainer } = await import("@webcontainer/api");
-    const webcontainer = await WebContainer.boot();
-    await webcontainer.mount(fileSystemTree);
+    const webcontainer = await WebContainer.boot({
+      workdirName: "mina",
+    });
+    dispatch(setWebcontainerInstance(webcontainer));
+
+    // TODO make sure it only loads the specific base file
+    const baseFiles = (await import(`@/json/${chapter}-base.json`)).default;
+    await webcontainer.mount(baseFiles);
 
     const installProcess = await webcontainer.spawn("npm", ["install"]);
     if ((await installProcess.exit) !== 0) {
       throw new Error("Installation failed");
     }
 
-    const shellProcess = await webcontainer.spawn("jsh");
+    return { webcontainer };
+  }
+);
+
+export const writeCommand = createAsyncThunk(
+  "writeCommand",
+  async (command: string, { getState, dispatch }) => {
+    dispatch(setIsRunning(true));
+    const { webcontainer } = getState() as { webcontainer: WebcontainerState };
+    await webcontainer.shellProcessInput?.write(command);
+  }
+);
+
+export const removeFiles = createAsyncThunk(
+  "removeFiles",
+  async (files: string[], { getState, dispatch }) => {
+    const { webcontainer } = getState() as { webcontainer: WebcontainerState };
+    await Promise.all(
+      files.map(async (item) => {
+        // @ts-ignore
+        return await webcontainer.webcontainerInstance.fs.rm(item, {
+          force: true,
+        });
+      })
+    );
+  }
+);
+
+export const initializeTerminal = createAsyncThunk(
+  "initTerminal",
+  async (_: void, { getState, dispatch }) => {
+    const { webcontainer } = getState() as { webcontainer: WebcontainerState };
+    const { FitAddon } = await import("xterm-addon-fit");
+    const fitAddon = new FitAddon();
+    const { Terminal } = await import("xterm");
+    const terminalEl = document.querySelector(".terminal");
+    const terminal = new Terminal({
+      convertEol: true,
+    });
+    terminal.loadAddon(fitAddon);
+    terminal.open(<HTMLElement>terminalEl);
+    fitAddon.fit();
+
+    // @ts-ignore
+    const shellProcess = await webcontainer.webcontainerInstance.spawn("jsh", {
+      terminal: {
+        cols: terminal.cols,
+        rows: terminal.rows,
+      },
+    });
+
+    const xtermResizeOb = new ResizeObserver(function (entries) {
+      fitAddon.fit();
+      shellProcess.resize({
+        cols: terminal.cols,
+        rows: terminal.rows,
+      });
+    });
+
+    xtermResizeOb.observe(<HTMLElement>terminalEl);
+
+    const input = shellProcess.input.getWriter();
+
+    terminal.onData((data) => {
+      input.write(data);
+    });
+
+    shellProcess.output.pipeTo(
+      new WritableStream({
+        write(data) {
+          terminal.write(data);
+          if (data === "^C") {
+            dispatch(setIsAborting(true));
+          }
+          if (data.endsWith("[3G")) {
+            dispatch(setIsRunning(false));
+            dispatch(setIsAborting(false));
+          }
+        },
+      })
+    );
+
+    return { input };
+  }
+);
+
+export const initializeShellProcess = createAsyncThunk(
+  "initShellProcess",
+  async (_: void, { getState, dispatch }) => {
+    const { webcontainer } = getState() as { webcontainer: WebcontainerState };
+
+    // @ts-ignore
+    const shellProcess = await webcontainer.webcontainerInstance.spawn("jsh");
     const input = shellProcess.input.getWriter();
 
     shellProcess.output.pipeTo(
@@ -142,16 +168,8 @@ export const initializeWebcontainer = createAsyncThunk(
         },
       })
     );
-    return { webcontainer, input };
-  }
-);
 
-export const writeCommand = createAsyncThunk(
-  "writeCommand",
-  async (command: string, { getState, dispatch }) => {
-    dispatch(setIsRunning(true));
-    const { webcontainer } = getState() as { webcontainer: WebcontainerState };
-    await webcontainer.shellProcessInput?.write(command);
+    return { input };
   }
 );
 
@@ -201,6 +219,20 @@ export const webcontainerSlice = createSlice({
   name: "webcontainer",
   initialState,
   reducers: {
+    reset: (state) => {
+      /* keep webcontainer state since we are re-using the current webcontainer process */
+      const webContainerState = {
+        webcontainerInstance: state.webcontainerInstance,
+        webcontainerStarted: state.webcontainerStarted,
+        initializingWebcontainer: state.initializingWebcontainer,
+        // isRemovingFiles: true,
+      };
+
+      return {
+        ...initialState,
+        ...webContainerState,
+      };
+    },
     setIsRunning: (state, action: PayloadAction<boolean>) => {
       state.isRunning = action.payload;
     },
@@ -219,20 +251,38 @@ export const webcontainerSlice = createSlice({
     setServerUrl: (state, action: PayloadAction<any>) => {
       state.serverUrl = action.payload;
     },
+    setWebcontainerInstance: (state, action: PayloadAction<any>) => {
+      state.webcontainerInstance = action.payload;
+    },
+    setWebcontainerStarted: (state, action: PayloadAction<any>) => {
+      state.webcontainerInstance = action.payload;
+    },
   },
   extraReducers(builder) {
     builder
-      .addCase(initializeWebcontainer.pending, (state, action) => {
-        state.initializingWebcontainer = true;
+      .addCase(installDependencies.pending, (state, action) => {
+        state.webcontainerStarted = true;
+        state.initializingWebcontainerError = null;
       })
-      .addCase(initializeWebcontainer.fulfilled, (state, action) => {
+      .addCase(installDependencies.fulfilled, (state, action) => {
         state.initializingWebcontainer = false;
-        state.webcontainerInstance = action.payload.webcontainer;
+      })
+      .addCase(installDependencies.rejected, (state, action) => {
+        if (action.payload) return;
+        state.initializingWebcontainerError =
+          action.error.message ?? "An unexpected error has occurred";
+      })
+      .addCase(initializeTerminal.fulfilled, (state, action) => {
         state.shellProcessInput = action.payload.input;
       })
-      .addCase(initializeWebcontainer.rejected, (state, action) => {
-        state.initializingWebcontainer = false;
-        state.initializingWebcontainerError = true;
+      .addCase(initializeShellProcess.fulfilled, (state, action) => {
+        state.shellProcessInput = action.payload.input;
+      })
+      .addCase(removeFiles.pending, (state, action) => {
+        state.isRemovingFiles = true;
+      })
+      .addCase(removeFiles.fulfilled, (state, action) => {
+        state.isRemovingFiles = false;
       });
     //TODO add reject case for write command
   },
@@ -241,8 +291,17 @@ export const webcontainerSlice = createSlice({
 export const selectInitializingEsbuild = (state: RootState) =>
   state.webcontainer.initializingWebcontainer;
 
+export const selectInitializingWebContainerError = (state: RootState) =>
+  state.webcontainer.initializingWebcontainerError;
+
 export const selectWebcontainerInstance = (state: RootState) =>
   state.webcontainer.webcontainerInstance;
+
+export const selectWebcontainerStarted = (state: RootState) =>
+  state.webcontainer.webcontainerStarted;
+
+export const selectIsRemovingFiles = (state: RootState) =>
+  state.webcontainer.isRemovingFiles;
 
 export const selectIsRunning = (state: RootState) =>
   state.webcontainer.isRunning;
@@ -268,6 +327,7 @@ export const {
   setIsDeploying,
   setDeploymentMessage,
   setIsTestPassed,
-  setServerUrl,
+  setWebcontainerInstance,
+  reset,
 } = webcontainerSlice.actions;
 export default webcontainerSlice.reducer;

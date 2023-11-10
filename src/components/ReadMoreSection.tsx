@@ -1,14 +1,12 @@
 import { FC } from "react";
+import Link from "next/link";
 
 const ReadMoreSection: FC = () => {
   return (
     <section>
       <div className="px-4 mx-auto max-w-screen-xl mb-12">
         <div className="shadow-2xl opacity-90 bg-gradient-to-br from-pink-500 to-orange-400 rounded-lg p-8 md:p-12 mb-8">
-          <a
-            href="#"
-            className="bg-white text-black text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mb-2"
-          >
+          <div className="bg-white text-black text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mb-2">
             <svg
               className="w-3 h-3 mr-1"
               fill="currentColor"
@@ -19,17 +17,17 @@ const ReadMoreSection: FC = () => {
               <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
             </svg>
             Tutorials
-          </a>
+          </div>
           <h1 className="text-white text-3xl md:text-5xl font-extrabold mb-2">
-            How to setup and create a zkApp
+            How to create a simple Smart Contract
           </h1>
           <p className="text-lg font-normal text-white mb-6">
-            Follow our interactive tutorial and learn how to setup and create
-            your own zkApp with a step-to-step guide.
+            Follow the interactive tutorial and learn how to create your own
+            Smart Contract on Mina Protocol with a step-to-step guide.
           </p>
-          <a
-            href="#"
-            className="inline-flex justify-center items-center py-2.5 px-5 text-base font-medium text-center rounded-lg bg-gray-100 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300"
+          <Link
+            href="/tutorial/01-introduction/01-o1js"
+            className="inline-flex justify-center items-center py-2.5 px-5 text-base font-medium text-center rounded-lg bg-gray-100 text-black hover:bg-gray-200"
           >
             Read more
             <svg
@@ -45,14 +43,11 @@ const ReadMoreSection: FC = () => {
                 clipRule="evenodd"
               />
             </svg>
-          </a>
+          </Link>
         </div>
         <div className="grid md:grid-cols-2 gap-8">
           <div className="shadow-2xl bg-[#252728] rounded-lg p-8 md:p-12">
-            <a
-              href="#"
-              className="bg-gradient-to-br from-pink-500 to-orange-400 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mb-2"
-            >
+            <div className="bg-gradient-to-br from-pink-500 to-orange-400 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mb-2">
               <svg
                 className="w-3 h-3 mr-1"
                 fill="currentColor"
@@ -67,19 +62,15 @@ const ReadMoreSection: FC = () => {
                 />
               </svg>
               Projects
-            </a>
+            </div>
             <h2 className="text-gray-200 text-3xl font-extrabold mb-2">
-              Manage your zkApp and Smart Contract projects
+              Create your own project
             </h2>
             <p className="text-lg font-normal text-gray-400 mb-4">
-              Create and manage public/private zkApp and Smart Contract
-              projects.
+              Create, test and run Smart Contract projects online.
             </p>
-            <a
-              href="#"
-              className="text-white hover:underline font-medium text-lg inline-flex items-center"
-            >
-              Read more
+            <div className="text-white font-medium text-lg inline-flex items-center">
+              Coming soon!
               <svg
                 aria-hidden="true"
                 className="w-4 h-4 ml-2"
@@ -95,13 +86,10 @@ const ReadMoreSection: FC = () => {
                   d="M17 8l4 4m0 0l-4 4m4-4H3"
                 />
               </svg>
-            </a>
+            </div>
           </div>
           <div className="shadow-2xl bg-[#252728] rounded-lg p-8 md:p-12">
-            <a
-              href="#"
-              className="bg-gradient-to-br from-pink-500 to-orange-400 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mb-2"
-            >
+            <div className="bg-gradient-to-br from-pink-500 to-orange-400 text-white text-xs font-medium inline-flex items-center px-2.5 py-0.5 rounded-md mb-2">
               <svg
                 className="w-3 h-3 mr-1"
                 fill="currentColor"
@@ -116,7 +104,7 @@ const ReadMoreSection: FC = () => {
                 />
               </svg>
               Smart Contracts
-            </a>
+            </div>
             <h2 className="text-gray-200 text-3xl font-extrabold mb-2">
               Deploy Smart Contracts in seconds
             </h2>
@@ -124,11 +112,8 @@ const ReadMoreSection: FC = () => {
               Deploy Smart Contracts easily and directly using our web
               interface.
             </p>
-            <a
-              href="#"
-              className="text-white hover:underline font-medium text-lg inline-flex items-center"
-            >
-              Read more
+            <div className="text-white font-medium text-lg inline-flex items-center">
+              Coming soon!
               <svg
                 aria-hidden="true"
                 className="w-4 h-4 ml-2"
@@ -144,7 +129,7 @@ const ReadMoreSection: FC = () => {
                   d="M17 8l4 4m0 0l-4 4m4-4H3"
                 />
               </svg>
-            </a>
+            </div>
           </div>
         </div>
       </div>
