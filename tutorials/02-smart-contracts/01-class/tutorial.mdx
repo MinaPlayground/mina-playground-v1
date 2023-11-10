@@ -1,0 +1,49 @@
+# Smart Contracts
+Now that we have covered the basics of writing o1js programs, let's see how to create a smart contract.
+
+## SmartContract
+
+Smart contracts are written by extending the base class ***SmartContract***:
+```ts
+class HelloWorld extends SmartContract {}
+```
+
+The ***constructor*** of a ***SmartContract*** is inherited from the base class and should not be overriden. It takes the zkApp account address (a public key) as its only argument:
+```ts
+let zkAppKey = PrivateKey.random();
+let zkAppAddress = PublicKey.fromPrivateKey(zkAppKey);
+
+let zkApp = new HelloWorld(zkAppAddress);
+```
+
+Later, you learn how to deploy a smart contract to an on-chain account.
+
+NOTE: On Mina, there is no strong distinction between normal "user accounts" and "zkApp accounts". A zkApp account is just a normal account that has a smart contract deployed to it – which essentially just means there's a verification key stored on the account, which can verify zero-knowledge proofs generated with the smart contract.
+
+### Tutorial
+
+Add the following ***Class*** definition:
+
+```ts
+class HelloWorld extends SmartContract {}
+```
+
+Declare a variable ***zkAppKey*** and generate a private key using the ***random*** method on the ***PrivateKey*** class:
+```ts
+const zkAppKey = PrivateKey.random();
+```
+
+Declare a variable ***zkAppAddress*** by deriving a public key from the private key using the ***fromPrivateKey*** method on the ***PublicKey*** class:
+```ts
+let zkAppAddress = PublicKey.fromPrivateKey(zkAppKey);
+```
+
+Declare a variable ***zkApp*** and instantiate the HelloWorld class, providing zkAppAddress as an input parameter.
+```ts
+let zkApp = new HelloWorld(zkAppAddress);
+```
+
+Log our instantiated HelloWorld class:
+```ts
+Provable.log(zkApp)
+```
