@@ -52,7 +52,7 @@ const BreadcrumbItem: FC<BreadcrumbItemProps> = ({
       {state ? (
         <div className="relative w-full">
           <ul
-            className="absolute w-full overflow-y-auto bg-white border rounded-md shadow-sm max-h-64"
+            className="absolute w-full overflow-y-auto bg-white border rounded-md shadow-sm"
             role="listbox"
           >
             {Object.entries(items).map(([key, value], index) => {

@@ -1,0 +1,66 @@
+# Initializing state
+
+You initialize on-chain state in the ***init()*** method.
+
+Like the constructor, ***init()*** is predefined on the base ***SmartContract*** class. It is called when you deploy your zkApp with the zkApp CLI, for the first time. It won't be called if you upgrade your contract and deploy a second time. You can override this method to add initialization of your on-chain state:
+```ts
+class HelloWorld extends SmartContract {
+  @state(Field) x = State<Field>();
+
+  init() {
+    super.init();
+    this.x.set(Field(10)); // initial state
+  }
+}
+```
+
+You must call ***super.init()*** to set your entire state to 0.
+
+If you don't have any state to initialize to values other than 0, then there's no need to override ***init()***, you can just leave it out. The previous example set the state ***x*** to ***Field(10)***.
+
+
+### Tutorial
+
+Add the following ***Class*** definition:
+```ts
+class HelloWorld extends SmartContract {
+  @state(Field) x = State<Field>();
+
+  init() {
+    super.init();
+    this.x.set(Field(10)); // initial state
+  }
+}
+```
+
+Add our local blockchain implementation so we can interact with our Smart Contract:
+```ts
+const useProof = false;
+const Local = Mina.LocalBlockchain({ proofsEnabled: useProof });
+Mina.setActiveInstance(Local);
+const { privateKey: deployerKey, publicKey: deployerAccount } = Local.testAccounts[0];
+const { privateKey: senderKey, publicKey: senderAccount } = Local.testAccounts[1];
+```
+
+Initialize the Smart Contract and send the transaction:
+```ts
+const zkAppPrivateKey = PrivateKey.random();
+const zkAppAddress = zkAppPrivateKey.toPublicKey();
+const zkAppInstance = new HelloWorld(zkAppAddress);
+const deployTxn = await Mina.transaction(deployerAccount, () => {
+  AccountUpdate.fundNewAccount(deployerAccount);
+  zkAppInstance.deploy();
+});
+await deployTxn.sign([deployerKey, zkAppPrivateKey]).send();
+```
+
+Retrieve and log the initial state ***x***:
+```ts
+const x = zkAppInstance.x.get();
+Provable.log('state after init:', x)
+```
+
+This will log the initial state of ***x*** which is set to 10 within the ***init()*** method:
+```
+state after init: 10
+```

@@ -1,0 +1,104 @@
+# Assertions
+
+Assertions can be incredibly useful to constrain state updates. Common assertions you may use are:
+```ts
+x.assertEquals(y); // x = y
+x.assertBoolean(); // x = 0 or x = 1
+x.assertLt(y);     // x < y
+x.assertLte(y);    // x <= y
+x.assertGt(y);     // x > y
+x.assertGte(y);    // x >= y
+```
+
+Building upon our previous ***HelloWorld*** example, we enhance it by modifying the ***increment()*** method to now accept a parameter:
+```ts
+class HelloWorld extends SmartContract {
+  @state(Field) x = State<Field>();
+
+  @method increment(xPlus1: Field) {
+    const x = this.x.get();
+    this.x.assertEquals(x);
+
+    x.add(1).assertEquals(xPlus1);
+
+    this.x.set(xPlus1);
+  }
+}
+```
+
+Here, after obtaining the current state ***x*** and asserting that it equals the on-chain value, we make another assertion:
+```ts
+x.add(1).assertEquals(xPlus1);
+```
+
+If the assertion fails, o1js will throw an error and not submit the transaction. On the other hand, if it succeeds, it becomes part of the proof that is verified on-chain.
+
+Because of this, our new version of ***increment()*** is guaranteed to behave like the previous version: It can only ever update the state ***x*** to ***x + 1***.
+
+You can add optional failure messages to assertions, to make debugging easier. For example, the above example could be written as:
+```ts
+x.add(1).assertEquals(xPlus1, 'x + 1 should equal xPlus1');
+```
+
+### Tutorial
+
+Add the following ***Class*** definition:
+```ts
+class HelloWorld extends SmartContract {
+  @state(Field) x = State<Field>();
+
+  @method increment(xPlus1: Field) {
+    const x = this.x.get();
+    this.x.assertEquals(x);
+    x.add(1).assertEquals(xPlus1);
+    this.x.set(xPlus1);
+  }
+}
+```
+
+Add our local blockchain implementation so we can interact with our Smart Contract:
+```ts
+const useProof = false;
+const Local = Mina.LocalBlockchain({ proofsEnabled: useProof });
+Mina.setActiveInstance(Local);
+const { privateKey: deployerKey, publicKey: deployerAccount } = Local.testAccounts[0];
+const { privateKey: senderKey, publicKey: senderAccount } = Local.testAccounts[1];
+```
+
+Initialize the Smart Contract and send the transaction:
+```ts
+const zkAppPrivateKey = PrivateKey.random();
+const zkAppAddress = zkAppPrivateKey.toPublicKey();
+const zkAppInstance = new HelloWorld(zkAppAddress);
+const deployTxn = await Mina.transaction(deployerAccount, () => {
+  AccountUpdate.fundNewAccount(deployerAccount);
+  zkAppInstance.deploy();
+});
+await deployTxn.sign([deployerKey, zkAppPrivateKey]).send();
+```
+
+To update your local zkApp account with a transaction, add the following code:
+```ts
+const txn1 = await Mina.transaction(senderAccount, () => {
+  zkAppInstance.increment(Field(1));
+});
+await txn1.prove();
+const transaction = await txn1.sign([senderKey]).send();
+```
+This code creates a new transaction that attempts to increment the field ***x*** using the ***increment()*** function. This will only work if our input value ***xPlus1*** is equal to ***x + 1***
+
+Now log the value of our transaction:
+```ts
+Provable.log(transaction)
+```
+Which will let you know that the transaction is successful.
+
+We can now pass an invalid value for ***xPlus1*** to our ***increment()*** method:
+```ts
+zkAppInstance.increment(Field(2));
+```
+
+Our assertion now fails because our input value ***xPlus1*** is not equal to ***x + 1***:
+```ts
+Error: Field.assertEquals(): 1 != 2
+```
