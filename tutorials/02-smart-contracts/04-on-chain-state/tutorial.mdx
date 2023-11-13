@@ -1,0 +1,74 @@
+# State
+
+A smart contract can contain ***on-chain state***, which is declared as a property on the class with the ***@state*** decorator:
+
+```ts
+class HelloWorld extends SmartContract {
+  @state(Field) x = State<Field>();
+}
+```
+
+Here, ***x*** is of type ***Field***. Like with method inputs, only o1js structs can be used for state variables. In the current design, the state can consist of at most 8 Fields of 32 bytes each. These states are stored on the zkApp account. Some structs take up more than one Field: for example, a PublicKey needs 2 of the 8 Fields. States are initialized with the ***State()*** function.
+
+A method can modify on-chain state by using the ***set()*** method:
+```ts
+class HelloWorld extends SmartContract {
+  @state(Field) x = State<Field>();
+
+  @method setX(x: Field) {
+    this.x.set(x);
+  }
+}
+```
+
+As a zkApp developer, if you add this method to your smart contract, you are saying: "Anyone can call this method, to set ***x*** on the account to any value they want."
+
+### Tutorial
+
+Add the following ***Class*** definition:
+```ts
+class HelloWorld extends SmartContract {
+  @state(Field) x = State<Field>();
+
+  @method setX(x: Field) {
+    this.x.set(x);
+  }
+}
+```
+
+Add our local blockchain implementation so we can interact with our Smart Contract:
+```ts
+const useProof = false;
+const Local = Mina.LocalBlockchain({ proofsEnabled: useProof });
+Mina.setActiveInstance(Local);
+const { privateKey: deployerKey, publicKey: deployerAccount } = Local.testAccounts[0];
+const { privateKey: senderKey, publicKey: senderAccount } = Local.testAccounts[1];
+```
+
+Initialize the Smart Contract and send the transaction:
+```ts
+const zkAppPrivateKey = PrivateKey.random();
+const zkAppAddress = zkAppPrivateKey.toPublicKey();
+const zkAppInstance = new HelloWorld(zkAppAddress);
+const deployTxn = await Mina.transaction(deployerAccount, () => {
+  AccountUpdate.fundNewAccount(deployerAccount);
+  zkAppInstance.deploy();
+});
+await deployTxn.sign([deployerKey, zkAppPrivateKey]).send();
+```
+
+To update your local zkApp account with a transaction, add the following code:
+```ts
+const txn1 = await Mina.transaction(senderAccount, () => {
+  zkAppInstance.setX(Field(9));
+});
+await txn1.prove();
+const transaction = await txn1.sign([senderKey]).send();
+```
+This code creates a new transaction that attempts to update the field to the value ***9*** using the ***setX()*** function.
+
+Now log the value of our transaction:
+```ts
+Provable.log(transaction)
+```
+Which will let you know if the transaction is successful.
