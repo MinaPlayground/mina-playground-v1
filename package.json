@@ -35,6 +35,7 @@
     "monaco-jsx-syntax-highlight": "^1.2.0",
     "next": "13.2.1",
     "next-mdx-remote": "^4.4.1",
+    "nextjs-google-analytics": "^2.3.3",
     "nextjs-progressbar": "^0.0.16",
     "react": "18.2.0",
     "react-dom": "18.2.0",
