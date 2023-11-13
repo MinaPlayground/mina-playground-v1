@@ -1,0 +1,45 @@
+# Introduction to o1js
+o1js, fka. o1js, is a TypeScript (TS) library for:
+
+* Writing general-purpose zk programs
+* Writing zk smart contracts for Mina
+
+This is TS code that you might write when using o1js:
+
+```ts
+import { Field, Poseidon } from "o1js";
+
+function knowsPreimage(value: Field) {
+  let hash = Poseidon.hash([value]);
+  hash.assertEquals(expectedHash);
+}
+
+const correctValue = Field(1);
+const incorrectValue = Field(2);
+const expectedHash = Poseidon.hash([correctValue]);
+
+knowsPreimage(incorrectValue);
+```
+
+In a zkApp, this code can be used to prove that you know a secret value whose hash is publicly known without revealing the secret. The code is plain TypeScript (TS) and is executed as normal TS. You might call o1js an ***embedded domain-specific language (DSL)***.
+
+o1js provides data types and methods that are provable: You can prove their execution.
+
+In the previous example code, ***Poseidon.hash()*** and ***Field.assertEquals()*** are examples of provable method. Proofs are zero-knowledge, because they can be verified without learning their inputs and execution trace. Selected parts of the proof can be made public, if it suits your application.
+
+o1js is a general-purpose zk framework that gives you the tools to create zk proofs. It lets you write arbitrary zk programs leveraging a rich set of built-in provable operations, like basic arithmetic, hashing, signatures, boolean operations, comparisons, and more. Use the o1js framework to write zkApps on Mina, smart contracts that execute client-side and have private inputs.
+
+All of the o1js framework is packaged as a single TS library that can be used in major web browsers and Node.js.
+
+### Tutorial
+
+You can run the code by clicking the "Run" button on the right above the terminal. When you run it, you'll notice that the assertion fails because the value is not equal to the correct hash.
+
+Now, we'll use the correct value to pass the assertion. Change the function argument for ***knowsPreimage*** with ***correctValue***:
+
+```ts
+knowsPreimage(correctValue);
+```
+
+Click the "Run" button again. This time, the assertion will pass because we used the correct value which ***assertEquals*** the expected hash.
+

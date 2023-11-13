@@ -2,6 +2,7 @@ import { FC } from "react";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import {
   selectInitializingEsbuild,
+  selectInitializingWebContainerError,
   selectIsAborting,
   selectIsRunning,
 } from "@/features/webcontainer/webcontainerSlice";
@@ -17,6 +18,7 @@ const RunScriptButton: FC<RunScriptButtonProps> = ({
   const isRunning = useAppSelector(selectIsRunning);
   const isAborting = useAppSelector(selectIsAborting);
   const isInitializing = useAppSelector(selectInitializingEsbuild);
+  const webcontainerError = useAppSelector(selectInitializingWebContainerError);
 
   const onClick = isRunning ? onAbort : onRun;
   const { style, title } = isRunning
@@ -25,6 +27,8 @@ const RunScriptButton: FC<RunScriptButtonProps> = ({
         style: "from-green-400 via-green-500 to-green-600",
         title: runTitle,
       };
+
+  if (webcontainerError) return null;
 
   return isInitializing ? (
     <Loader
