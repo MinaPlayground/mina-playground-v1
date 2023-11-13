@@ -40,11 +40,10 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   return (
     <>
       <Head>
-        <title>Mina Playground</title>
-        <meta
-          name="description"
-          content="Interactive Smart Contracts tutorial"
-        />
+        <title>
+          Mina Playground {c} {s}
+        </title>
+        <meta name="description" content="Interactive tutorials" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/icon.svg" />
       </Head>

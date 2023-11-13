@@ -1,0 +1,107 @@
+# Public and private inputs
+
+While the state of a zkApp is ***public***, method parameters are ***private***.
+
+When a smart contract method is called, the proof it produces uses zero-knowledge to hide inputs and details of the computation.
+
+The only way method parameters can be exposed is when the computation explicitly exposes them, as in the last example where the input was directly stored in the public state: ***this.x.set(xPlus1);***
+
+For example where this is not the case, define a new method called ***incrementSecret()***:
+```ts
+class HelloWorld extends SmartContract {
+  @state(Field) x = State<Field>();
+
+  // ...
+
+  @method incrementSecret(secret: Field) {
+    const x = this.x.get();
+    this.x.assertEquals(x);
+
+    Poseidon.hash(secret).assertEquals(x);
+    this.x.set(Poseidon.hash(secret.add(1)));
+  }
+}
+```
+This time, the input is called ***secret***. Check that the hash of the secret is equal to the current state ***x***. If this is the case, add 1 to the secret and set ***x*** to the hash of that.
+
+When running this successfully, it just proves that the code was run with some input ***secret*** whose hash is ***x***, and that the new ***x*** is set to ***hash(secret + 1)***. However, the secret itself remains private, because it can't be deduced from its hash.
+
+### Tutorial
+
+Add the following ***Class*** definition:
+```ts
+class HelloWorld extends SmartContract {
+  @state(Field) x = State<Field>();
+
+   init() {
+    super.init();
+    this.x.set(Poseidon.hash([Field(1)]));
+  }
+
+  @method incrementSecret(secret: Field) {
+    const x = this.x.get();
+    this.x.assertEquals(x);
+
+    Poseidon.hash([secret]).assertEquals(x);
+    this.x.set(Poseidon.hash([secret.add(1)]));
+  }
+}
+```
+
+Add our local blockchain implementation so we can interact with our Smart Contract:
+```ts
+const useProof = false;
+const Local = Mina.LocalBlockchain({ proofsEnabled: useProof });
+Mina.setActiveInstance(Local);
+const { privateKey: deployerKey, publicKey: deployerAccount } = Local.testAccounts[0];
+const { privateKey: senderKey, publicKey: senderAccount } = Local.testAccounts[1];
+```
+
+Initialize the Smart Contract and send the transaction:
+```ts
+const zkAppPrivateKey = PrivateKey.random();
+const zkAppAddress = zkAppPrivateKey.toPublicKey();
+const zkAppInstance = new HelloWorld(zkAppAddress);
+const deployTxn = await Mina.transaction(deployerAccount, () => {
+  AccountUpdate.fundNewAccount(deployerAccount);
+  zkAppInstance.deploy();
+});
+await deployTxn.sign([deployerKey, zkAppPrivateKey]).send();
+```
+
+To update your local zkApp account with a transaction, add the following code:
+```ts
+const txn1 = await Mina.transaction(senderAccount, () => {
+  zkAppInstance.incrementSecret(Field(1));
+});
+await txn1.prove();
+const transaction = await txn1.sign([senderKey]).send();
+```
+This code creates a new transaction that attempts to increment the field ***x*** using the ***incrementSecret()*** function. It proves that the code was run with some input ***secret*** whose hash is ***x*** and that the new ***x*** is set to ***hash(secret + 1)***
+
+Now log the value of our transaction:
+```ts
+Provable.log(transaction)
+```
+Which will let you know that the transaction is successful.
+
+We can now execute another transaction and increment our input value:
+```ts
+const txn2 = await Mina.transaction(senderAccount, () => {
+  zkAppInstance.incrementSecret(Field(2));
+});
+await txn2.prove();
+const transaction2 = await txn2.sign([senderKey]).send();
+```
+
+Now log the value of our second transaction:
+```ts
+Provable.log(transaction2)
+```
+Which will let you know that the transaction is successful.
+
+Both transactions are now successful:
+```ts
+{ isSuccess: true }
+{ isSuccess: true }
+```

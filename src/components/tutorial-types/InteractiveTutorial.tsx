@@ -27,6 +27,7 @@ import { FileSystemTree } from "@webcontainer/api";
 import * as React from "react";
 import WebcontainerLoader from "@/features/webcontainer/WebcontainerLoader";
 import { useRouter } from "next/router";
+import { event } from "nextjs-google-analytics";
 
 const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
   type,
@@ -128,6 +129,10 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
   };
 
   const runTest = async () => {
+    event("run_tutorial", {
+      category: "Interactive tutorials",
+      label: `${chapter}-${section}`,
+    });
     dispatch(writeCommand(command));
   };
 
@@ -140,13 +145,13 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
           </div>
         ) : (
           <>
-            <div className="w-40 p-4">
-              <Tree
-                data={focusedFiles}
-                onClick={onClick}
-                enableActions={false}
-              />
-            </div>
+            {/*<div className="w-40 p-4">*/}
+            {/*  <Tree*/}
+            {/*    data={focusedFiles}*/}
+            {/*    onClick={onClick}*/}
+            {/*    enableActions={false}*/}
+            {/*  />*/}
+            {/*</div>*/}
             <CodeEditor code={code} setCodeChange={onCodeChange} />
           </>
         )}
