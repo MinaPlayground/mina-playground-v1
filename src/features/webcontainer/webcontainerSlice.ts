@@ -1,12 +1,13 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/store";
-import { WebContainer } from "@webcontainer/api";
+import { WebContainer, WebContainerProcess } from "@webcontainer/api";
 
 interface WebcontainerState {
   initializingWebcontainer: boolean;
   initializingWebcontainerError: string | null;
   webcontainerStarted: boolean;
   webcontainerInstance: WebContainer | null;
+  shellProcess: WebContainerProcess | null;
   shellProcessInput: WritableStreamDefaultWriter | null;
   isRemovingFiles: boolean;
   isRunning: boolean;
@@ -34,6 +35,7 @@ const initialState: WebcontainerState = {
   isDeploying: false,
   deploymentMessage: null,
   serverUrl: null,
+  shellProcess: null,
 };
 
 export const installDependencies = createAsyncThunk(
@@ -100,6 +102,11 @@ export const initializeTerminal = createAsyncThunk(
     terminal.open(<HTMLElement>terminalEl);
     fitAddon.fit();
 
+    if (webcontainer.shellProcess) {
+      webcontainer.shellProcess.kill();
+      await webcontainer.shellProcess.exit;
+    }
+
     // @ts-ignore
     const shellProcess = await webcontainer.webcontainerInstance.spawn("jsh", {
       terminal: {
@@ -107,6 +114,7 @@ export const initializeTerminal = createAsyncThunk(
         rows: terminal.rows,
       },
     });
+    dispatch(setShellProcess(shellProcess));
 
     const xtermResizeOb = new ResizeObserver(function (entries) {
       fitAddon.fit();
@@ -119,7 +127,6 @@ export const initializeTerminal = createAsyncThunk(
     xtermResizeOb.observe(<HTMLElement>terminalEl);
 
     const input = shellProcess.input.getWriter();
-
     terminal.onData((data) => {
       input.write(data);
     });
@@ -226,6 +233,7 @@ export const webcontainerSlice = createSlice({
         webcontainerStarted: state.webcontainerStarted,
         initializingWebcontainer: state.initializingWebcontainer,
         initializingWebcontainerError: state.initializingWebcontainerError,
+        shellProcess: state.shellProcess,
       };
 
       return {
@@ -253,6 +261,9 @@ export const webcontainerSlice = createSlice({
     },
     setWebcontainerInstance: (state, action: PayloadAction<any>) => {
       state.webcontainerInstance = action.payload;
+    },
+    setShellProcess: (state, action: PayloadAction<any>) => {
+      state.shellProcess = action.payload;
     },
     setWebcontainerStarted: (state, action: PayloadAction<any>) => {
       state.webcontainerInstance = action.payload;
@@ -328,6 +339,7 @@ export const {
   setDeploymentMessage,
   setIsTestPassed,
   setWebcontainerInstance,
+  setShellProcess,
   reset,
 } = webcontainerSlice.actions;
 export default webcontainerSlice.reducer;
