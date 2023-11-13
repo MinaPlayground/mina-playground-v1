@@ -16,6 +16,7 @@ import TutorialList from "@/components/tutorial/TutorialList";
 import TutorialSectionHeader from "@/components/tutorial/TutorialSectionHeader";
 import TutorialOrderedList from "@/components/tutorial/TutorialOrderedList";
 import RunHeader from "@/components/tutorial/RunHeader";
+import { GoogleAnalytics } from "nextjs-google-analytics";
 
 const components: Components = {
   h1: TutorialHeader,
@@ -30,16 +31,19 @@ const components: Components = {
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
   return (
-    <MDXProvider components={components}>
-      <Provider store={store}>
-        <NextNProgress
-          startPosition={0.3}
-          stopDelayMs={200}
-          height={3}
-          showOnShallow={true}
-        />
-        <Component key={router.asPath} {...pageProps} />
-      </Provider>
-    </MDXProvider>
+    <>
+      <GoogleAnalytics trackPageViews />
+      <MDXProvider components={components}>
+        <Provider store={store}>
+          <NextNProgress
+            startPosition={0.3}
+            stopDelayMs={200}
+            height={3}
+            showOnShallow={true}
+          />
+          <Component key={router.asPath} {...pageProps} />
+        </Provider>
+      </MDXProvider>
+    </>
   );
 }
