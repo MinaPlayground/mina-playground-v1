@@ -145,13 +145,13 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
           </div>
         ) : (
           <>
-            <div className="w-40 p-4">
-              <Tree
-                data={focusedFiles}
-                onClick={onClick}
-                enableActions={false}
-              />
-            </div>
+            {/*<div className="w-40 p-4">*/}
+            {/*  <Tree*/}
+            {/*    data={focusedFiles}*/}
+            {/*    onClick={onClick}*/}
+            {/*    enableActions={false}*/}
+            {/*  />*/}
+            {/*</div>*/}
             <CodeEditor code={code} setCodeChange={onCodeChange} />
           </>
         )}
