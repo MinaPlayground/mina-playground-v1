@@ -75,15 +75,9 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
     // );
 
     if (action === "delete") {
-      // const location = getCombinedPathName(payload.key, path, ".");
-      const location = payload.path.replace(/\//g, ".");
+      const location = path.replace(/\//g, ".directory.");
       try {
-        const webcontainerPath = getCombinedPathName(value, path, "/").replace(
-          /\*/g,
-          "."
-        );
-
-        console.log(payload);
+        const webcontainerPath = path.replace(/\*/g, ".");
         await deleteFileTreeItem({
           id,
           body: { location: location },
