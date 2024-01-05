@@ -34,10 +34,7 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
   const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
   const dockApi = useAppSelector(selectDockApi);
 
-  const onClick = async (
-    code: string,
-    { path, webcontainerPath }: { path: string; webcontainerPath: string }
-  ) => {
+  const onClick = async (code: string, path: string) => {
     dispatch(setCurrentTreeItem(path));
 
     const panel = dockApi?.getPanel(path);
@@ -49,7 +46,7 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
       id: path,
       title: path.replace(/\*/g, "."),
       component: "editor",
-      params: { id, value: code, directory: { path, webcontainerPath } },
+      params: { id, value: code, directory: path },
     });
   };
 
@@ -70,22 +67,27 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
   };
 
   const onChange: FileSystemOnChangeHandler = async (action, type, payload) => {
-    const { path, value, directoryPath } = payload;
-    setFileData(
-      produce((fileData: FileSystemTree) => {
-        mapFileSystemAction(action, type).action(fileData, payload);
-      })
-    );
+    const { path, value } = payload;
+    // setFileData(
+    //   produce((fileData: FileSystemTree) => {
+    //     mapFileSystemAction(action, type).action(fileData, payload);
+    //   })
+    // );
 
     if (action === "delete") {
-      const location = getCombinedPathName(payload.key, path, ".");
+      // const location = getCombinedPathName(payload.key, path, ".");
+      const location = payload.path.replace(/\//g, ".");
       try {
-        const webcontainerPath = getCombinedPathName(
-          value,
-          directoryPath,
-          "/"
-        ).replace(/\*/g, ".");
-        await deleteFileTreeItem({ id, body: { location } }).unwrap();
+        const webcontainerPath = getCombinedPathName(value, path, "/").replace(
+          /\*/g,
+          "."
+        );
+
+        console.log(payload);
+        await deleteFileTreeItem({
+          id,
+          body: { location: location },
+        }).unwrap();
         await webcontainerInstance?.fs.rm(webcontainerPath, {
           recursive: true,
         });

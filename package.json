@@ -26,7 +26,7 @@
     "comlink": "^4.4.1",
     "comlink-loader": "^2.0.0",
     "daisyui": "^3.4.0",
-    "dockview": "^1.7.6",
+    "dockview": "^1.8.5",
     "esbuild-wasm": "^0.17.10",
     "eslint": "8.35.0",
     "eslint-config-next": "13.2.1",

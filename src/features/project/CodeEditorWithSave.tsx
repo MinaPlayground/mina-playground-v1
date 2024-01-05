@@ -19,9 +19,8 @@ const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({
   value,
   directory,
 }) => {
-  const { webcontainerPath, path } = directory;
   const changedField = useAppSelector((state) =>
-    selectChangedField(state, webcontainerPath)
+    selectChangedField(state, directory)
   );
   const dispatch = useAppDispatch();
   const [code, setCode] = useState<string | undefined>("");
@@ -31,7 +30,7 @@ const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({
   const setCodeChange = async (code: string | undefined) => {
     if (!code) return;
     setCode(code);
-    dispatch(setChangedFields({ location: webcontainerPath, code }));
+    dispatch(setChangedFields({ location: directory, code }));
   };
 
   useEffect(() => {
@@ -41,22 +40,22 @@ const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({
 
   const isSaved = changedField?.saved;
   const results = findSmartContractMatches(code);
-  const formattedPath = path.replace(/\*/g, ".");
+  const formattedPath = directory.replace(/\*/g, ".");
 
   const save = async () => {
-    try {
-      await updateFileTree({
-        id: id,
-        body: { location: webcontainerPath, code },
-      }).unwrap();
-      dispatch(
-        setChangedFieldStatus({
-          location: webcontainerPath,
-          saved: true,
-        })
-      );
-      webcontainerInstance?.fs.writeFile(formattedPath, code || "");
-    } catch {}
+    // try {
+    //   await updateFileTree({
+    //     id: id,
+    //     body: { location: webcontainerPath, code },
+    //   }).unwrap();
+    //   dispatch(
+    //     setChangedFieldStatus({
+    //       location: webcontainerPath,
+    //       saved: true,
+    //     })
+    //   );
+    //   webcontainerInstance?.fs.writeFile(formattedPath, code || "");
+    // } catch {}
   };
 
   return (
@@ -78,7 +77,7 @@ const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({
 
 interface CodeEditorWithSaveProps {
   id: string;
-  directory: { path: string; webcontainerPath: string };
+  directory: string;
   value: string;
 }
 
