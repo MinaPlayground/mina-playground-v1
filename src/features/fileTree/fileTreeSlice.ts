@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/store";
 import { FileSystemTree } from "@webcontainer/api";
+import { fileTreeApi } from "@/services/fileTree";
 
 interface FileTreeState {
   currentTreeItem: string;
@@ -48,6 +49,14 @@ export const FileTreeSlice = createSlice({
       if (!(location in state.changedFields)) return;
       state.changedFields[location].saved = saved;
     },
+  },
+  extraReducers(builder) {
+    builder.addMatcher(
+      fileTreeApi.endpoints.deleteFileTreeItem.matchFulfilled,
+      (state, action) => {
+        state.fileSystemTree = action.payload.fileSystemTree;
+      }
+    );
   },
 });
 

@@ -70,23 +70,17 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id }) => {
 
   const onChange: FileSystemOnChangeHandler = async (action, type, payload) => {
     const { path, value } = payload;
-    // setFileData(
-    //   produce((fileData: FileSystemTree) => {
-    //     mapFileSystemAction(action, type).action(fileData, payload);
-    //   })
-    // );
-
     if (action === "delete") {
       const location = path.replace(/\//g, ".directory.");
       try {
         const webcontainerPath = path.replace(/\*/g, ".");
+        await webcontainerInstance?.fs.rm(webcontainerPath, {
+          recursive: true,
+        });
         await deleteFileTreeItem({
           id,
           body: { location: location },
         }).unwrap();
-        await webcontainerInstance?.fs.rm(webcontainerPath, {
-          recursive: true,
-        });
       } catch {}
     }
   };
