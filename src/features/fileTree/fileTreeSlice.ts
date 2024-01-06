@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/store";
+import { FileSystemTree } from "@webcontainer/api";
 
 interface FileTreeState {
   currentTreeItem: string;
@@ -10,17 +11,22 @@ interface FileTreeState {
       saved: boolean;
     }
   >;
+  fileSystemTree: FileSystemTree | null;
 }
 
 const initialState: FileTreeState = {
   currentTreeItem: "",
   changedFields: {},
+  fileSystemTree: null,
 };
 
 export const FileTreeSlice = createSlice({
   name: "fileTree",
   initialState,
   reducers: {
+    setFileSystemTree: (state, action: PayloadAction<FileSystemTree>) => {
+      state.fileSystemTree = action.payload;
+    },
     setCurrentTreeItem: (state, action: PayloadAction<string>) => {
       state.currentTreeItem = action.payload;
     },
@@ -48,13 +54,20 @@ export const FileTreeSlice = createSlice({
 export const selectCurrentDirectory = (state: RootState) =>
   state.fileTree.currentTreeItem;
 
+export const selectFileSystemTree = (state: RootState) =>
+  state.fileTree.fileSystemTree;
+
 export const selectChangedFields = (state: RootState) =>
   state.fileTree.changedFields;
 
 export const selectChangedField = (state: RootState, fieldName: string) =>
   state.fileTree.changedFields[fieldName];
 
-export const { setCurrentTreeItem, setChangedFields, setChangedFieldStatus } =
-  FileTreeSlice.actions;
+export const {
+  setCurrentTreeItem,
+  setChangedFields,
+  setChangedFieldStatus,
+  setFileSystemTree,
+} = FileTreeSlice.actions;
 
 export default FileTreeSlice.reducer;

@@ -13,7 +13,11 @@ import {
   useDeleteFileTreeItemMutation,
   useUpdateFileTreeMutation,
 } from "@/services/fileTree";
-import { setCurrentTreeItem } from "@/features/fileTree/fileTreeSlice";
+import {
+  selectCurrentDirectory,
+  selectFileSystemTree,
+  setCurrentTreeItem,
+} from "@/features/fileTree/fileTreeSlice";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import {
@@ -22,12 +26,10 @@ import {
 } from "@/features/webcontainer/webcontainerSlice";
 import { selectDockApi } from "@/features/dockView/dockViewSlice";
 
-const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
-  fileSystemTree,
-  id,
-}) => {
+const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id }) => {
   const dispatch = useAppDispatch();
-  const [fileData, setFileData] = useState<FileSystemTree>(fileSystemTree);
+  // const [fileData, setFileData] = useState<FileSystemTree>(fileSystemTree);
+  const fileData = useAppSelector(selectFileSystemTree);
   const [updateFileTree, { isLoading }] = useUpdateFileTreeMutation();
   const [deleteFileTreeItem, { isLoading: isLoadingDeletion }] =
     useDeleteFileTreeItemMutation();
@@ -51,19 +53,19 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
   };
 
   const createNewFolder = () => {
-    setFileData(
-      produce((fileData: FileSystemTree) => {
-        mutateFileTreeCreateNew(fileData, "directory");
-      })
-    );
+    // setFileData(
+    //   produce((fileData: FileSystemTree) => {
+    //     mutateFileTreeCreateNew(fileData, "directory");
+    //   })
+    // );
   };
 
   const createNewFile = () => {
-    setFileData(
-      produce((fileData: FileSystemTree) => {
-        mutateFileTreeCreateNew(fileData, "file");
-      })
-    );
+    // setFileData(
+    //   produce((fileData: FileSystemTree) => {
+    //     mutateFileTreeCreateNew(fileData, "file");
+    //   })
+    // );
   };
 
   const onChange: FileSystemOnChangeHandler = async (action, type, payload) => {
@@ -90,11 +92,11 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
   };
 
   const onBlur: FileSystemOnBlurHandler = async (action, type, payload) => {
-    setFileData(
-      produce((fileData) => {
-        mutateFileTreeOnBlur(fileData, payload);
-      })
-    );
+    // setFileData(
+    //   produce((fileData) => {
+    //     mutateFileTreeOnBlur(fileData, payload);
+    //   })
+    // );
 
     if (action === "create") {
       const { value, fullPath, directoryPath } = payload;
@@ -160,19 +162,20 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
           <path d="M512 416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96C0 60.7 28.7 32 64 32H192c20.1 0 39.1 9.5 51.2 25.6l19.2 25.6c6 8.1 15.5 12.8 25.6 12.8H448c35.3 0 64 28.7 64 64V416zM232 376c0 13.3 10.7 24 24 24s24-10.7 24-24V312h64c13.3 0 24-10.7 24-24s-10.7-24-24-24H280V200c0-13.3-10.7-24-24-24s-24 10.7-24 24v64H168c-13.3 0-24 10.7-24 24s10.7 24 24 24h64v64z" />
         </svg>
       </div>
-      <Tree
-        data={fileData}
-        onBlur={onBlur}
-        onChange={onChange}
-        onClick={onClick}
-        enableActions={true}
-      />
+      {fileData && (
+        <Tree
+          data={fileData}
+          onBlur={onBlur}
+          onChange={onChange}
+          onClick={onClick}
+          enableActions={true}
+        />
+      )}
     </div>
   );
 };
 
 interface ProjectFileExplorerProps {
-  fileSystemTree: FileSystemTree;
   id: string;
 }
 

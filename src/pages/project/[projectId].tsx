@@ -7,7 +7,7 @@ import { useEffect } from "react";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 // import { initializeWebcontainer } from "@/features/webcontainer/webcontainerSlice";
 import DockView from "@/components/dockview/DockView";
-
+import { setFileSystemTree } from "@/features/fileTree/fileTreeSlice";
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { projectId } = query;
   try {
@@ -32,6 +32,7 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
+    dispatch(setFileSystemTree(fileSystemTree));
     // dispatch(initializeWebcontainer({ fileSystemTree }));
   }, []);
 
@@ -45,7 +46,7 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
       </Head>
       <main>
         <Header />
-        <DockView id={_id} fileSystemTree={fileSystemTree} />
+        <DockView id={_id} />
       </main>
     </>
   );
