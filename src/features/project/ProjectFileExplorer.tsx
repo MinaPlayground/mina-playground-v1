@@ -6,7 +6,12 @@ import {
   mutateFileTreeCreateNew,
   mutateFileTreeOnBlur,
 } from "@/mutations/fileTreeMutations";
-import { getCombinedPathName } from "@/utils/fileSystemWeb";
+import {
+  getCombinedPathName,
+  normalizePath,
+  pathToWebContainerPath,
+  pathToWebcontainerPath,
+} from "@/utils/fileSystemWeb";
 import { FileSystemOnBlurHandler, FileSystemOnChangeHandler } from "@/types";
 import { mapFileSystemAction } from "@/mappers/mapFileSystemAction";
 import {
@@ -71,9 +76,9 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id }) => {
   const onChange: FileSystemOnChangeHandler = async (action, type, payload) => {
     const { path, value } = payload;
     if (action === "delete") {
-      const location = path.replace(/\//g, ".directory.");
+      const location = pathToWebContainerPath(path);
       try {
-        const webcontainerPath = path.replace(/\*/g, ".");
+        const webcontainerPath = normalizePath(path);
         await webcontainerInstance?.fs.rm(webcontainerPath, {
           recursive: true,
         });
@@ -111,24 +116,19 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id }) => {
     }
 
     if (action === "rename") {
-      const { path, key, value, directoryPath } = payload;
+      const { path, value } = payload;
       const body = {
-        location: getCombinedPathName(key as string, path, "."),
-        rename: getCombinedPathName(value, path, "."),
+        location: pathToWebContainerPath(path),
+        rename: pathToWebContainerPath(value),
       };
-
       try {
         await updateFileTree({
           id,
           body,
         }).unwrap();
-        const newPath = getCombinedPathName(value, directoryPath, "/");
-        const oldPath = getCombinedPathName(key, directoryPath, "/");
-        await webcontainerInstance?.spawn("mv", [
-          "-t",
-          newPath.replace(/\*/g, "."),
-          oldPath.replace(/\*/g, "."),
-        ]);
+        const newPath = normalizePath(value);
+        const oldPath = normalizePath(path);
+        await webcontainerInstance?.spawn("mv", ["-t", newPath, oldPath]);
       } catch {}
     }
   };
