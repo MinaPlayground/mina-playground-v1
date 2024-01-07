@@ -104,7 +104,7 @@ const TreeNode: FC<TreeNodeType> = ({
                   onBlur("rename", type, {
                     path,
                     key,
-                    value: inputFileName,
+                    value: getCombinedPathName(inputFileName, directory),
                   });
                   return;
                 }
@@ -112,7 +112,7 @@ const TreeNode: FC<TreeNodeType> = ({
                 onBlur("create", type, {
                   path,
                   key,
-                  value: inputFileName,
+                  value: getCombinedPathName(inputFileName, directory),
                 });
                 setIsEditing(false);
                 setShowChildren(false);
@@ -138,7 +138,7 @@ const TreeNode: FC<TreeNodeType> = ({
                 onBlur("create", type, {
                   path,
                   key,
-                  value: inputFileName,
+                  value: getCombinedPathName(inputFileName, directory),
                 });
                 setIsEditing(false);
                 setShowChildren(false);

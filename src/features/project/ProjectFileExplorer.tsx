@@ -10,7 +10,6 @@ import {
   getCombinedPathName,
   normalizePath,
   pathToWebContainerPath,
-  pathToWebcontainerPath,
 } from "@/utils/fileSystemWeb";
 import { FileSystemOnBlurHandler, FileSystemOnChangeHandler } from "@/types";
 import { mapFileSystemAction } from "@/mappers/mapFileSystemAction";
@@ -79,27 +78,21 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id }) => {
   };
 
   const onBlur: FileSystemOnBlurHandler = async (action, type, payload) => {
-    // setFileData(
-    //   produce((fileData) => {
-    //     mutateFileTreeOnBlur(fileData, payload);
-    //   })
-    // );
-
     if (action === "create") {
-      const { value, fullPath, directoryPath } = payload;
-      const webcontainerPath = getCombinedPathName(value, directoryPath, "/");
-      const body = { location: fullPath };
+      const { value } = payload;
+      const path = pathToWebContainerPath(value);
+      const webContainerPath = normalizePath(value);
+      const body = {
+        location: type === "directory" ? path : `${path}.file.contents`,
+      };
       try {
         await updateFileTree({
           id,
           body,
         }).unwrap();
         type === "directory"
-          ? webcontainerInstance?.fs.mkdir(webcontainerPath.replace(/\*/g, "."))
-          : webcontainerInstance?.fs.writeFile(
-              webcontainerPath.replace(/\*/g, "."),
-              ""
-            );
+          ? webcontainerInstance?.fs.mkdir(webContainerPath)
+          : webcontainerInstance?.fs.writeFile(webContainerPath, "");
       } catch {}
     }
 
