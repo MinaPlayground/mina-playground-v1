@@ -19,6 +19,7 @@ import {
   useUpdateFileTreeMutation,
 } from "@/services/fileTree";
 import {
+  fileTreeCreateNew,
   selectCurrentDirectory,
   selectFileSystemTree,
   setCurrentTreeItem,
@@ -57,21 +58,8 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id }) => {
     });
   };
 
-  const createNewFolder = () => {
-    // setFileData(
-    //   produce((fileData: FileSystemTree) => {
-    //     mutateFileTreeCreateNew(fileData, "directory");
-    //   })
-    // );
-  };
-
-  const createNewFile = () => {
-    // setFileData(
-    //   produce((fileData: FileSystemTree) => {
-    //     mutateFileTreeCreateNew(fileData, "file");
-    //   })
-    // );
-  };
+  const createNewFolder = () => dispatch(fileTreeCreateNew("directory"));
+  const createNewFile = () => dispatch(fileTreeCreateNew("file"));
 
   const onChange: FileSystemOnChangeHandler = async (action, type, payload) => {
     const { path, value } = payload;

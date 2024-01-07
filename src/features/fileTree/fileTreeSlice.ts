@@ -2,6 +2,8 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/store";
 import { FileSystemTree } from "@webcontainer/api";
 import { fileTreeApi } from "@/services/fileTree";
+import { FileSystemType } from "@/types";
+import { getFileSystemValueByType } from "@/utils/fileSystemWeb";
 
 interface FileTreeState {
   currentTreeItem: string;
@@ -28,6 +30,10 @@ export const FileTreeSlice = createSlice({
     setFileSystemTree: (state, action: PayloadAction<FileSystemTree>) => {
       state.fileSystemTree = action.payload;
     },
+    fileTreeCreateNew: (state, action: PayloadAction<FileSystemType>) => {
+      if (!state.fileSystemTree) return;
+      state.fileSystemTree[""] = getFileSystemValueByType(action.payload);
+    },
     setCurrentTreeItem: (state, action: PayloadAction<string>) => {
       state.currentTreeItem = action.payload;
     },
@@ -51,12 +57,19 @@ export const FileTreeSlice = createSlice({
     },
   },
   extraReducers(builder) {
-    builder.addMatcher(
-      fileTreeApi.endpoints.deleteFileTreeItem.matchFulfilled,
-      (state, action) => {
-        state.fileSystemTree = action.payload.fileSystemTree;
-      }
-    );
+    builder
+      .addMatcher(
+        fileTreeApi.endpoints.deleteFileTreeItem.matchFulfilled,
+        (state, action) => {
+          state.fileSystemTree = action.payload.fileSystemTree;
+        }
+      )
+      .addMatcher(
+        fileTreeApi.endpoints.updateFileTree.matchFulfilled,
+        (state, action) => {
+          state.fileSystemTree = action.payload.fileSystemTree;
+        }
+      );
   },
 });
 
@@ -77,6 +90,7 @@ export const {
   setChangedFields,
   setChangedFieldStatus,
   setFileSystemTree,
+  fileTreeCreateNew,
 } = FileTreeSlice.actions;
 
 export default FileTreeSlice.reducer;
