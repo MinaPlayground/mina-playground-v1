@@ -4,6 +4,7 @@ import { FileSystemTree } from "@webcontainer/api";
 import { fileTreeApi } from "@/services/fileTree";
 import { FileSystemType } from "@/types";
 import { getFileSystemValueByType } from "@/utils/fileSystemWeb";
+import { get } from "lodash";
 
 interface FileTreeState {
   currentTreeItem: string;
@@ -33,6 +34,16 @@ export const FileTreeSlice = createSlice({
     fileTreeCreateNew: (state, action: PayloadAction<FileSystemType>) => {
       if (!state.fileSystemTree) return;
       state.fileSystemTree[""] = getFileSystemValueByType(action.payload);
+    },
+    fileTreeOnCreate: (
+      state,
+      action: PayloadAction<{ type: FileSystemType; path: string }>
+    ) => {
+      const { type, path } = action.payload;
+      if (!state.fileSystemTree) return;
+      const fileSystemValue = getFileSystemValueByType(type);
+      const data = get(state.fileSystemTree, path) as Record<string, any>;
+      data[""] = fileSystemValue;
     },
     setCurrentTreeItem: (state, action: PayloadAction<string>) => {
       state.currentTreeItem = action.payload;
@@ -91,6 +102,7 @@ export const {
   setChangedFieldStatus,
   setFileSystemTree,
   fileTreeCreateNew,
+  fileTreeOnCreate,
 } = FileTreeSlice.actions;
 
 export default FileTreeSlice.reducer;

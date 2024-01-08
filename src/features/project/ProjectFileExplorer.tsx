@@ -8,6 +8,7 @@ import {
 } from "@/services/fileTree";
 import {
   fileTreeCreateNew,
+  fileTreeOnCreate,
   selectFileSystemTree,
   setCurrentTreeItem,
 } from "@/features/fileTree/fileTreeSlice";
@@ -35,7 +36,7 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id }) => {
     }
     dockApi?.addPanel({
       id: path,
-      title: path.replace(/\*/g, "."),
+      title: normalizePath(path),
       component: "editor",
       params: { id, value: code, directory: path },
     });
@@ -46,6 +47,11 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id }) => {
 
   const onChange: FileSystemOnChangeHandler = async (action, type, payload) => {
     const { path } = payload;
+    if (action === "create") {
+      const location = pathToWebContainerPath(path);
+      dispatch(fileTreeOnCreate({ type, path: `${location}.directory` }));
+    }
+
     if (action === "delete") {
       const location = pathToWebContainerPath(path);
       try {
@@ -67,7 +73,8 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id }) => {
       const path = pathToWebContainerPath(value);
       const webContainerPath = normalizePath(value);
       const body = {
-        location: type === "directory" ? path : `${path}.file.contents`,
+        location:
+          type === "directory" ? `${path}.directory` : `${path}.file.contents`,
       };
       try {
         await updateFileTree({
