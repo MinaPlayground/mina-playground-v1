@@ -9,6 +9,7 @@ import {
 import {
   fileTreeCreateNew,
   fileTreeOnCreate,
+  selectChangedFields,
   selectFileSystemTree,
   setCurrentTreeItem,
 } from "@/features/fileTree/fileTreeSlice";
@@ -16,6 +17,8 @@ import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { selectWebcontainerInstance } from "@/features/webcontainer/webcontainerSlice";
 import { selectDockApi } from "@/features/dockView/dockViewSlice";
+import CommitButton from "@/components/version-control/CommitButton";
+import SaveCode from "@/components/editor/SaveCode";
 
 const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id }) => {
   const dispatch = useAppDispatch();
@@ -25,6 +28,7 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id }) => {
     useDeleteFileTreeItemMutation();
   const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
   const dockApi = useAppSelector(selectDockApi);
+  const changedFields = useAppSelector(selectChangedFields);
 
   const onClick = async (code: string, path: string) => {
     dispatch(setCurrentTreeItem(path));
@@ -104,8 +108,50 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id }) => {
       } catch {}
     }
   };
+
+  const hasUnsavedField = Object.values(changedFields).some(
+    ({ saved }) => !saved
+  );
+
+  const saveAllFields = async () => {
+    try {
+      const fieldValues: Record<string, string> = {};
+      for (const key in changedFields) {
+        fieldValues[`${key}.file.contents`] = changedFields[key].code;
+      }
+      // await updateFileTree({
+      //   id: id,
+      //   body: { location: `${location}.file.contents`, code },
+      // }).unwrap();
+      // dispatch(
+      //     setChangedFieldStatus({
+      //       location: directory,
+      //       saved: true,
+      //     })
+      // );
+      // webcontainerInstance?.fs.writeFile(webContainerPath, code || "");
+    } catch {}
+  };
+
   return (
     <div className="p-2">
+      <div className="mb-2">
+        <SaveCode
+          disabled={!hasUnsavedField}
+          onClick={saveAllFields}
+          isLoading={false}
+          isSaved={false}
+          isError={false}
+          defaultText="Save all"
+        />
+        <CommitButton
+          disabled={false}
+          onClick={() => {}}
+          isError={false}
+          isLoading={false}
+          isSaved={false}
+        />
+      </div>
       <div className="flex flex-row gap-1 mb-2">
         <svg
           onClick={createNewFile}
