@@ -4,14 +4,6 @@ import { FileSystemTree } from "@webcontainer/api";
 
 export type KeyValueObj = Record<string, any>;
 export type FileSystemType = "directory" | "file";
-export type FileSystemOnChangePayload = { path: string; key?: string };
-
-export type FileSystemPayload = {
-  path: string;
-  fullPath: string;
-  key: string;
-  value: string;
-};
 
 type FileSystemHandlerParam<A, P> = [
   action: A,
@@ -68,17 +60,6 @@ export type UpdateFileTree =
   | UpdateFileTreeItem<{ location: string; rename: string }>;
 
 export type FileSystemOnClickHandler = (code: string, path: string) => void;
-
-type MapFileSystemAction = {
-  action(data: KeyValueObj, payload: FileSystemOnChangePayload): void;
-};
-
-export type MapFileSystemActions = {
-  create: MapFileSystemAction;
-  delete: MapFileSystemAction;
-};
-
-export type FileSystemAction = keyof MapFileSystemActions;
 
 export interface TutorialParams extends ParsedUrlQuery {
   chapter: string;

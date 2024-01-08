@@ -1,39 +1,23 @@
-import { FC, useState } from "react";
+import { FC } from "react";
 import Tree from "@/components/file-explorer/Tree";
-import { produce } from "immer";
-import { FileSystemTree } from "@webcontainer/api";
-import {
-  mutateFileTreeCreateNew,
-  mutateFileTreeOnBlur,
-} from "@/mutations/fileTreeMutations";
-import {
-  getCombinedPathName,
-  normalizePath,
-  pathToWebContainerPath,
-} from "@/utils/fileSystemWeb";
+import { normalizePath, pathToWebContainerPath } from "@/utils/fileSystemWeb";
 import { FileSystemOnBlurHandler, FileSystemOnChangeHandler } from "@/types";
-import { mapFileSystemAction } from "@/mappers/mapFileSystemAction";
 import {
   useDeleteFileTreeItemMutation,
   useUpdateFileTreeMutation,
 } from "@/services/fileTree";
 import {
   fileTreeCreateNew,
-  selectCurrentDirectory,
   selectFileSystemTree,
   setCurrentTreeItem,
 } from "@/features/fileTree/fileTreeSlice";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import {
-  selectIsAborting,
-  selectWebcontainerInstance,
-} from "@/features/webcontainer/webcontainerSlice";
+import { selectWebcontainerInstance } from "@/features/webcontainer/webcontainerSlice";
 import { selectDockApi } from "@/features/dockView/dockViewSlice";
 
 const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id }) => {
   const dispatch = useAppDispatch();
-  // const [fileData, setFileData] = useState<FileSystemTree>(fileSystemTree);
   const fileData = useAppSelector(selectFileSystemTree);
   const [updateFileTree, { isLoading }] = useUpdateFileTreeMutation();
   const [deleteFileTreeItem, { isLoading: isLoadingDeletion }] =
@@ -61,7 +45,7 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id }) => {
   const createNewFile = () => dispatch(fileTreeCreateNew("file"));
 
   const onChange: FileSystemOnChangeHandler = async (action, type, payload) => {
-    const { path, value } = payload;
+    const { path } = payload;
     if (action === "delete") {
       const location = pathToWebContainerPath(path);
       try {
