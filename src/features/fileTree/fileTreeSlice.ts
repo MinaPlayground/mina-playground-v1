@@ -11,7 +11,8 @@ interface FileTreeState {
   changedFields: Record<
     string,
     {
-      code: string;
+      previousCode: string;
+      currentCode: string;
       saved: boolean;
     }
   >;
@@ -50,12 +51,16 @@ export const FileTreeSlice = createSlice({
     },
     setChangedFields: (
       state,
-      action: PayloadAction<{ location: string; code: string }>
+      action: PayloadAction<{
+        location: string;
+        previousCode: string;
+        currentCode: string;
+      }>
     ) => {
-      const { location, code } = action.payload;
+      const { location, previousCode, currentCode } = action.payload;
       state.changedFields = {
         ...state.changedFields,
-        [location]: { code, saved: false },
+        [location]: { previousCode, currentCode, saved: false },
       };
     },
     setChangedFieldStatus: (
