@@ -5,6 +5,7 @@ import { fileTreeApi } from "@/services/fileTree";
 import { FileSystemType } from "@/types";
 import { getFileSystemValueByType } from "@/utils/fileSystemWeb";
 import { get } from "lodash";
+import { versionControlApi } from "@/services/versionControl";
 
 interface FileTreeState {
   currentTreeItem: string;
@@ -84,6 +85,17 @@ export const FileTreeSlice = createSlice({
         fileTreeApi.endpoints.updateFileTree.matchFulfilled,
         (state, action) => {
           state.fileSystemTree = action.payload.fileSystemTree;
+        }
+      )
+      .addMatcher(
+        versionControlApi.endpoints.createCommit.matchFulfilled,
+        (state, action) => {
+          for (const key in state.changedFields) {
+            const field = state.changedFields[key];
+            if (field.saved) {
+              delete state.changedFields[key];
+            }
+          }
         }
       );
   },
