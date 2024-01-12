@@ -3,8 +3,8 @@ import Header from "@/components/Header";
 import { GetServerSideProps, NextPage } from "next";
 import axios from "axios";
 import { FileSystemTree } from "@webcontainer/api";
-import { useAppDispatch } from "@/hooks/useAppDispatch";
-import * as Diff from "diff";
+import dayjs from "dayjs";
+import { useRouter } from "next/router";
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { projectId } = query;
@@ -25,8 +25,7 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
 };
 
 const Home: NextPage<HomeProps> = ({ data }) => {
-  const dispatch = useAppDispatch();
-
+  const router = useRouter();
   return (
     <>
       <Head>
@@ -37,34 +36,23 @@ const Home: NextPage<HomeProps> = ({ data }) => {
       </Head>
       <main>
         <Header />
-        {data.map(({ files }) => {
-          return (
-            <>
-              <h1>commit</h1>
-              {Object.values(files).map(({ previousCode, currentCode }) => {
-                const diff = Diff.diffChars(previousCode, currentCode);
-                return (
-                  <pre className="whitespace-pre-wrap text-gray-200">
-                    {diff.map((part) => {
-                      const element = part.added ? (
-                        <del className="text-green-600 no-underline bg-green-50">
-                          {part.value}
-                        </del>
-                      ) : part.removed ? (
-                        <ins className="text-red-600 no-underline bg-red-50">
-                          {part.value}
-                        </ins>
-                      ) : (
-                        part.value
-                      );
-                      return element;
-                    })}
-                  </pre>
-                );
-              })}
-            </>
-          );
-        })}
+        <h1 className="text-xl text-gray-200 p-2">Your commits:</h1>
+        <div className="overflow-x-auto cursor-pointer text-gray-200">
+          <table className="table">
+            <tbody>
+              {data.map(({ files, message, _id, createdAt }) => (
+                <tr
+                  className="hover"
+                  onClick={() => router.push(`/commit/${_id}`)}
+                >
+                  <td>{_id}</td>
+                  <td>{message}</td>
+                  <td>{dayjs(createdAt).format("DD-MM-YYYY HH:mm")}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </main>
     </>
   );
