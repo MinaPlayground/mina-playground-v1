@@ -11,6 +11,7 @@ import {
   fileTreeOnCreate,
   selectChangedFields,
   selectFileSystemTree,
+  setChangedFieldStatus,
   setCurrentTreeItem,
 } from "@/features/fileTree/fileTreeSlice";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
@@ -23,7 +24,8 @@ import SaveCode from "@/components/editor/SaveCode";
 const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id }) => {
   const dispatch = useAppDispatch();
   const fileData = useAppSelector(selectFileSystemTree);
-  const [updateFileTree, { isLoading }] = useUpdateFileTreeMutation();
+  const [updateFileTree, { isLoading, isSuccess, isError }] =
+    useUpdateFileTreeMutation();
   const [deleteFileTreeItem, { isLoading: isLoadingDeletion }] =
     useDeleteFileTreeItemMutation();
   const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
@@ -117,19 +119,26 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id }) => {
     try {
       const fieldValues: Record<string, string> = {};
       for (const key in changedFields) {
-        fieldValues[`${key}.file.contents`] = changedFields[key].code;
+        fieldValues[
+          `fileSystemTree.${pathToWebContainerPath(key)}.file.contents`
+        ] = changedFields[key].currentCode;
       }
-      // await updateFileTree({
-      //   id: id,
-      //   body: { location: `${location}.file.contents`, code },
-      // }).unwrap();
-      // dispatch(
-      //     setChangedFieldStatus({
-      //       location: directory,
-      //       saved: true,
-      //     })
-      // );
-      // webcontainerInstance?.fs.writeFile(webContainerPath, code || "");
+      await updateFileTree({
+        id: id,
+        body: { locations: fieldValues },
+      }).unwrap();
+
+      for (const key in changedFields) {
+        dispatch(
+          setChangedFieldStatus({
+            location: key,
+            saved: true,
+          })
+        );
+        const { currentCode } = changedFields[key];
+        const webContainerPath = normalizePath(key);
+        webcontainerInstance?.fs.writeFile(webContainerPath, currentCode || "");
+      }
     } catch {}
   };
 
@@ -139,18 +148,12 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id }) => {
         <SaveCode
           disabled={!hasUnsavedField}
           onClick={saveAllFields}
-          isLoading={false}
-          isSaved={false}
-          isError={false}
+          isLoading={isLoading}
+          isSaved={isSuccess && !hasUnsavedField}
+          isError={isError}
           defaultText="Save all"
         />
-        <CommitButton
-          disabled={false}
-          onClick={() => {}}
-          isError={false}
-          isLoading={false}
-          isSaved={false}
-        />
+        <CommitButton />
       </div>
       <div className="flex flex-row gap-1 mb-2">
         <svg

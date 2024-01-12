@@ -31,11 +31,17 @@ const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({
   const setCodeChange = async (code: string | undefined) => {
     if (!code) return;
     setCode(code);
-    dispatch(setChangedFields({ location: directory, code }));
+    dispatch(
+      setChangedFields({
+        location: directory,
+        currentCode: code,
+        previousCode: value,
+      })
+    );
   };
 
   useEffect(() => {
-    const changedStoredCode = changedField?.code;
+    const changedStoredCode = changedField?.currentCode;
     setCode(changedStoredCode || value);
   }, []);
 
