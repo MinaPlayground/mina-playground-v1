@@ -9,7 +9,8 @@ import {
 const mapStatusToIconText = (
   isLoading: boolean,
   isSaved: boolean,
-  isError: boolean
+  isError: boolean,
+  defaultText: string
 ) => {
   if (isLoading) {
     return {
@@ -30,7 +31,7 @@ const mapStatusToIconText = (
     };
   }
   return {
-    text: "Save",
+    text: defaultText,
     Icon: <SaveIcon />,
   };
 };
@@ -41,8 +42,14 @@ const SaveCode: FC<SaveCodeProps> = ({
   isSaved,
   isError,
   onClick,
+  defaultText = "Save",
 }) => {
-  const { text, Icon } = mapStatusToIconText(isLoading, isSaved, isError);
+  const { text, Icon } = mapStatusToIconText(
+    isLoading,
+    isSaved,
+    isError,
+    defaultText
+  );
   return (
     <button
       onClick={onClick}
@@ -62,6 +69,7 @@ interface SaveCodeProps {
   isLoading: boolean;
   isSaved: boolean;
   isError: boolean;
+  defaultText?: string;
   onClick(): void;
 }
 

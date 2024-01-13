@@ -25,6 +25,8 @@ import {
   setCurrentTreeItem,
 } from "@/features/fileTree/fileTreeSlice";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
+import { getCombinedPathName } from "@/utils/fileSystemWeb";
+
 // TODO refactor this component
 const TreeNode: FC<TreeNodeType> = ({
   node,
@@ -102,7 +104,7 @@ const TreeNode: FC<TreeNodeType> = ({
                   onBlur("rename", type, {
                     path,
                     key,
-                    value: inputFileName,
+                    value: getCombinedPathName(inputFileName, directory),
                   });
                   return;
                 }
@@ -110,7 +112,7 @@ const TreeNode: FC<TreeNodeType> = ({
                 onBlur("create", type, {
                   path,
                   key,
-                  value: inputFileName,
+                  value: getCombinedPathName(inputFileName, directory),
                 });
                 setIsEditing(false);
                 setShowChildren(false);
@@ -128,7 +130,7 @@ const TreeNode: FC<TreeNodeType> = ({
                   onBlur("rename", type, {
                     path,
                     key,
-                    value: inputFileName,
+                    value: getCombinedPathName(inputFileName, directory),
                   });
                   return;
                 }
@@ -136,7 +138,7 @@ const TreeNode: FC<TreeNodeType> = ({
                 onBlur("create", type, {
                   path,
                   key,
-                  value: inputFileName,
+                  value: getCombinedPathName(inputFileName, directory),
                 });
                 setIsEditing(false);
                 setShowChildren(false);

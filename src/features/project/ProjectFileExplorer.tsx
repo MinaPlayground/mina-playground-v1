@@ -1,43 +1,38 @@
-import { FC, useState } from "react";
+import { FC } from "react";
 import Tree from "@/components/file-explorer/Tree";
-import { produce } from "immer";
-import { FileSystemTree } from "@webcontainer/api";
-import {
-  mutateFileTreeCreateNew,
-  mutateFileTreeOnBlur,
-} from "@/mutations/fileTreeMutations";
-import { getCombinedPathName } from "@/utils/fileSystemWeb";
+import { normalizePath, pathToWebContainerPath } from "@/utils/fileSystemWeb";
 import { FileSystemOnBlurHandler, FileSystemOnChangeHandler } from "@/types";
-import { mapFileSystemAction } from "@/mappers/mapFileSystemAction";
 import {
   useDeleteFileTreeItemMutation,
   useUpdateFileTreeMutation,
 } from "@/services/fileTree";
-import { setCurrentTreeItem } from "@/features/fileTree/fileTreeSlice";
+import {
+  fileTreeCreateNew,
+  fileTreeOnCreate,
+  selectChangedFields,
+  selectFileSystemTree,
+  setChangedFieldStatus,
+  setCurrentTreeItem,
+} from "@/features/fileTree/fileTreeSlice";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import {
-  selectIsAborting,
-  selectWebcontainerInstance,
-} from "@/features/webcontainer/webcontainerSlice";
+import { selectWebcontainerInstance } from "@/features/webcontainer/webcontainerSlice";
 import { selectDockApi } from "@/features/dockView/dockViewSlice";
+import CommitButton from "@/components/version-control/CommitButton";
+import SaveCode from "@/components/editor/SaveCode";
 
-const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
-  fileSystemTree,
-  id,
-}) => {
+const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id }) => {
   const dispatch = useAppDispatch();
-  const [fileData, setFileData] = useState<FileSystemTree>(fileSystemTree);
-  const [updateFileTree, { isLoading }] = useUpdateFileTreeMutation();
+  const fileData = useAppSelector(selectFileSystemTree);
+  const [updateFileTree, { isLoading, isSuccess, isError }] =
+    useUpdateFileTreeMutation();
   const [deleteFileTreeItem, { isLoading: isLoadingDeletion }] =
     useDeleteFileTreeItemMutation();
   const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
   const dockApi = useAppSelector(selectDockApi);
+  const changedFields = useAppSelector(selectChangedFields);
 
-  const onClick = async (
-    code: string,
-    { path, webcontainerPath }: { path: string; webcontainerPath: string }
-  ) => {
+  const onClick = async (code: string, path: string) => {
     dispatch(setCurrentTreeItem(path));
 
     const panel = dockApi?.getPanel(path);
@@ -47,101 +42,119 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
     }
     dockApi?.addPanel({
       id: path,
-      title: path.replace(/\*/g, "."),
+      title: normalizePath(path),
       component: "editor",
-      params: { id, value: code, directory: { path, webcontainerPath } },
+      params: { id, value: code, directory: path },
     });
   };
 
-  const createNewFolder = () => {
-    setFileData(
-      produce((fileData: FileSystemTree) => {
-        mutateFileTreeCreateNew(fileData, "directory");
-      })
-    );
-  };
-
-  const createNewFile = () => {
-    setFileData(
-      produce((fileData: FileSystemTree) => {
-        mutateFileTreeCreateNew(fileData, "file");
-      })
-    );
-  };
+  const createNewFolder = () => dispatch(fileTreeCreateNew("directory"));
+  const createNewFile = () => dispatch(fileTreeCreateNew("file"));
 
   const onChange: FileSystemOnChangeHandler = async (action, type, payload) => {
-    const { path, value, directoryPath } = payload;
-    setFileData(
-      produce((fileData: FileSystemTree) => {
-        mapFileSystemAction(action, type).action(fileData, payload);
-      })
-    );
+    const { path } = payload;
+    if (action === "create") {
+      const location = pathToWebContainerPath(path);
+      dispatch(fileTreeOnCreate({ type, path: `${location}.directory` }));
+    }
 
     if (action === "delete") {
-      const location = getCombinedPathName(payload.key, path, ".");
+      const location = pathToWebContainerPath(path);
       try {
-        const webcontainerPath = getCombinedPathName(
-          value,
-          directoryPath,
-          "/"
-        ).replace(/\*/g, ".");
-        await deleteFileTreeItem({ id, body: { location } }).unwrap();
+        const webcontainerPath = normalizePath(path);
         await webcontainerInstance?.fs.rm(webcontainerPath, {
           recursive: true,
         });
+        await deleteFileTreeItem({
+          id,
+          body: { location: location },
+        }).unwrap();
       } catch {}
     }
   };
 
   const onBlur: FileSystemOnBlurHandler = async (action, type, payload) => {
-    setFileData(
-      produce((fileData) => {
-        mutateFileTreeOnBlur(fileData, payload);
-      })
-    );
-
     if (action === "create") {
-      const { value, fullPath, directoryPath } = payload;
-      const webcontainerPath = getCombinedPathName(value, directoryPath, "/");
-      const body = { location: fullPath };
+      const { value } = payload;
+      const path = pathToWebContainerPath(value);
+      const webContainerPath = normalizePath(value);
+      const body = {
+        location:
+          type === "directory" ? `${path}.directory` : `${path}.file.contents`,
+      };
       try {
         await updateFileTree({
           id,
           body,
         }).unwrap();
         type === "directory"
-          ? webcontainerInstance?.fs.mkdir(webcontainerPath.replace(/\*/g, "."))
-          : webcontainerInstance?.fs.writeFile(
-              webcontainerPath.replace(/\*/g, "."),
-              ""
-            );
+          ? webcontainerInstance?.fs.mkdir(webContainerPath)
+          : webcontainerInstance?.fs.writeFile(webContainerPath, "");
       } catch {}
     }
 
     if (action === "rename") {
-      const { path, key, value, directoryPath } = payload;
+      const { path, value } = payload;
       const body = {
-        location: getCombinedPathName(key as string, path, "."),
-        rename: getCombinedPathName(value, path, "."),
+        location: pathToWebContainerPath(path),
+        rename: pathToWebContainerPath(value),
       };
-
       try {
         await updateFileTree({
           id,
           body,
         }).unwrap();
-        const newPath = getCombinedPathName(value, directoryPath, "/");
-        const oldPath = getCombinedPathName(key, directoryPath, "/");
-        await webcontainerInstance?.spawn("mv", [
-          "-t",
-          newPath.replace(/\*/g, "."),
-          oldPath.replace(/\*/g, "."),
-        ]);
+        const newPath = normalizePath(value);
+        const oldPath = normalizePath(path);
+        await webcontainerInstance?.spawn("mv", ["-t", newPath, oldPath]);
       } catch {}
     }
   };
+
+  const hasUnsavedField = Object.values(changedFields).some(
+    ({ saved }) => !saved
+  );
+
+  const saveAllFields = async () => {
+    try {
+      const fieldValues: Record<string, string> = {};
+      for (const key in changedFields) {
+        fieldValues[
+          `fileSystemTree.${pathToWebContainerPath(key)}.file.contents`
+        ] = changedFields[key].currentCode;
+      }
+      await updateFileTree({
+        id: id,
+        body: { locations: fieldValues },
+      }).unwrap();
+
+      for (const key in changedFields) {
+        dispatch(
+          setChangedFieldStatus({
+            location: key,
+            saved: true,
+          })
+        );
+        const { currentCode } = changedFields[key];
+        const webContainerPath = normalizePath(key);
+        webcontainerInstance?.fs.writeFile(webContainerPath, currentCode || "");
+      }
+    } catch {}
+  };
+
   return (
     <div className="p-2">
+      <div className="mb-2">
+        <SaveCode
+          disabled={!hasUnsavedField}
+          onClick={saveAllFields}
+          isLoading={isLoading}
+          isSaved={isSuccess && !hasUnsavedField}
+          isError={isError}
+          defaultText="Save all"
+        />
+        <CommitButton />
+      </div>
       <div className="flex flex-row gap-1 mb-2">
         <svg
           onClick={createNewFile}
@@ -164,19 +177,20 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({
           <path d="M512 416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96C0 60.7 28.7 32 64 32H192c20.1 0 39.1 9.5 51.2 25.6l19.2 25.6c6 8.1 15.5 12.8 25.6 12.8H448c35.3 0 64 28.7 64 64V416zM232 376c0 13.3 10.7 24 24 24s24-10.7 24-24V312h64c13.3 0 24-10.7 24-24s-10.7-24-24-24H280V200c0-13.3-10.7-24-24-24s-24 10.7-24 24v64H168c-13.3 0-24 10.7-24 24s10.7 24 24 24h64v64z" />
         </svg>
       </div>
-      <Tree
-        data={fileData}
-        onBlur={onBlur}
-        onChange={onChange}
-        onClick={onClick}
-        enableActions={true}
-      />
+      {fileData && (
+        <Tree
+          data={fileData}
+          onBlur={onBlur}
+          onChange={onChange}
+          onClick={onClick}
+          enableActions={true}
+        />
+      )}
     </div>
   );
 };
 
 interface ProjectFileExplorerProps {
-  fileSystemTree: FileSystemTree;
   id: string;
 }
 

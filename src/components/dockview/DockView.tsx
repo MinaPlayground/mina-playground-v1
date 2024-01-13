@@ -9,7 +9,6 @@ import {
   PaneviewReact,
 } from "dockview";
 import * as React from "react";
-import { FileSystemTree } from "@webcontainer/api";
 import ProjectFileExplorer from "@/features/project/ProjectFileExplorer";
 import CodeEditorWithSave from "@/features/project/CodeEditorWithSave";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
@@ -26,13 +25,7 @@ const GetStarted = () => {
   );
 };
 
-const DockView = ({
-  fileSystemTree,
-  id,
-}: {
-  fileSystemTree: FileSystemTree;
-  id: string;
-}) => {
+const DockView = ({ id }: { id: string }) => {
   const onReady = (event: GridviewReadyEvent) => {
     event.api.addPanel({
       id: "dock",
@@ -49,7 +42,7 @@ const DockView = ({
         direction: "left",
         referencePanel: "dock",
       },
-      params: { fileSystemTree, id },
+      params: { id },
     });
 
     event.api.addPanel({
@@ -61,7 +54,6 @@ const DockView = ({
         direction: "below",
         referencePanel: "dock",
       },
-      params: { fileSystemTree },
     });
     // event.api.addPanel({
     //   id: "terminal",
@@ -108,9 +100,7 @@ const gridComponents: PanelCollection<IGridviewPanelProps> = {
       />
     );
   },
-  panes: (
-    props: IGridviewPanelProps<{ fileSystemTree: FileSystemTree; id: string }>
-  ) => (
+  panes: (props: IGridviewPanelProps<{ id: string }>) => (
     <PaneviewReact
       components={paneComponents}
       onReady={(event) => {
@@ -120,7 +110,6 @@ const gridComponents: PanelCollection<IGridviewPanelProps> = {
           component: "filetree",
           isExpanded: true,
           params: {
-            fileSystemTree: props.params.fileSystemTree,
             id: props.params.id,
           },
         });
@@ -128,22 +117,15 @@ const gridComponents: PanelCollection<IGridviewPanelProps> = {
       }}
     />
   ),
-  terminal: (
-    props: IGridviewPanelProps<{ fileSystemTree: FileSystemTree }>
-  ) => <ProjectTerminal />,
+  terminal: () => <ProjectTerminal />,
   // preview: (props: IGridviewPanelProps<{ fileSystemTree: FileSystemTree }>) => (
   //   <Iframe />
   // ),
 };
 
-const paneComponents: PanelCollection<
-  IPaneviewPanelProps<{ fileSystemTree: FileSystemTree }>
-> = {
+const paneComponents: PanelCollection<IPaneviewPanelProps<{ id: string }>> = {
   filetree: (props: IPaneviewPanelProps) => (
-    <ProjectFileExplorer
-      fileSystemTree={props.params.fileSystemTree}
-      id={props.params.id}
-    />
+    <ProjectFileExplorer id={props.params.id} />
   ),
 };
 
