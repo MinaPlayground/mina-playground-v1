@@ -8,6 +8,14 @@ import { useAppDispatch } from "@/hooks/useAppDispatch";
 // import { initializeWebcontainer } from "@/features/webcontainer/webcontainerSlice";
 import DockView from "@/components/dockview/DockView";
 import { setFileSystemTree } from "@/features/fileTree/fileTreeSlice";
+import {
+  initializeShellProcess,
+  initializeTerminal,
+  installDependencies,
+  selectInitializingEsbuild,
+  selectWebcontainerStarted,
+} from "@/features/webcontainer/webcontainerSlice";
+import { useAppSelector } from "@/hooks/useAppSelector";
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { projectId } = query;
   try {
@@ -30,6 +38,19 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
 
 const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
   const dispatch = useAppDispatch();
+  const webcontainerStarted = useAppSelector(selectWebcontainerStarted);
+  const initializingWebcontainer = useAppSelector(selectInitializingEsbuild);
+
+  useEffect(() => {
+    if (!webcontainerStarted) {
+      dispatch(installDependencies({ fileSystemTree }));
+      return;
+    }
+  }, [webcontainerStarted]);
+
+  useEffect(() => {
+    dispatch(initializeTerminal());
+  }, [initializingWebcontainer]);
 
   useEffect(() => {
     dispatch(setFileSystemTree(fileSystemTree));
@@ -46,7 +67,7 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
       </Head>
       <main>
         <Header />
-        <DockView id={_id} />
+        <DockView id={_id} name={name} />
       </main>
     </>
   );

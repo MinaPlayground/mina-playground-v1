@@ -1,6 +1,10 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/store";
-import { WebContainer, WebContainerProcess } from "@webcontainer/api";
+import {
+  FileSystemTree,
+  WebContainer,
+  WebContainerProcess,
+} from "@webcontainer/api";
 
 interface WebcontainerState {
   initializingWebcontainer: boolean;
@@ -41,7 +45,10 @@ const initialState: WebcontainerState = {
 export const installDependencies = createAsyncThunk(
   "installDependencies",
   async (
-    { chapter }: { chapter: string },
+    {
+      chapter,
+      fileSystemTree,
+    }: { chapter?: string; fileSystemTree?: FileSystemTree },
     { dispatch, getState, rejectWithValue }
   ) => {
     const { WebContainer } = await import("@webcontainer/api");
@@ -51,7 +58,9 @@ export const installDependencies = createAsyncThunk(
     dispatch(setWebcontainerInstance(webcontainer));
 
     // TODO make sure it only loads the specific base file
-    const baseFiles = (await import(`@/json/${chapter}-base.json`)).default;
+    const baseFiles = fileSystemTree
+      ? fileSystemTree
+      : (await import(`@/json/${chapter}-base.json`)).default;
     await webcontainer.mount(baseFiles);
 
     const installProcess = await webcontainer.spawn("npm", ["install"]);
@@ -210,6 +219,7 @@ export const deploySmartContract = createAsyncThunk(
     process2?.output.pipeTo(
       new WritableStream({
         write(data) {
+          console.log(data);
           if (data.startsWith("{")) {
             dispatch(setDeploymentMessage(JSON.parse(data)));
           }
