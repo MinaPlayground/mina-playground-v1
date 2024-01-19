@@ -1,10 +1,23 @@
 import { FC } from "react";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import { selectInitializingWebContainerError } from "@/features/webcontainer/webcontainerSlice";
+import {
+  selectInitializingEsbuild,
+  selectInitializingWebContainerError,
+} from "@/features/webcontainer/webcontainerSlice";
 import * as React from "react";
+import WebcontainerLoader from "@/features/webcontainer/WebcontainerLoader";
 
 const ProjectTerminal: FC = () => {
   const webcontainerError = useAppSelector(selectInitializingWebContainerError);
+  const initializingWebcontainer = useAppSelector(selectInitializingEsbuild);
+
+  if (initializingWebcontainer) {
+    return (
+      <div className="flex bg-black h-full justify-center m-2">
+        <WebcontainerLoader />
+      </div>
+    );
+  }
 
   if (webcontainerError) {
     return (
