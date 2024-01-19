@@ -100,8 +100,12 @@ const Home: NextPage<HomeProps> = ({ data }) => {
                   <td>{type === 0 ? "zkApp" : "Smart Contract"}</td>
                   <td>
                     <div className="flex items-center">
-                      <div className="h-2.5 w-2.5 rounded-full bg-green-500 mr-2" />
-                      Public
+                      <div
+                        className={`h-2.5 w-2.5 rounded-full ${
+                          visibility ? "bg-green-500" : "bg-red-600"
+                        } mr-2`}
+                      />
+                      {visibility ? "Public" : "Private"}
                     </div>
                   </td>
                   <th>
