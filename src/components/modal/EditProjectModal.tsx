@@ -2,7 +2,12 @@ import { FC, useEffect, useState } from "react";
 import CTAModal from "@/components/modal/CTAModal";
 import Button from "@/components/button/Button";
 import { useRouter } from "next/router";
-import { useCreateProjectMutation } from "@/services/project";
+import {
+  useCreateProjectMutation,
+  useDeleteProjectMutation,
+  useUpdateProjectMutation,
+} from "@/services/project";
+import { useDeleteFileTreeItemMutation } from "@/services/fileTree";
 
 const EditProjectModal: FC<EditProjectModalProps> = ({
   isVisible,
@@ -13,8 +18,9 @@ const EditProjectModal: FC<EditProjectModalProps> = ({
   id,
 }) => {
   const { query, push } = useRouter();
-  const [createProject, { isLoading, isError, isSuccess }] =
-    useCreateProjectMutation();
+  const [deleteProject, { isLoading: isLoadingDeletion }] =
+    useDeleteProjectMutation();
+  const [updateProject, { isLoading: isUpdating }] = useUpdateProjectMutation();
   const [values, setValues] = useState({
     name,
     type,
@@ -32,7 +38,24 @@ const EditProjectModal: FC<EditProjectModalProps> = ({
     });
   }, [id]);
 
-  console.log(values);
+  const onDelete = async () => {
+    try {
+      await deleteProject({
+        id,
+      }).unwrap();
+      router.reload();
+    } catch {}
+  };
+
+  const onUpdate = async () => {
+    try {
+      await updateProject({
+        id,
+        body: { name: values.name, visibility: values.visibility },
+      }).unwrap();
+      router.reload();
+    } catch {}
+  };
 
   return (
     <CTAModal id="editProject" isVisible={isVisible} close={close}>
@@ -64,18 +87,14 @@ const EditProjectModal: FC<EditProjectModalProps> = ({
         <span className="label-text">Make private</span>
       </label>
       <Button
-        isLoading={isLoading || isSuccess}
-        onClick={() => null}
+        isLoading={isLoadingDeletion}
+        onClick={onDelete}
         className="mt-4 btn-sm btn-error"
       >
         Delete Project
       </Button>
       <div className="modal-action">
-        <Button
-          isLoading={isLoading || isSuccess}
-          onClick={() => null}
-          className="btn-dark"
-        >
+        <Button isLoading={isUpdating} onClick={onUpdate} className="btn-dark">
           Update
         </Button>
         <Button onClick={close} className="btn-primary">
