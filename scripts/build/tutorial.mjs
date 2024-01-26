@@ -23,7 +23,6 @@ export const getTutorial = async (c, s) => {
     });
 };
 
-
 export const getTutorialAndFiles = async (c, s, {focus, highlight}) => {
     const dir = process.cwd();
     const {files, filesArray} = transformToWebcontainerFiles(`${dir}/tutorials/${c}/${s}/source/`)
@@ -38,6 +37,7 @@ export const getTutorialAndFiles = async (c, s, {focus, highlight}) => {
         focusedFiles,
     };
 };
+
 export const getFiles = async (c, s, {focus, highlight}) => {
     const dir = process.cwd();
     const {files, filesArray} = transformToWebcontainerFiles(`${dir}/tutorials/${c}/${s}/source/`)

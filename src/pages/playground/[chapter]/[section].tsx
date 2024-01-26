@@ -18,37 +18,33 @@ import {
 } from "@/features/webcontainer/webcontainerSlice";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
-import { smartContractTemplate } from "../../templates/smartContract";
-import { setChangedFields } from "@/features/fileTree/fileTreeSlice";
 import RunScriptButton from "@/components/terminal/RunScriptButton";
 import Breadcrumb from "@/components/breadcrumb/Breadcrumb";
+import examplesPath from "@/examplePaths.json";
+import examples from "@/examples.json";
 
-const items = {
-  "01-introduction": {
-    name: "Add",
-    sections: {
-      "01-o1js": { name: "o1js" },
-      "02-basic-concepts": { name: "Basic concepts" },
-      "03-common-methods": { name: "Common methods" },
-      "04-other-common-methods": { name: "Other common methods" },
-      "05-functions": { name: "Functions" },
-      "06-conditionals": { name: "Conditionals" },
-    },
-  },
+export const getStaticPaths: GetStaticPaths = async () => {
+  return examplesPath;
 };
 
-const examples = [
-  {
-    name: "Add",
-    src: smartContractTemplate,
-    highlightedCode:
-      smartContractTemplate.src.directory["Add*test*ts"].file.contents,
-    options: {
-      focus: ["src/Add.ts", "src/Add.test.ts"],
-      highlight: "src/Add.ts",
+export const getStaticProps: GetStaticProps<
+  IHomeProps,
+  TutorialParams
+> = async ({ params }) => {
+  const { chapter: c, section: s } = params!;
+
+  const tutorialResponse: TutorialResponse = (
+    await import(`../../../examples-json/${c}-${s}.json`)
+  ).default;
+
+  return {
+    props: {
+      c,
+      s,
+      item: tutorialResponse,
     },
-  },
-];
+  };
+};
 
 const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const dispatch = useAppDispatch();
@@ -56,14 +52,14 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const webcontainerStarted = useAppSelector(selectWebcontainerStarted);
   const initializingWebcontainer = useAppSelector(selectInitializingEsbuild);
   const isRemovingFiles = useAppSelector(selectIsRemovingFiles);
-  const [exampleIndex, setExampleIndex] = useState(0);
-
-  const { src, highlightedCode, options } = examples[exampleIndex];
-  const [code, setCode] = useState<string | undefined>(highlightedCode);
+  const { files, filesArray, focusedFiles, highlightedItem } = item;
+  const [code, setCode] = useState<string | undefined>(
+    highlightedItem.highlightedCode
+  );
 
   useEffect(() => {
     if (!webcontainerStarted) {
-      dispatch(installDependencies({ fileSystemTree: {} }));
+      dispatch(installDependencies({ chapter: c as string }));
       return;
     }
   }, [webcontainerStarted]);
@@ -76,12 +72,12 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
 
   const remove = async () => {
     if (!webcontainerInstance) return;
-    dispatch(removeFiles([]));
+    dispatch(removeFiles(filesArray));
   };
 
   const mount = async () => {
     if (!webcontainerInstance) return;
-    await webcontainerInstance.mount(src);
+    await webcontainerInstance.mount(files);
   };
 
   useEffect(() => {
@@ -123,15 +119,15 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
             <Breadcrumb
               chapterIndex={"01-introduction"}
               sectionIndex={"01-o1js"}
-              items={items}
+              items={examples}
             />
             <div className="flex bg-gradient-to-br from-pink-600 to-orange-400 mb-2 rounded-lg mx-4 mt-2">
-              {options.focus.map((item) => (
+              {Object.entries(focusedFiles).map(([key, value]) => (
                 <button
-                  onClick={() => null}
+                  onClick={() => console.log(value)}
                   className={`btn-sm text-white hover:btn-secondary`}
                 >
-                  {item}
+                  {key}
                 </button>
               ))}
             </div>
