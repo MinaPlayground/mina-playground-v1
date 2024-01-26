@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "build-tutorials": "node scripts/build-tutorials-json.mjs",
+    "build-examples": "node scripts/build-examples-json.mjs",
+
     "postinstall": "patch-package"
   },
   "dependencies": {
