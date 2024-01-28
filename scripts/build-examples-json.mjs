@@ -23,7 +23,7 @@ for (const item of projectDir) {
     sections: {},
   };
 
-  const baseFolderExists = existsSync(`${dir}/tutorials/${item}/base`)
+  const baseFolderExists = existsSync(`${dir}/examples/${item}/base`)
   if (baseFolderExists) {
     const {files: baseFiles} = transformToWebcontainerFiles(
         `${dir}/examples/${item}/base`
@@ -31,7 +31,7 @@ for (const item of projectDir) {
     writeFileSync(`${dir}/src/examples-json/${item}-base.json`, JSON.stringify(baseFiles));
   }
 
-  const currentPath = path.join(`${dir}/tutorials/${item}`);
+  const currentPath = path.join(`${dir}/examples/${item}`);
   const sections = readdirSync(currentPath).filter(
     (item) => !excluded.includes(item)
   );

@@ -53,9 +53,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const initializingWebcontainer = useAppSelector(selectInitializingEsbuild);
   const isRemovingFiles = useAppSelector(selectIsRemovingFiles);
   const { files, filesArray, focusedFiles, highlightedItem } = item;
-  const [code, setCode] = useState<string | undefined>(
-    highlightedItem.highlightedCode
-  );
+  const [currentFile, setCurrentFile] = useState(highlightedItem);
 
   useEffect(() => {
     if (!webcontainerStarted) {
@@ -94,7 +92,10 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
 
   const onCodeChange = (value: string | undefined) => {
     const code = value || "";
-    setCode(code);
+    setCurrentFile({
+      ...currentFile,
+      highlightedCode: code,
+    });
     webcontainerInstance?.fs.writeFile("src/Add.ts", code);
   };
 
@@ -103,7 +104,6 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   };
 
   const onAbort = () => {};
-
   return (
     <>
       <Head>
@@ -116,22 +116,28 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
         <Header />
         <div className="flex flex-1 grid lg:grid-cols-2">
           <div className="flex flex-col">
-            <Breadcrumb
-              chapterIndex={"01-introduction"}
-              sectionIndex={"01-o1js"}
-              items={examples}
-            />
+            <Breadcrumb chapterIndex={c} sectionIndex={s} items={examples} />
             <div className="flex bg-gradient-to-br from-pink-600 to-orange-400 mb-2 rounded-lg mx-4 mt-2">
               {Object.entries(focusedFiles).map(([key, value]) => (
                 <button
-                  onClick={() => console.log(value)}
-                  className={`btn-sm text-white hover:btn-secondary`}
+                  onClick={() =>
+                    setCurrentFile({
+                      highlightedName: key,
+                      highlightedCode: value.file.contents,
+                    })
+                  }
+                  className={`btn-sm text-white hover:btn-secondary ${
+                    currentFile.highlightedName === key && "btn-secondary"
+                  }`}
                 >
                   {key}
                 </button>
               ))}
             </div>
-            <CodeEditor code={code} setCodeChange={onCodeChange} />
+            <CodeEditor
+              code={currentFile.highlightedCode}
+              setCodeChange={onCodeChange}
+            />
           </div>
           <div className="flex flex-1 flex-col">
             <div className="p-2">
