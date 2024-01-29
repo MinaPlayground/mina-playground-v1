@@ -16,6 +16,7 @@ import { setDockApi } from "@/features/dockView/dockViewSlice";
 import Section from "@/components/section/Section";
 import SectionItem from "@/components/section/SectionItem";
 import ProjectTerminal from "@/components/terminal/ProjectTerminal";
+import DependencyManager from "@/features/project/DependencyManager";
 
 const GetStarted = () => {
   return (
@@ -25,7 +26,7 @@ const GetStarted = () => {
   );
 };
 
-const DockView = ({ id }: { id: string }) => {
+const DockView = ({ id, name }: { id: string; name: string }) => {
   const onReady = (event: GridviewReadyEvent) => {
     event.api.addPanel({
       id: "dock",
@@ -42,7 +43,7 @@ const DockView = ({ id }: { id: string }) => {
         direction: "left",
         referencePanel: "dock",
       },
-      params: { id },
+      params: { id, name },
     });
 
     event.api.addPanel({
@@ -100,7 +101,7 @@ const gridComponents: PanelCollection<IGridviewPanelProps> = {
       />
     );
   },
-  panes: (props: IGridviewPanelProps<{ id: string }>) => (
+  panes: (props: IGridviewPanelProps<{ id: string; name: string }>) => (
     <PaneviewReact
       components={paneComponents}
       onReady={(event) => {
@@ -111,9 +112,22 @@ const gridComponents: PanelCollection<IGridviewPanelProps> = {
           isExpanded: true,
           params: {
             id: props.params.id,
+            name: props.params.name,
           },
         });
         filetree.headerVisible = false;
+
+        const dependencyManager = event.api.addPanel({
+          id: "dependencyManager",
+          title: "Dependency Manager",
+          component: "dependencyManager",
+          isExpanded: true,
+          params: {
+            id: props.params.id,
+            name: props.params.name,
+          },
+        });
+        // dependencyManager.headerVisible = false;
       }}
     />
   ),
@@ -123,9 +137,14 @@ const gridComponents: PanelCollection<IGridviewPanelProps> = {
   // ),
 };
 
-const paneComponents: PanelCollection<IPaneviewPanelProps<{ id: string }>> = {
+const paneComponents: PanelCollection<
+  IPaneviewPanelProps<{ id: string; name: string }>
+> = {
   filetree: (props: IPaneviewPanelProps) => (
-    <ProjectFileExplorer id={props.params.id} />
+    <ProjectFileExplorer id={props.params.id} name={props.params.name} />
+  ),
+  dependencyManager: (props: IPaneviewPanelProps) => (
+    <DependencyManager id={props.params.id} name={props.params.name} />
   ),
 };
 

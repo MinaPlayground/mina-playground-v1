@@ -20,7 +20,7 @@ const Breadcrumb: FC<BreadCrumbProps> = ({
         items={items}
         onClick={async (key) => {
           const firstSection = Object.keys(items[key].sections)[0];
-          await router.push(`/tutorial/${key}/${firstSection}`);
+          await router.push(`/playground/${key}/${firstSection}`);
         }}
       />
       <BreadcrumbItem
@@ -28,7 +28,7 @@ const Breadcrumb: FC<BreadCrumbProps> = ({
         activeIndex={sectionIndex}
         items={sections}
         onClick={async (key) => {
-          await router.push(`/tutorial/${chapterIndex}/${key}`);
+          await router.push(`/playground/${chapterIndex}/${key}`);
         }}
       />
     </div>

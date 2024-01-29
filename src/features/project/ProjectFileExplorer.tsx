@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 import Tree from "@/components/file-explorer/Tree";
 import { normalizePath, pathToWebContainerPath } from "@/utils/fileSystemWeb";
 import { FileSystemOnBlurHandler, FileSystemOnChangeHandler } from "@/types";
@@ -20,8 +20,11 @@ import { selectWebcontainerInstance } from "@/features/webcontainer/webcontainer
 import { selectDockApi } from "@/features/dockView/dockViewSlice";
 import CommitButton from "@/components/version-control/CommitButton";
 import SaveCode from "@/components/editor/SaveCode";
+import Button from "@/components/button/Button";
+import CreateProjectModal from "@/components/modal/CreateProjectModal";
+import { FileSystemTree } from "@webcontainer/api";
 
-const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id }) => {
+const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id, name }) => {
   const dispatch = useAppDispatch();
   const fileData = useAppSelector(selectFileSystemTree);
   const [updateFileTree, { isLoading, isSuccess, isError }] =
@@ -31,6 +34,7 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id }) => {
   const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
   const dockApi = useAppSelector(selectDockApi);
   const changedFields = useAppSelector(selectChangedFields);
+  const [isForkModalVisible, setIsForkModalVisible] = useState(false);
 
   const onClick = async (code: string, path: string) => {
     dispatch(setCurrentTreeItem(path));
@@ -155,6 +159,31 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id }) => {
         />
         <CommitButton />
       </div>
+      <div className="bg-gray-800 mb-2 p-2 text-gray-200">
+        <div className="flex justify-between items-center">
+          <h1 className="font-bold">{name}</h1>
+          <Button
+            isLoading={false}
+            onClick={() => setIsForkModalVisible(true)}
+            className="btn-primary btn-sm"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              height="16"
+              width="14"
+              fill={"currentColor"}
+              viewBox="0 0 448 512"
+            >
+              <path d="M80 104a24 24 0 1 0 0-48 24 24 0 1 0 0 48zm80-24c0 32.8-19.7 61-48 73.3V192c0 17.7 14.3 32 32 32H304c17.7 0 32-14.3 32-32V153.3C307.7 141 288 112.8 288 80c0-44.2 35.8-80 80-80s80 35.8 80 80c0 32.8-19.7 61-48 73.3V192c0 53-43 96-96 96H256v70.7c28.3 12.3 48 40.5 48 73.3c0 44.2-35.8 80-80 80s-80-35.8-80-80c0-32.8 19.7-61 48-73.3V288H144c-53 0-96-43-96-96V153.3C19.7 141 0 112.8 0 80C0 35.8 35.8 0 80 0s80 35.8 80 80zm208 24a24 24 0 1 0 0-48 24 24 0 1 0 0 48zM248 432a24 24 0 1 0 -48 0 24 24 0 1 0 48 0z" />
+            </svg>
+            Fork
+          </Button>
+        </div>
+        <div className="flex items-center">
+          <div className="h-2.5 w-2.5 rounded-full bg-green-500 mr-2" />
+          <span className="text-sm">Public</span>
+        </div>
+      </div>
       <div className="flex flex-row gap-1 mb-2">
         <svg
           onClick={createNewFile}
@@ -186,12 +215,18 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id }) => {
           enableActions={true}
         />
       )}
+      <CreateProjectModal
+        isVisible={isForkModalVisible}
+        close={() => setIsForkModalVisible(false)}
+        fileSystemTree={fileData as FileSystemTree}
+      />
     </div>
   );
 };
 
 interface ProjectFileExplorerProps {
   id: string;
+  name: string;
 }
 
 export default ProjectFileExplorer;
