@@ -22,6 +22,7 @@ import RunScriptButton from "@/components/terminal/RunScriptButton";
 import Breadcrumb from "@/components/breadcrumb/Breadcrumb";
 import examplesPath from "@/examplePaths.json";
 import examples from "@/examples.json";
+import { normalizePath } from "@/utils/fileSystemWeb";
 
 export const getStaticPaths: GetStaticPaths = async () => {
   return examplesPath;
@@ -96,11 +97,14 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
       ...currentFile,
       highlightedCode: code,
     });
-    webcontainerInstance?.fs.writeFile("src/Add.ts", code);
+    webcontainerInstance?.fs.writeFile(
+      `src/${normalizePath(currentFile.highlightedName)}`,
+      code
+    );
   };
 
   const onRun = () => {
-    dispatch(writeCommand("npm run test \r"));
+    dispatch(writeCommand("npm run build && node build/src/main.js \r"));
   };
 
   const onAbort = () => {};
@@ -130,7 +134,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
                     currentFile.highlightedName === key && "btn-secondary"
                   }`}
                 >
-                  {key}
+                  {normalizePath(key)}
                 </button>
               ))}
             </div>
