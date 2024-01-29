@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "NODE_ENV=development npm run build-tutorials && next dev",
-    "build": "npm run build-tutorials && next build",
+    "build": "npm run build-tutorials && npm run build-examples && next build",
     "start": "next start",
     "lint": "next lint",
     "build-tutorials": "node scripts/build-tutorials-json.mjs",
