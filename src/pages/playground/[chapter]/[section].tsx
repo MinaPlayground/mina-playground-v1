@@ -10,6 +10,7 @@ import {
   initializeTerminal,
   installDependencies,
   removeFiles,
+  selectChapter,
   selectInitializingEsbuild,
   selectIsRemovingFiles,
   selectWebcontainerInstance,
@@ -53,24 +54,13 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const webcontainerStarted = useAppSelector(selectWebcontainerStarted);
   const initializingWebcontainer = useAppSelector(selectInitializingEsbuild);
   const isRemovingFiles = useAppSelector(selectIsRemovingFiles);
+  const chapter = useAppSelector(selectChapter);
   const { files, filesArray, focusedFiles, highlightedItem } = item;
   const [currentFile, setCurrentFile] = useState(highlightedItem);
 
-  useEffect(() => {
-    if (!webcontainerStarted) {
-      dispatch(installDependencies({ chapter: c as string }));
-      return;
-    }
-  }, [webcontainerStarted]);
-
-  useEffect(() => {
-    if (initializingWebcontainer) return;
-    dispatch(initializeTerminal());
-    return;
-  }, [initializingWebcontainer]);
-
   const remove = async () => {
     if (!webcontainerInstance) return;
+    console.log(filesArray);
     dispatch(removeFiles(filesArray));
   };
 
@@ -78,6 +68,26 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
     if (!webcontainerInstance) return;
     await webcontainerInstance.mount(files);
   };
+
+  useEffect(() => {
+    if (!chapter) return;
+    if (c !== chapter) {
+      webcontainerInstance.teardown();
+      dispatch(installDependencies({ chapter: c as string, isExamples: true }));
+    }
+  }, [c]);
+
+  useEffect(() => {
+    if (!webcontainerStarted) {
+      dispatch(installDependencies({ chapter: c as string, isExamples: true }));
+      return;
+    }
+  }, [webcontainerStarted]);
+
+  useEffect(() => {
+    if (initializingWebcontainer) return;
+    dispatch(initializeTerminal());
+  }, [initializingWebcontainer]);
 
   useEffect(() => {
     if (!webcontainerInstance) return;
@@ -121,9 +131,10 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
         <div className="flex flex-1 grid lg:grid-cols-2">
           <div className="flex flex-col">
             <Breadcrumb chapterIndex={c} sectionIndex={s} items={examples} />
-            <div className="flex bg-gradient-to-br from-pink-600 to-orange-400 mb-2 rounded-lg mx-4 mt-2">
+            <div className="flex bg-gray-700 mb-2 rounded-lg mx-4 mt-2">
               {Object.entries(focusedFiles).map(([key, value]) => (
                 <button
+                  key={key}
                   onClick={() =>
                     setCurrentFile({
                       highlightedName: key,
@@ -131,7 +142,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
                     })
                   }
                   className={`btn-sm text-white hover:btn-secondary ${
-                    currentFile.highlightedName === key && "btn-secondary"
+                    currentFile.highlightedName === key && "btn-primary"
                   }`}
                 >
                   {normalizePath(key)}

@@ -24,6 +24,7 @@ interface WebcontainerState {
     details?: string;
   } | null;
   serverUrl: string | null;
+  chapter: string | null;
 }
 
 const initialState: WebcontainerState = {
@@ -40,6 +41,7 @@ const initialState: WebcontainerState = {
   deploymentMessage: null,
   serverUrl: null,
   shellProcess: null,
+  chapter: null,
 };
 
 export const installDependencies = createAsyncThunk(
@@ -48,19 +50,31 @@ export const installDependencies = createAsyncThunk(
     {
       chapter,
       fileSystemTree,
-    }: { chapter?: string; fileSystemTree?: FileSystemTree },
+      isExamples = false,
+    }: {
+      chapter?: string;
+      fileSystemTree?: FileSystemTree;
+      isExamples?: boolean;
+    },
     { dispatch, getState, rejectWithValue }
   ) => {
+    const { webcontainer: state } = getState() as {
+      webcontainer: WebcontainerState;
+    };
     const { WebContainer } = await import("@webcontainer/api");
     const webcontainer = await WebContainer.boot({
       workdirName: "mina",
     });
+    if (chapter) {
+      dispatch(setChapter(chapter));
+    }
     dispatch(setWebcontainerInstance(webcontainer));
 
-    // TODO make sure it only loads the specific base file
-    const baseFiles = fileSystemTree
-      ? fileSystemTree
-      : (await import(`@/json/${chapter}-base.json`)).default;
+    const baseImport = isExamples
+      ? await import(`@/examples-json/${chapter}-base.json`)
+      : await import(`@/json/${chapter}-base.json`);
+
+    const baseFiles = fileSystemTree ? fileSystemTree : baseImport.default;
     await webcontainer.mount(baseFiles);
 
     const installProcess = await webcontainer.spawn("npm", ["install"]);
@@ -111,10 +125,10 @@ export const initializeTerminal = createAsyncThunk(
     terminal.open(<HTMLElement>terminalEl);
     fitAddon.fit();
 
-    if (webcontainer.shellProcess) {
-      webcontainer.shellProcess.kill();
-      await webcontainer.shellProcess.exit;
-    }
+    // if (webcontainer.shellProcess) {
+    //   webcontainer.shellProcess.kill();
+    //   await webcontainer.shellProcess.exit;
+    // }
 
     // @ts-ignore
     const shellProcess = await webcontainer.webcontainerInstance.spawn("jsh", {
@@ -278,12 +292,16 @@ export const webcontainerSlice = createSlice({
     setWebcontainerStarted: (state, action: PayloadAction<any>) => {
       state.webcontainerInstance = action.payload;
     },
+    setChapter: (state, action: PayloadAction<string>) => {
+      state.chapter = action.payload;
+    },
   },
   extraReducers(builder) {
     builder
       .addCase(installDependencies.pending, (state, action) => {
         state.webcontainerStarted = true;
         state.initializingWebcontainerError = null;
+        state.initializingWebcontainer = true;
       })
       .addCase(installDependencies.fulfilled, (state, action) => {
         state.initializingWebcontainer = false;
@@ -342,6 +360,8 @@ export const selectDeploymentMessage = (state: RootState) =>
 export const selectServerUrl = (state: RootState) =>
   state.webcontainer.serverUrl;
 
+export const selectChapter = (state: RootState) => state.webcontainer.chapter;
+
 export const {
   setIsRunning,
   setIsAborting,
@@ -351,5 +371,6 @@ export const {
   setWebcontainerInstance,
   setShellProcess,
   reset,
+  setChapter,
 } = webcontainerSlice.actions;
 export default webcontainerSlice.reducer;
