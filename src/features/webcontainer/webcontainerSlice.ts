@@ -24,7 +24,7 @@ interface WebcontainerState {
     details?: string;
   } | null;
   serverUrl: string | null;
-  chapter: string | null;
+  base: string | null;
 }
 
 const initialState: WebcontainerState = {
@@ -41,18 +41,18 @@ const initialState: WebcontainerState = {
   deploymentMessage: null,
   serverUrl: null,
   shellProcess: null,
-  chapter: null,
+  base: null,
 };
 
 export const installDependencies = createAsyncThunk(
   "installDependencies",
   async (
     {
-      chapter,
+      base,
       fileSystemTree,
       isExamples = false,
     }: {
-      chapter?: string;
+      base?: string;
       fileSystemTree?: FileSystemTree;
       isExamples?: boolean;
     },
@@ -65,14 +65,11 @@ export const installDependencies = createAsyncThunk(
     const webcontainer = await WebContainer.boot({
       workdirName: "mina",
     });
-    if (chapter) {
-      dispatch(setChapter(chapter));
-    }
     dispatch(setWebcontainerInstance(webcontainer));
 
     const baseImport = isExamples
-      ? await import(`@/examples-json/${chapter}-base.json`)
-      : await import(`@/json/${chapter}-base.json`);
+      ? await import(`@/examples-json/${base}-base.json`)
+      : await import(`@/json/${base}-base.json`);
 
     const baseFiles = fileSystemTree ? fileSystemTree : baseImport.default;
     await webcontainer.mount(baseFiles);
@@ -292,8 +289,8 @@ export const webcontainerSlice = createSlice({
     setWebcontainerStarted: (state, action: PayloadAction<any>) => {
       state.webcontainerInstance = action.payload;
     },
-    setChapter: (state, action: PayloadAction<string>) => {
-      state.chapter = action.payload;
+    setBase: (state, action: PayloadAction<string>) => {
+      state.base = action.payload;
     },
   },
   extraReducers(builder) {
@@ -360,7 +357,7 @@ export const selectDeploymentMessage = (state: RootState) =>
 export const selectServerUrl = (state: RootState) =>
   state.webcontainer.serverUrl;
 
-export const selectChapter = (state: RootState) => state.webcontainer.chapter;
+export const selectBase = (state: RootState) => state.webcontainer.base;
 
 export const {
   setIsRunning,
@@ -371,6 +368,6 @@ export const {
   setWebcontainerInstance,
   setShellProcess,
   reset,
-  setChapter,
+  setBase,
 } = webcontainerSlice.actions;
 export default webcontainerSlice.reducer;

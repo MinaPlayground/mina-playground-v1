@@ -10,11 +10,12 @@ import {
   initializeTerminal,
   installDependencies,
   removeFiles,
-  selectChapter,
+  selectBase,
   selectInitializingEsbuild,
   selectIsRemovingFiles,
   selectWebcontainerInstance,
   selectWebcontainerStarted,
+  setBase,
   writeCommand,
 } from "@/features/webcontainer/webcontainerSlice";
 import { useAppSelector } from "@/hooks/useAppSelector";
@@ -54,8 +55,8 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const webcontainerStarted = useAppSelector(selectWebcontainerStarted);
   const initializingWebcontainer = useAppSelector(selectInitializingEsbuild);
   const isRemovingFiles = useAppSelector(selectIsRemovingFiles);
-  const chapter = useAppSelector(selectChapter);
-  const { files, filesArray, focusedFiles, highlightedItem } = item;
+  const storedBase = useAppSelector(selectBase);
+  const { files, filesArray, focusedFiles, highlightedItem, base } = item;
   const [currentFile, setCurrentFile] = useState(highlightedItem);
 
   const remove = async () => {
@@ -70,16 +71,27 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   };
 
   useEffect(() => {
-    if (!chapter) return;
-    if (c !== chapter) {
-      webcontainerInstance.teardown();
-      dispatch(installDependencies({ chapter: c as string, isExamples: true }));
+    dispatch(setBase(base));
+  }, []);
+
+  useEffect(() => {
+    if (base !== storedBase) {
+      console.log("changed");
     }
-  }, [c]);
+  }, [base]);
+
+  // useEffect(() => {
+  //   if (!storedBase) return;
+  //   if (base !== storedBase) {
+  //     console.log("changed");
+  //     // webcontainerInstance.teardown();
+  //     // dispatch(installDependencies({ chapter: c as string, isExamples: true }));
+  //   }
+  // }, [base]);
 
   useEffect(() => {
     if (!webcontainerStarted) {
-      dispatch(installDependencies({ chapter: c as string, isExamples: true }));
+      dispatch(installDependencies({ base: base as string, isExamples: true }));
       return;
     }
   }, [webcontainerStarted]);
