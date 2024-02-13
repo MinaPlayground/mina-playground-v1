@@ -74,6 +74,10 @@ export const installDependencies = createAsyncThunk(
     const baseFiles = fileSystemTree ? fileSystemTree : baseImport.default;
     await webcontainer.mount(baseFiles);
 
+    webcontainer.on("server-ready", (port, url) => {
+      dispatch(setServerUrl(url));
+    });
+
     const installProcess = await webcontainer.spawn("npm", ["install"]);
     if ((await installProcess.exit) !== 0) {
       throw new Error("Installation failed");
@@ -104,6 +108,17 @@ export const removeFiles = createAsyncThunk(
         });
       })
     );
+  }
+);
+
+export const stop = createAsyncThunk(
+  "stop",
+  async (_: void, { getState, dispatch }) => {
+    dispatch(setIsRunning(true));
+    const { webcontainer } = getState() as { webcontainer: WebcontainerState };
+    // webcontainer.shellProcess.kill();
+    // await webcontainer.shellProcess.exit;
+    webcontainer.webcontainerInstance?.teardown();
   }
 );
 
@@ -367,6 +382,7 @@ export const {
   setIsTestPassed,
   setWebcontainerInstance,
   setShellProcess,
+  setServerUrl,
   reset,
   setBase,
 } = webcontainerSlice.actions;

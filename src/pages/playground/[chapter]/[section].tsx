@@ -16,6 +16,7 @@ import {
   selectWebcontainerInstance,
   selectWebcontainerStarted,
   setBase,
+  stop,
   writeCommand,
 } from "@/features/webcontainer/webcontainerSlice";
 import { useAppSelector } from "@/hooks/useAppSelector";
@@ -25,6 +26,7 @@ import Breadcrumb from "@/components/breadcrumb/Breadcrumb";
 import examplesPath from "@/examplePaths.json";
 import examples from "@/examples.json";
 import { normalizePath } from "@/utils/fileSystemWeb";
+import Iframe from "@/components/iframe/Iframe";
 
 export const getStaticPaths: GetStaticPaths = async () => {
   return examplesPath;
@@ -58,10 +60,10 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const storedBase = useAppSelector(selectBase);
   const { files, filesArray, focusedFiles, highlightedItem, base } = item;
   const [currentFile, setCurrentFile] = useState(highlightedItem);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   const remove = async () => {
     if (!webcontainerInstance) return;
-    console.log(filesArray);
     dispatch(removeFiles(filesArray));
   };
 
@@ -75,19 +77,11 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   }, []);
 
   useEffect(() => {
-    if (base !== storedBase) {
-      console.log("changed");
+    if (storedBase !== null && base !== storedBase) {
+      webcontainerInstance?.teardown();
+      dispatch(installDependencies({ base: base as string, isExamples: true }));
     }
   }, [base]);
-
-  // useEffect(() => {
-  //   if (!storedBase) return;
-  //   if (base !== storedBase) {
-  //     console.log("changed");
-  //     // webcontainerInstance.teardown();
-  //     // dispatch(installDependencies({ chapter: c as string, isExamples: true }));
-  //   }
-  // }, [base]);
 
   useEffect(() => {
     if (!webcontainerStarted) {
@@ -167,15 +161,34 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
             />
           </div>
           <div className="flex flex-1 flex-col">
-            <div className="p-2">
+            <div className="flex items-center bg-gray-700">
               <RunScriptButton
                 onRun={onRun}
                 abortTitle={"Abort"}
                 onAbort={onAbort}
                 runTitle={"Run"}
               />
+              <button
+                onClick={() => setPreviewOpen(false)}
+                className={`btn-sm h-full text-white hover:btn-secondary ${
+                  !previewOpen && "btn-primary"
+                }`}
+              >
+                Terminal
+              </button>
+              <button
+                onClick={() => setPreviewOpen(true)}
+                className={`btn-sm h-full text-white hover:btn-secondary ${
+                  previewOpen && "btn-primary"
+                }`}
+              >
+                Preview
+              </button>
             </div>
-            <ProjectTerminal />
+            <div className={`flex flex-1 ${previewOpen && "hidden"}`}>
+              <ProjectTerminal />
+            </div>
+            {previewOpen && <Iframe />}
           </div>
         </div>
       </main>
