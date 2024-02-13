@@ -3,7 +3,6 @@
   "type": "playground",
   "options": {
     "focus": ["src/main.ts"],
-    "highlight": "src/main.ts",
-    "base": true
+    "highlight": "src/main.ts"
   }
 }

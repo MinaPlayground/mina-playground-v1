@@ -1,3 +1,4 @@
 {
-  "name": "Smart Contracts"
+  "name": "Smart Contracts",
+  "base": "smart-contract"
 }
