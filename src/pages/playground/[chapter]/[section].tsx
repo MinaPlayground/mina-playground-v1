@@ -58,7 +58,8 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const initializingWebcontainer = useAppSelector(selectInitializingEsbuild);
   const isRemovingFiles = useAppSelector(selectIsRemovingFiles);
   const storedBase = useAppSelector(selectBase);
-  const { files, filesArray, focusedFiles, highlightedItem, base } = item;
+  const { files, filesArray, focusedFiles, highlightedItem, base, command } =
+    item;
   const [currentFile, setCurrentFile] = useState(highlightedItem);
   const [previewOpen, setPreviewOpen] = useState(false);
 
@@ -120,7 +121,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   };
 
   const onRun = () => {
-    dispatch(writeCommand("npm run build && node build/src/main.js \r"));
+    dispatch(writeCommand(`${command} \r`));
   };
 
   const onAbort = () => {};
@@ -188,7 +189,9 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
             <div className={`flex flex-1 ${previewOpen && "hidden"}`}>
               <ProjectTerminal />
             </div>
-            {previewOpen && <Iframe />}
+            <div className={`flex flex-1 ${!previewOpen && "hidden"}`}>
+              <Iframe />
+            </div>
           </div>
         </div>
       </main>
