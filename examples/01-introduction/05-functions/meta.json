@@ -3,6 +3,7 @@
   "type": "playground",
   "options": {
     "focus": ["src/main.ts"],
-    "highlight": "src/main.ts"
+    "highlight": "src/main.ts",
+    "command": "npm run build && node build/src/main.js"
   }
 }

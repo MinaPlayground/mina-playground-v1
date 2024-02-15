@@ -1,0 +1,9 @@
+{
+  "name": "Class",
+  "type": "playground",
+  "options": {
+    "focus": ["src/App.tsx"],
+    "highlight": "src/App.tsx",
+    "command": "npm start"
+  }
+}
