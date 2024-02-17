@@ -13,6 +13,7 @@ import {
   selectBase,
   selectInitializingEsbuild,
   selectIsRemovingFiles,
+  selectServerUrl,
   selectWebcontainerInstance,
   selectWebcontainerStarted,
   setBase,
@@ -58,6 +59,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const initializingWebcontainer = useAppSelector(selectInitializingEsbuild);
   const isRemovingFiles = useAppSelector(selectIsRemovingFiles);
   const storedBase = useAppSelector(selectBase);
+  const serverUrl = useAppSelector(selectServerUrl);
   const { files, filesArray, focusedFiles, highlightedItem, base, command } =
     item;
   const [currentFile, setCurrentFile] = useState(highlightedItem);
@@ -107,6 +109,11 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
     if (!webcontainerInstance || isRemovingFiles) return;
     void mount();
   }, [webcontainerInstance, isRemovingFiles]);
+
+  useEffect(() => {
+    if (!serverUrl) return;
+    setPreviewOpen(true);
+  }, [serverUrl]);
 
   const onCodeChange = (value: string | undefined) => {
     const code = value || "";
@@ -161,7 +168,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
               setCodeChange={onCodeChange}
             />
           </div>
-          <div className="flex flex-1 flex-col">
+          <div className="flex flex-col">
             <div className="flex items-center bg-gray-700">
               <RunScriptButton
                 onRun={onRun}
@@ -188,6 +195,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
             </div>
             <div className={`flex flex-1 ${previewOpen && "hidden"}`}>
               <ProjectTerminal />
+              {/*<div className="bg-pink-200 flex flex-1"></div>*/}
             </div>
             <div className={`flex flex-1 ${!previewOpen && "hidden"}`}>
               <Iframe />
