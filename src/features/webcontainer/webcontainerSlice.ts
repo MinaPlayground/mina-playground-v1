@@ -24,6 +24,7 @@ interface WebcontainerState {
     details?: string;
   } | null;
   serverUrl: string | null;
+  base: string | null;
 }
 
 const initialState: WebcontainerState = {
@@ -40,28 +41,42 @@ const initialState: WebcontainerState = {
   deploymentMessage: null,
   serverUrl: null,
   shellProcess: null,
+  base: null,
 };
 
 export const installDependencies = createAsyncThunk(
   "installDependencies",
   async (
     {
-      chapter,
+      base,
       fileSystemTree,
-    }: { chapter?: string; fileSystemTree?: FileSystemTree },
+      isExamples = false,
+    }: {
+      base?: string;
+      fileSystemTree?: FileSystemTree;
+      isExamples?: boolean;
+    },
     { dispatch, getState, rejectWithValue }
   ) => {
+    const { webcontainer: state } = getState() as {
+      webcontainer: WebcontainerState;
+    };
     const { WebContainer } = await import("@webcontainer/api");
     const webcontainer = await WebContainer.boot({
       workdirName: "mina",
     });
     dispatch(setWebcontainerInstance(webcontainer));
 
-    // TODO make sure it only loads the specific base file
-    const baseFiles = fileSystemTree
-      ? fileSystemTree
-      : (await import(`@/json/${chapter}-base.json`)).default;
+    const baseImport = isExamples
+      ? await import(`@/examples-json/${base}-base.json`)
+      : await import(`@/json/${base}-base.json`);
+
+    const baseFiles = fileSystemTree ? fileSystemTree : baseImport.default;
     await webcontainer.mount(baseFiles);
+
+    webcontainer.on("server-ready", (port, url) => {
+      dispatch(setServerUrl(url));
+    });
 
     const installProcess = await webcontainer.spawn("npm", ["install"]);
     if ((await installProcess.exit) !== 0) {
@@ -96,6 +111,17 @@ export const removeFiles = createAsyncThunk(
   }
 );
 
+export const stop = createAsyncThunk(
+  "stop",
+  async (_: void, { getState, dispatch }) => {
+    dispatch(setIsRunning(true));
+    const { webcontainer } = getState() as { webcontainer: WebcontainerState };
+    // webcontainer.shellProcess.kill();
+    // await webcontainer.shellProcess.exit;
+    webcontainer.webcontainerInstance?.teardown();
+  }
+);
+
 export const initializeTerminal = createAsyncThunk(
   "initTerminal",
   async (_: void, { getState, dispatch }) => {
@@ -111,10 +137,10 @@ export const initializeTerminal = createAsyncThunk(
     terminal.open(<HTMLElement>terminalEl);
     fitAddon.fit();
 
-    if (webcontainer.shellProcess) {
-      webcontainer.shellProcess.kill();
-      await webcontainer.shellProcess.exit;
-    }
+    // if (webcontainer.shellProcess) {
+    //   webcontainer.shellProcess.kill();
+    //   await webcontainer.shellProcess.exit;
+    // }
 
     // @ts-ignore
     const shellProcess = await webcontainer.webcontainerInstance.spawn("jsh", {
@@ -278,12 +304,16 @@ export const webcontainerSlice = createSlice({
     setWebcontainerStarted: (state, action: PayloadAction<any>) => {
       state.webcontainerInstance = action.payload;
     },
+    setBase: (state, action: PayloadAction<string>) => {
+      state.base = action.payload;
+    },
   },
   extraReducers(builder) {
     builder
       .addCase(installDependencies.pending, (state, action) => {
         state.webcontainerStarted = true;
         state.initializingWebcontainerError = null;
+        state.initializingWebcontainer = true;
       })
       .addCase(installDependencies.fulfilled, (state, action) => {
         state.initializingWebcontainer = false;
@@ -342,6 +372,8 @@ export const selectDeploymentMessage = (state: RootState) =>
 export const selectServerUrl = (state: RootState) =>
   state.webcontainer.serverUrl;
 
+export const selectBase = (state: RootState) => state.webcontainer.base;
+
 export const {
   setIsRunning,
   setIsAborting,
@@ -350,6 +382,8 @@ export const {
   setIsTestPassed,
   setWebcontainerInstance,
   setShellProcess,
+  setServerUrl,
   reset,
+  setBase,
 } = webcontainerSlice.actions;
 export default webcontainerSlice.reducer;

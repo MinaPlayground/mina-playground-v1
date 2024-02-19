@@ -35,6 +35,7 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
   filesArray,
   focusedFiles,
   highlightedItem,
+  base,
 }) => {
   const { highlightedName, highlightedCode } = highlightedItem;
   const [code, setCode] = useState<string | undefined>(highlightedCode);
@@ -73,7 +74,7 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
   // TODO create webcontainer hook
   useEffect(() => {
     if (!webcontainerStarted) {
-      dispatch(installDependencies({ chapter: chapter as string }));
+      dispatch(installDependencies({ base }));
       return;
     }
   }, [webcontainerStarted]);
@@ -145,13 +146,13 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
           </div>
         ) : (
           <>
-            {/*<div className="w-40 p-4">*/}
-            {/*  <Tree*/}
-            {/*    data={focusedFiles}*/}
-            {/*    onClick={onClick}*/}
-            {/*    enableActions={false}*/}
-            {/*  />*/}
-            {/*</div>*/}
+            <div className="w-40 p-4">
+              <Tree
+                data={focusedFiles}
+                onClick={onClick}
+                enableActions={false}
+              />
+            </div>
             <CodeEditor code={code} setCodeChange={onCodeChange} />
           </>
         )}
@@ -184,6 +185,7 @@ interface InteractiveTutorialProps {
   };
   files: FileSystemTree;
   focusedFiles: FileSystemTree;
+  base: string;
 }
 
 export default InteractiveTutorial;

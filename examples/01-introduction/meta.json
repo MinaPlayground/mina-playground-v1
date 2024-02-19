@@ -1,3 +1,4 @@
 {
-  "name": "Introduction"
+  "name": "Introduction",
+  "base": "smart-contract"
 }

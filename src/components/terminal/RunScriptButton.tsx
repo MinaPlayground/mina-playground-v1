@@ -30,15 +30,9 @@ const RunScriptButton: FC<RunScriptButtonProps> = ({
 
   if (webcontainerError) return null;
 
-  return isInitializing ? (
-    <Loader
-      text="Initializing"
-      circleColor={"text-gray-400"}
-      spinnerColor={"fill-white"}
-    />
-  ) : (
+  return (
     <button
-      disabled={disabled}
+      disabled={disabled || isInitializing}
       type="button"
       onClick={onClick}
       className={`inline-flex text-white bg-gradient-to-r ${style} disabled:opacity-50 disabled:pointer-events-none
