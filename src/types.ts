@@ -4,6 +4,7 @@ import { FileSystemTree } from "@webcontainer/api";
 
 export type KeyValueObj = Record<string, any>;
 export type FileSystemType = "directory" | "file";
+type ItemType = "unit" | "playground" | "playground-zkApp";
 
 type FileSystemHandlerParam<A, P> = [
   action: A,
@@ -66,19 +67,16 @@ export interface TutorialParams extends ParsedUrlQuery {
   section: string;
 }
 
-export type TutorialResponse =
-  | {
-      type: "unit" | "playground";
-      tutorial: MDXRemoteSerializeResult;
-      filesArray: string[];
-      focusedFiles: FileSystemTree;
-      highlightedItem: {
-        highlightedName: string;
-        highlightedCode: string;
-      };
-      files: FileSystemTree;
-    }
-  | {
-      type: "theory";
-      tutorial: MDXRemoteSerializeResult;
-    };
+export type TutorialResponse = {
+  type: ItemType;
+  tutorial: MDXRemoteSerializeResult;
+  filesArray: string[];
+  focusedFiles: FileSystemTree;
+  highlightedItem: {
+    highlightedName: string;
+    highlightedCode: string;
+  };
+  files: FileSystemTree;
+  base: string;
+  command: string;
+};

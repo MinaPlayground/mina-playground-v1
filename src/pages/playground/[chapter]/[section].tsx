@@ -4,8 +4,7 @@ import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import { TutorialParams, TutorialResponse } from "@/types";
 import CodeEditor from "@/components/editor/CodeEditor";
 import * as React from "react";
-import { FC, useEffect, useState } from "react";
-import ProjectTerminal from "@/components/terminal/ProjectTerminal";
+import { useEffect, useState } from "react";
 import {
   initializeTerminal,
   installDependencies,
@@ -13,7 +12,6 @@ import {
   selectBase,
   selectInitializingEsbuild,
   selectIsRemovingFiles,
-  selectServerUrl,
   selectWebcontainerInstance,
   selectWebcontainerStarted,
   setBase,
@@ -21,12 +19,11 @@ import {
 } from "@/features/webcontainer/webcontainerSlice";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
-import RunScriptButton from "@/components/terminal/RunScriptButton";
 import Breadcrumb from "@/components/breadcrumb/Breadcrumb";
 import examplesPath from "@/examplePaths.json";
 import examples from "@/examples.json";
 import { normalizePath } from "@/utils/fileSystemWeb";
-import Iframe from "@/components/iframe/Iframe";
+import TerminalPreview from "@/features/examples/TerminalPreview";
 
 export const getStaticPaths: GetStaticPaths = async () => {
   return examplesPath;
@@ -49,53 +46,6 @@ export const getStaticProps: GetStaticProps<
       item: tutorialResponse,
     },
   };
-};
-
-const TerminalPreview: FC = ({ onRun, onAbort, shouldShowPreview }) => {
-  const serverUrl = useAppSelector(selectServerUrl);
-  const [previewOpen, setPreviewOpen] = useState(false);
-
-  useEffect(() => {
-    if (!serverUrl || !shouldShowPreview) return;
-    setPreviewOpen(true);
-  }, [serverUrl]);
-
-  return (
-    <div className="flex flex-col">
-      <div className="flex items-center bg-gray-700">
-        <RunScriptButton
-          onRun={onRun}
-          abortTitle={"Abort"}
-          onAbort={onAbort}
-          runTitle={"Run"}
-        />
-        <button
-          onClick={() => setPreviewOpen(false)}
-          className={`btn-sm h-full text-white hover:btn-secondary ${
-            !previewOpen && "btn-primary"
-          }`}
-        >
-          Terminal
-        </button>
-        {shouldShowPreview && (
-          <button
-            onClick={() => setPreviewOpen(true)}
-            className={`btn-sm h-full text-white hover:btn-secondary ${
-              previewOpen && "btn-primary"
-            }`}
-          >
-            Preview
-          </button>
-        )}
-      </div>
-      <div className={`flex flex-1 ${previewOpen && "hidden"}`}>
-        <ProjectTerminal />
-      </div>
-      <div className={`flex flex-1 ${!previewOpen && "hidden"}`}>
-        <Iframe />
-      </div>
-    </div>
-  );
 };
 
 const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
