@@ -15,6 +15,7 @@ const Iframe: FC = () => {
     <div className="flex flex-1 bg-white flex-col">
       <div className="flex bg-gray-600 gap-2">
         <input
+          readOnly
           value={serverUrl || ""}
           className="w-96 bg-gray-800 text-white rounded-lg px-2"
         />

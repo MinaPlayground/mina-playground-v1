@@ -110,25 +110,25 @@ const Home: NextPage<IHomeProps> = ({ data }) => {
         <div className="flex flex-1 grid lg:grid-cols-2">
           <div className="flex flex-col">
             <div className="flex flex-row p-2 gap-2">
-              {/*<SaveCode*/}
-              {/*  disabled={false}*/}
-              {/*  onClick={() => {}}*/}
-              {/*  isLoading={false}*/}
-              {/*  isSaved={false}*/}
-              {/*  isError={false}*/}
-              {/*/>*/}
-              <div className="flex flex-row gap-4">
+              <div className="flex flex-row gap-2 items-center">
                 <input
                   type="text"
                   name="name"
                   id="name"
                   value={snippetName}
                   onChange={(evt) => setSnippetName(evt.target.value)}
-                  className="bg-[#252728] border border-gray-500 text-gray-100 text-sm rounded-lg block w-full p-2.5"
+                  className="input input-bordered input-sm input-primary text-white w-full max-w-xs"
                   placeholder="My snippet"
                   required
                 />
-                <Button onClick={onCreateSnippet}>Create snippet</Button>
+                <Button
+                  className="btn-sm"
+                  onClick={onCreateSnippet}
+                  isLoading={isLoading}
+                  disabled={!code || !snippetName}
+                >
+                  <span className="text-xs">Create snippet</span>
+                </Button>
               </div>
             </div>
             <CodeEditor code={code} setCodeChange={onCodeChange} />
