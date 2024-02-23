@@ -9,8 +9,10 @@ import {
 interface WebcontainerState {
   initializingWebcontainer: boolean;
   initializingWebcontainerError: string | null;
+  webcontainerBooted: boolean;
   webcontainerStarted: boolean;
   webcontainerInstance: WebContainer | null;
+  installProcess: WebContainerProcess | null;
   shellProcess: WebContainerProcess | null;
   shellProcessInput: WritableStreamDefaultWriter | null;
   isRemovingFiles: boolean;
@@ -30,6 +32,7 @@ interface WebcontainerState {
 const initialState: WebcontainerState = {
   initializingWebcontainer: true,
   initializingWebcontainerError: null,
+  webcontainerBooted: false,
   webcontainerStarted: false,
   webcontainerInstance: null,
   shellProcessInput: null,
@@ -42,6 +45,7 @@ const initialState: WebcontainerState = {
   serverUrl: null,
   shellProcess: null,
   base: null,
+  installProcess: null,
 };
 
 export const installDependencies = createAsyncThunk(
@@ -61,7 +65,17 @@ export const installDependencies = createAsyncThunk(
     const { webcontainer: state } = getState() as {
       webcontainer: WebcontainerState;
     };
+    if (
+      state.webcontainerBooted ||
+      state.webcontainerInstance?._tornDown === false
+    ) {
+      dispatch(setWebcontainerBooted(false));
+      state.installProcess?.kill();
+      await state.installProcess?.exit;
+      state.webcontainerInstance?.teardown();
+    }
     const { WebContainer } = await import("@webcontainer/api");
+    dispatch(setWebcontainerBooted(true));
     const webcontainer = await WebContainer.boot({
       workdirName: "mina",
     });
@@ -78,9 +92,14 @@ export const installDependencies = createAsyncThunk(
       dispatch(setServerUrl(url));
     });
 
-    const installProcess = await webcontainer.spawn("npm", ["install"]);
-    if ((await installProcess.exit) !== 0) {
-      throw new Error("Installation failed");
+    try {
+      const installProcess = await webcontainer.spawn("npm", ["install"]);
+      dispatch(setInstallProcess(installProcess));
+      if ((await installProcess.exit) !== 0) {
+        throw new Error("Installation failed");
+      }
+    } catch (e) {
+      console.log(e);
     }
 
     return { webcontainer };
@@ -265,7 +284,7 @@ export const webcontainerSlice = createSlice({
     reset: (state) => {
       /* keep webcontainer state since we are re-using the current webcontainer process */
       const webContainerState = {
-        webcontainerInstance: state.webcontainerInstance,
+        // webcontainerInstance: state.webcontainerInstance,
         webcontainerStarted: state.webcontainerStarted,
         initializingWebcontainer: state.initializingWebcontainer,
         initializingWebcontainerError: state.initializingWebcontainerError,
@@ -301,6 +320,12 @@ export const webcontainerSlice = createSlice({
     setShellProcess: (state, action: PayloadAction<any>) => {
       state.shellProcess = action.payload;
     },
+    setInstallProcess: (state, action: PayloadAction<any>) => {
+      state.installProcess = action.payload;
+    },
+    setWebcontainerBooted: (state, action: PayloadAction<any>) => {
+      state.webcontainerBooted = action.payload;
+    },
     setWebcontainerStarted: (state, action: PayloadAction<any>) => {
       state.webcontainerInstance = action.payload;
     },
@@ -317,6 +342,7 @@ export const webcontainerSlice = createSlice({
       })
       .addCase(installDependencies.fulfilled, (state, action) => {
         state.initializingWebcontainer = false;
+        console.log("fulfiled");
       })
       .addCase(installDependencies.rejected, (state, action) => {
         if (action.payload) return;
@@ -382,6 +408,8 @@ export const {
   setIsTestPassed,
   setWebcontainerInstance,
   setShellProcess,
+  setInstallProcess,
+  setWebcontainerBooted,
   setServerUrl,
   reset,
   setBase,
