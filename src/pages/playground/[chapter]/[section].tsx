@@ -85,6 +85,8 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   useEffect(() => {
     if (initializingWebcontainer) return;
     dispatch(initializeTerminal());
+    // apply changed code after WebContainer has been initialized
+    onCodeChange(currentFile.highlightedCode);
   }, [initializingWebcontainer]);
 
   useEffect(() => {
@@ -115,7 +117,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
     dispatch(writeCommand(`${command} \r`));
   };
 
-  const onAbort = () => {};
+  const onAbort = () => dispatch(writeCommand("\u0003"));
   return (
     <>
       <Head>

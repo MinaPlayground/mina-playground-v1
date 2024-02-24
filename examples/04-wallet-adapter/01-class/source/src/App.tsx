@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { ReactNode, useState } from "react";
 import {
   type AdapterOption,
@@ -5,7 +6,7 @@ import {
   AdapterId,
   useWallet,
   WalletProvider,
-  WalletMultiButton
+  WalletMultiButton,
 } from "@mina-wallet-adapter/ui-react";
 import "@mina-wallet-adapter/ui-react/dist/wallet-adapter.css";
 
@@ -53,7 +54,11 @@ function Content() {
       </h1>
       <p>
         Demo of{" "}
-        <a href="https://github.com/mina-wallet-adapter/wallet-adapter" target="_blank" rel="noreferrer">
+        <a
+          href="https://github.com/mina-wallet-adapter/wallet-adapter"
+          target="_blank"
+          rel="noreferrer"
+        >
           mina-wallet-adapter
         </a>{" "}
         for implementing zkApps in React.
@@ -69,8 +74,16 @@ function Content() {
             <p>
               What is the square of <strong>{value}</strong>?
             </p>
-            <input type="number" min="0" value={square} onChange={e => setSquare(parseInt(e.target.value))} />
-            <button className="wallet-adapter-button wallet-adapter-button-trigger" onClick={submit}>
+            <input
+              type="number"
+              min="0"
+              value={square}
+              onChange={(e) => setSquare(parseInt(e.target.value))}
+            />
+            <button
+              className="wallet-adapter-button wallet-adapter-button-trigger"
+              onClick={submit}
+            >
               Submit
             </button>
           </>
