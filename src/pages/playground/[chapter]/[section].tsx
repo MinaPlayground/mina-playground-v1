@@ -9,14 +9,10 @@ import {
   initializeTerminal,
   installDependencies,
   removeFiles,
-  reset,
-  selectBase,
   selectInitializingEsbuild,
   selectIsRemovingFiles,
   selectWebcontainerInstance,
   selectWebcontainerStarted,
-  setBase,
-  setWebcontainerInstance,
   writeCommand,
 } from "@/features/webcontainer/webcontainerSlice";
 import { useAppSelector } from "@/hooks/useAppSelector";
@@ -26,7 +22,6 @@ import examplesPath from "@/examplePaths.json";
 import examples from "@/examples.json";
 import { normalizePath } from "@/utils/fileSystemWeb";
 import TerminalPreview from "@/features/examples/TerminalPreview";
-import { useRouter } from "next/router";
 
 export const getStaticPaths: GetStaticPaths = async () => {
   return examplesPath;
@@ -57,8 +52,6 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const webcontainerStarted = useAppSelector(selectWebcontainerStarted);
   const initializingWebcontainer = useAppSelector(selectInitializingEsbuild);
   const isRemovingFiles = useAppSelector(selectIsRemovingFiles);
-  const storedBase = useAppSelector(selectBase);
-  const router = useRouter();
   const {
     files,
     filesArray,
@@ -83,36 +76,11 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   };
 
   useEffect(() => {
-    dispatch(setBase(base));
-  }, []);
-
-  const isNotTornDown = webcontainerInstance?._tornDown === false;
-
-  useEffect(() => {
-    if (storedBase !== null && base !== storedBase && isNotTornDown) {
-      webcontainerInstance.teardown();
-      dispatch(installDependencies({ base: base as string, isExamples: true }));
-    }
-  }, [base, isNotTornDown]);
-
-  useEffect(() => {
     if (!webcontainerStarted) {
       dispatch(installDependencies({ base: base as string, isExamples: true }));
       return;
     }
   }, [webcontainerStarted]);
-
-  useEffect(() => {
-    const handleRouteChange = () => {
-      dispatch(reset());
-    };
-
-    router.events.on("routeChangeStart", handleRouteChange);
-
-    return () => {
-      router.events.off("routeChangeStart", handleRouteChange);
-    };
-  }, [dispatch, router]);
 
   useEffect(() => {
     if (initializingWebcontainer) return;

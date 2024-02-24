@@ -9,10 +9,8 @@ import {
 interface WebcontainerState {
   initializingWebcontainer: boolean;
   initializingWebcontainerError: string | null;
-  webcontainerBooted: boolean;
   webcontainerStarted: boolean;
   webcontainerInstance: WebContainer | null;
-  installProcess: WebContainerProcess | null;
   shellProcess: WebContainerProcess | null;
   shellProcessInput: WritableStreamDefaultWriter | null;
   isRemovingFiles: boolean;
@@ -32,7 +30,6 @@ interface WebcontainerState {
 const initialState: WebcontainerState = {
   initializingWebcontainer: true,
   initializingWebcontainerError: null,
-  webcontainerBooted: false,
   webcontainerStarted: false,
   webcontainerInstance: null,
   shellProcessInput: null,
@@ -45,7 +42,6 @@ const initialState: WebcontainerState = {
   serverUrl: null,
   shellProcess: null,
   base: null,
-  installProcess: null,
 };
 
 export const installDependencies = createAsyncThunk(
@@ -62,20 +58,7 @@ export const installDependencies = createAsyncThunk(
     },
     { dispatch, getState, rejectWithValue }
   ) => {
-    const { webcontainer: state } = getState() as {
-      webcontainer: WebcontainerState;
-    };
-    if (
-      state.webcontainerBooted ||
-      state.webcontainerInstance?._tornDown === false
-    ) {
-      dispatch(setWebcontainerBooted(false));
-      state.installProcess?.kill();
-      await state.installProcess?.exit;
-      state.webcontainerInstance?.teardown();
-    }
     const { WebContainer } = await import("@webcontainer/api");
-    dispatch(setWebcontainerBooted(true));
     const webcontainer = await WebContainer.boot({
       workdirName: "mina",
     });
@@ -92,14 +75,9 @@ export const installDependencies = createAsyncThunk(
       dispatch(setServerUrl(url));
     });
 
-    try {
-      const installProcess = await webcontainer.spawn("npm", ["install"]);
-      dispatch(setInstallProcess(installProcess));
-      if ((await installProcess.exit) !== 0) {
-        throw new Error("Installation failed");
-      }
-    } catch (e) {
-      console.log(e);
+    const installProcess = await webcontainer.spawn("npm", ["install"]);
+    if ((await installProcess.exit) !== 0) {
+      throw new Error("Installation failed");
     }
 
     return { webcontainer };
@@ -320,17 +298,8 @@ export const webcontainerSlice = createSlice({
     setShellProcess: (state, action: PayloadAction<any>) => {
       state.shellProcess = action.payload;
     },
-    setInstallProcess: (state, action: PayloadAction<any>) => {
-      state.installProcess = action.payload;
-    },
-    setWebcontainerBooted: (state, action: PayloadAction<any>) => {
-      state.webcontainerBooted = action.payload;
-    },
     setWebcontainerStarted: (state, action: PayloadAction<any>) => {
       state.webcontainerInstance = action.payload;
-    },
-    setBase: (state, action: PayloadAction<string>) => {
-      state.base = action.payload;
     },
   },
   extraReducers(builder) {
@@ -398,8 +367,6 @@ export const selectDeploymentMessage = (state: RootState) =>
 export const selectServerUrl = (state: RootState) =>
   state.webcontainer.serverUrl;
 
-export const selectBase = (state: RootState) => state.webcontainer.base;
-
 export const {
   setIsRunning,
   setIsAborting,
@@ -408,10 +375,7 @@ export const {
   setIsTestPassed,
   setWebcontainerInstance,
   setShellProcess,
-  setInstallProcess,
-  setWebcontainerBooted,
   setServerUrl,
   reset,
-  setBase,
 } = webcontainerSlice.actions;
 export default webcontainerSlice.reducer;
