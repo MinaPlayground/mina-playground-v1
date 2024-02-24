@@ -30,6 +30,7 @@ for (const item of projectDir) {
 
     data[item] = {
         name,
+        base,
         sections: {},
     };
 

@@ -128,7 +128,12 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
         <Header />
         <div className="flex flex-1 grid lg:grid-cols-2">
           <div className="flex flex-col">
-            <Breadcrumb chapterIndex={c} sectionIndex={s} items={examples} />
+            <Breadcrumb
+              chapterIndex={c}
+              sectionIndex={s}
+              items={examples}
+              isExamples={true}
+            />
             <div className="flex bg-gray-700 mb-2 rounded-lg mx-4 mt-2">
               {Object.entries(focusedFiles).map(([key, value]) => (
                 <button
