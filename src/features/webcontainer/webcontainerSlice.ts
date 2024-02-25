@@ -58,9 +58,6 @@ export const installDependencies = createAsyncThunk(
     },
     { dispatch, getState, rejectWithValue }
   ) => {
-    const { webcontainer: state } = getState() as {
-      webcontainer: WebcontainerState;
-    };
     const { WebContainer } = await import("@webcontainer/api");
     const webcontainer = await WebContainer.boot({
       workdirName: "mina",
@@ -265,7 +262,7 @@ export const webcontainerSlice = createSlice({
     reset: (state) => {
       /* keep webcontainer state since we are re-using the current webcontainer process */
       const webContainerState = {
-        webcontainerInstance: state.webcontainerInstance,
+        // webcontainerInstance: state.webcontainerInstance,
         webcontainerStarted: state.webcontainerStarted,
         initializingWebcontainer: state.initializingWebcontainer,
         initializingWebcontainerError: state.initializingWebcontainerError,
@@ -304,9 +301,6 @@ export const webcontainerSlice = createSlice({
     setWebcontainerStarted: (state, action: PayloadAction<any>) => {
       state.webcontainerInstance = action.payload;
     },
-    setBase: (state, action: PayloadAction<string>) => {
-      state.base = action.payload;
-    },
   },
   extraReducers(builder) {
     builder
@@ -317,6 +311,7 @@ export const webcontainerSlice = createSlice({
       })
       .addCase(installDependencies.fulfilled, (state, action) => {
         state.initializingWebcontainer = false;
+        console.log("fulfiled");
       })
       .addCase(installDependencies.rejected, (state, action) => {
         if (action.payload) return;
@@ -372,8 +367,6 @@ export const selectDeploymentMessage = (state: RootState) =>
 export const selectServerUrl = (state: RootState) =>
   state.webcontainer.serverUrl;
 
-export const selectBase = (state: RootState) => state.webcontainer.base;
-
 export const {
   setIsRunning,
   setIsAborting,
@@ -384,6 +377,5 @@ export const {
   setShellProcess,
   setServerUrl,
   reset,
-  setBase,
 } = webcontainerSlice.actions;
 export default webcontainerSlice.reducer;

@@ -9,12 +9,10 @@ import {
   initializeTerminal,
   installDependencies,
   removeFiles,
-  selectBase,
   selectInitializingEsbuild,
   selectIsRemovingFiles,
   selectWebcontainerInstance,
   selectWebcontainerStarted,
-  setBase,
   writeCommand,
 } from "@/features/webcontainer/webcontainerSlice";
 import { useAppSelector } from "@/hooks/useAppSelector";
@@ -54,7 +52,6 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const webcontainerStarted = useAppSelector(selectWebcontainerStarted);
   const initializingWebcontainer = useAppSelector(selectInitializingEsbuild);
   const isRemovingFiles = useAppSelector(selectIsRemovingFiles);
-  const storedBase = useAppSelector(selectBase);
   const {
     files,
     filesArray,
@@ -79,17 +76,6 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   };
 
   useEffect(() => {
-    dispatch(setBase(base));
-  }, []);
-
-  useEffect(() => {
-    if (storedBase !== null && base !== storedBase) {
-      webcontainerInstance?.teardown();
-      dispatch(installDependencies({ base: base as string, isExamples: true }));
-    }
-  }, [base]);
-
-  useEffect(() => {
     if (!webcontainerStarted) {
       dispatch(installDependencies({ base: base as string, isExamples: true }));
       return;
@@ -99,6 +85,8 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   useEffect(() => {
     if (initializingWebcontainer) return;
     dispatch(initializeTerminal());
+    // apply changed code after WebContainer has been initialized
+    onCodeChange(currentFile.highlightedCode);
   }, [initializingWebcontainer]);
 
   useEffect(() => {
@@ -129,7 +117,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
     dispatch(writeCommand(`${command} \r`));
   };
 
-  const onAbort = () => {};
+  const onAbort = () => dispatch(writeCommand("\u0003"));
   return (
     <>
       <Head>
@@ -142,7 +130,12 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
         <Header />
         <div className="flex flex-1 grid lg:grid-cols-2">
           <div className="flex flex-col">
-            <Breadcrumb chapterIndex={c} sectionIndex={s} items={examples} />
+            <Breadcrumb
+              chapterIndex={c}
+              sectionIndex={s}
+              items={examples}
+              isExamples={true}
+            />
             <div className="flex bg-gray-700 mb-2 rounded-lg mx-4 mt-2">
               {Object.entries(focusedFiles).map(([key, value]) => (
                 <button
