@@ -13,7 +13,7 @@ const ProjectTerminal: FC = () => {
 
   if (initializingWebcontainer) {
     return (
-      <div className="flex bg-black h-full justify-center m-2">
+      <div className="flex flex-1 bg-black justify-center">
         <WebcontainerLoader />
       </div>
     );
@@ -21,7 +21,7 @@ const ProjectTerminal: FC = () => {
 
   if (webcontainerError) {
     return (
-      <h1 className="text-white p-2 bg-black h-full">
+      <h1 className="text-white bg-black h-full">
         {webcontainerError}.{" "}
         <a
           className="link"
@@ -34,7 +34,7 @@ const ProjectTerminal: FC = () => {
     );
   }
 
-  return <div className="terminal h-full bg-black" />;
+  return <div className="terminal flex-1 bg-black" />;
 };
 
 export default ProjectTerminal;

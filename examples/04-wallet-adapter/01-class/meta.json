@@ -1,6 +1,6 @@
 {
   "name": "Class",
-  "type": "playground",
+  "type": "playground-zkApp",
   "options": {
     "focus": ["src/App.tsx"],
     "highlight": "src/App.tsx",
