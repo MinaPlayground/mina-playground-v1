@@ -6,6 +6,12 @@ import {
 } from "@/features/fileTree/fileTreeSlice";
 import { DeleteActionIcon } from "@/icons/FileSystemActionIcons";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
+import {
+  selectIsRunning,
+  setIsRunning,
+  writeCommand,
+} from "@/features/webcontainer/webcontainerSlice";
+import Spinner from "@/components/Spinner";
 
 const DependencyManager: FC<DependencyManagerProps> = ({ id, name }) => {
   const dispatch = useAppDispatch();
@@ -14,6 +20,7 @@ const DependencyManager: FC<DependencyManagerProps> = ({ id, name }) => {
   const [dependencies, setDependencies] = useState(
     JSON.parse(fileData["package*json"].file.contents).dependencies
   );
+  const isRunning = useAppSelector(selectIsRunning);
 
   const onDelete = (key: string) => {
     const newDependencies = { ...dependencies };
@@ -43,6 +50,8 @@ const DependencyManager: FC<DependencyManagerProps> = ({ id, name }) => {
         previousCode: fileData["package*json"].file.contents,
       })
     );
+    dispatch(setIsRunning(true));
+    dispatch(writeCommand(`npm install ${dependency} \r`));
   };
 
   return (
@@ -55,6 +64,13 @@ const DependencyManager: FC<DependencyManagerProps> = ({ id, name }) => {
             <div className="hidden group-hover:block">
               <DeleteActionIcon onClick={(event) => onDelete(key)} />
             </div>
+            {key === dependency && isRunning && (
+              <Spinner
+                circleColor={"text-gray-400"}
+                spinnerColor={"fill-white"}
+                size="4"
+              />
+            )}
           </div>
         </div>
       ))}
