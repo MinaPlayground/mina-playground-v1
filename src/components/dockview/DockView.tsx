@@ -16,7 +16,7 @@ import { setDockApi } from "@/features/dockView/dockViewSlice";
 import Section from "@/components/section/Section";
 import SectionItem from "@/components/section/SectionItem";
 import ProjectTerminal from "@/components/terminal/ProjectTerminal";
-import DependencyManager from "@/features/project/DependencyManager";
+import DependencyManagerLoader from "@/features/project/DependencyManagerLoader";
 
 const GetStarted = () => {
   return (
@@ -144,7 +144,7 @@ const paneComponents: PanelCollection<
     <ProjectFileExplorer id={props.params.id} name={props.params.name} />
   ),
   dependencyManager: (props: IPaneviewPanelProps) => (
-    <DependencyManager id={props.params.id} name={props.params.name} />
+    <DependencyManagerLoader />
   ),
 };
 

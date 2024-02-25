@@ -13,7 +13,7 @@ import {
 } from "@/features/webcontainer/webcontainerSlice";
 import Spinner from "@/components/Spinner";
 
-const DependencyManager: FC<DependencyManagerProps> = ({ id, name }) => {
+const DependencyManager: FC<DependencyManagerProps> = ({}) => {
   const dispatch = useAppDispatch();
   const fileData = useAppSelector(selectFileSystemTree);
   const [dependency, setDependency] = useState("");
@@ -91,9 +91,6 @@ const DependencyManager: FC<DependencyManagerProps> = ({ id, name }) => {
   );
 };
 
-interface DependencyManagerProps {
-  id: string;
-  name: string;
-}
+interface DependencyManagerProps {}
 
 export default DependencyManager;
