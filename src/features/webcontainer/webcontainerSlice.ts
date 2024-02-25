@@ -64,11 +64,11 @@ export const installDependencies = createAsyncThunk(
     });
     dispatch(setWebcontainerInstance(webcontainer));
 
-    const baseImport = isExamples
-      ? await import(`@/examples-json/${base}-base.json`)
-      : await import(`@/json/${base}-base.json`);
-
-    const baseFiles = fileSystemTree ? fileSystemTree : baseImport.default;
+    const baseFiles = fileSystemTree
+      ? fileSystemTree
+      : isExamples
+      ? (await import(`@/examples-json/${base}-base.json`)).default
+      : (await import(`@/json/${base}-base.json`)).default;
     await webcontainer.mount(baseFiles);
 
     webcontainer.on("server-ready", (port, url) => {

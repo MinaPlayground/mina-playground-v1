@@ -131,7 +131,7 @@ const gridComponents: PanelCollection<IGridviewPanelProps> = {
       }}
     />
   ),
-  terminal: () => <ProjectTerminal />,
+  terminal: () => <ProjectTerminal fullScreen={true} />,
   // preview: (props: IGridviewPanelProps<{ fileSystemTree: FileSystemTree }>) => (
   //   <Iframe />
   // ),
