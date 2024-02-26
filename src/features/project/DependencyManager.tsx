@@ -57,7 +57,7 @@ const DependencyManager: FC<DependencyManagerProps> = ({}) => {
   return (
     <div className="p-2 text-gray-200">
       {Object.entries(dependencies).map(([key, value]) => (
-        <div className="flex group justify-between">
+        <div key={key} className="flex group justify-between">
           <span>{key}</span>
           <div className="flex items-center gap-2">
             <span>{value}</span>

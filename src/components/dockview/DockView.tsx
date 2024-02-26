@@ -15,8 +15,8 @@ import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { setDockApi } from "@/features/dockView/dockViewSlice";
 import Section from "@/components/section/Section";
 import SectionItem from "@/components/section/SectionItem";
-import ProjectTerminal from "@/components/terminal/ProjectTerminal";
 import DependencyManagerLoader from "@/features/project/DependencyManagerLoader";
+import TerminalPreview from "@/features/examples/TerminalPreview";
 
 const GetStarted = () => {
   return (
@@ -56,17 +56,6 @@ const DockView = ({ id, name }: { id: string; name: string }) => {
         referencePanel: "dock",
       },
     });
-    // event.api.addPanel({
-    //   id: "terminal",
-    //   component: "preview",
-    //   minimumHeight: 100,
-    //   size: 150,
-    //   position: {
-    //     direction: "below",
-    //     referencePanel: "dock",
-    //   },
-    //   params: { fileSystemTree },
-    // });
   };
 
   return (
@@ -117,7 +106,7 @@ const gridComponents: PanelCollection<IGridviewPanelProps> = {
         });
         filetree.headerVisible = false;
 
-        const dependencyManager = event.api.addPanel({
+        event.api.addPanel({
           id: "dependencyManager",
           title: "Dependency Manager",
           component: "dependencyManager",
@@ -127,14 +116,18 @@ const gridComponents: PanelCollection<IGridviewPanelProps> = {
             name: props.params.name,
           },
         });
-        // dependencyManager.headerVisible = false;
       }}
     />
   ),
-  terminal: () => <ProjectTerminal fullScreen={true} />,
-  // preview: (props: IGridviewPanelProps<{ fileSystemTree: FileSystemTree }>) => (
-  //   <Iframe />
-  // ),
+  terminal: () => (
+    <TerminalPreview
+      onRunCommand={
+        "cd contracts && npm i && npm run build && cd ../ui && npm i && npm run dev"
+      }
+      shouldShowPreview={true}
+      fullScreen={true}
+    />
+  ),
 };
 
 const paneComponents: PanelCollection<
