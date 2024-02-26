@@ -13,7 +13,6 @@ import {
   selectIsRemovingFiles,
   selectWebcontainerInstance,
   selectWebcontainerStarted,
-  writeCommand,
 } from "@/features/webcontainer/webcontainerSlice";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
@@ -113,11 +112,6 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
     );
   };
 
-  const onRun = () => {
-    dispatch(writeCommand(`${command} \r`));
-  };
-
-  const onAbort = () => dispatch(writeCommand("\u0003"));
   return (
     <>
       <Head>
@@ -160,8 +154,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
             />
           </div>
           <TerminalPreview
-            onRun={onRun}
-            onAbort={onAbort}
+            onRunCommand={command}
             shouldShowPreview={shouldShowPreview}
           />
         </div>

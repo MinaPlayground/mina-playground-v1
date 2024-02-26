@@ -10,7 +10,6 @@ import {
   selectInitializingEsbuild,
   selectWebcontainerInstance,
   selectWebcontainerStarted,
-  writeCommand,
 } from "@/features/webcontainer/webcontainerSlice";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
@@ -77,11 +76,6 @@ const Home: NextPage<IHomeProps> = ({ data }) => {
     webcontainerInstance?.fs.writeFile(`src/main.ts`, code);
   };
 
-  const onRun = () => {
-    dispatch(writeCommand(`npm run build && node build/src/main.js \r`));
-  };
-
-  const onAbort = () => {};
   return (
     <>
       <Head>
@@ -98,8 +92,7 @@ const Home: NextPage<IHomeProps> = ({ data }) => {
             <CodeEditor code={code} setCodeChange={onCodeChange} />
           </div>
           <TerminalPreview
-            onRun={onRun}
-            onAbort={onAbort}
+            onRunCommand={"npm run build && node build/src/main.js"}
             shouldShowPreview={false}
           />
         </div>
