@@ -51,10 +51,12 @@ export const installDependencies = createAsyncThunk(
       base,
       fileSystemTree,
       isExamples = false,
+      hasPackageJSON = true,
     }: {
       base?: string;
       fileSystemTree?: FileSystemTree;
       isExamples?: boolean;
+      hasPackageJSON?: boolean;
     },
     { dispatch, getState, rejectWithValue }
   ) => {
@@ -75,9 +77,11 @@ export const installDependencies = createAsyncThunk(
       dispatch(setServerUrl(url));
     });
 
-    const installProcess = await webcontainer.spawn("npm", ["install"]);
-    if ((await installProcess.exit) !== 0) {
-      throw new Error("Installation failed");
+    if (hasPackageJSON) {
+      const installProcess = await webcontainer.spawn("npm", ["install"]);
+      if ((await installProcess.exit) !== 0) {
+        throw new Error("Installation failed");
+      }
     }
 
     return { webcontainer };
@@ -121,7 +125,12 @@ export const stop = createAsyncThunk(
 
 export const initializeTerminal = createAsyncThunk(
   "initTerminal",
-  async (_: void, { getState, dispatch }) => {
+  async (
+    {
+      installDirectories = [],
+    }: { installDirectories?: { directory: string; build: boolean }[] | [] },
+    { getState, dispatch }
+  ) => {
     const { webcontainer } = getState() as { webcontainer: WebcontainerState };
     const { FitAddon } = await import("xterm-addon-fit");
     const fitAddon = new FitAddon();
@@ -177,6 +186,16 @@ export const initializeTerminal = createAsyncThunk(
         },
       })
     );
+
+    const commandString = installDirectories
+      .map(({ directory, build }, index) => {
+        const buildCommand = build ? "&& npm run build" : "";
+        return `${
+          index !== 0 ? "&&" : ""
+        } cd ~/mina/${directory} && npm i ${buildCommand}`;
+      })
+      .join(" ");
+    input.write(commandString + "\r");
 
     return { input };
   }
