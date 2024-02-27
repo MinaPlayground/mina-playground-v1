@@ -61,7 +61,6 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
 
   useEffect(() => {
     dispatch(setFileSystemTree(fileSystemTree));
-    // dispatch(initializeWebcontainer({ fileSystemTree }));
   }, []);
 
   return (

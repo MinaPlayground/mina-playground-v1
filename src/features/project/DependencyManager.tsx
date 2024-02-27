@@ -20,6 +20,7 @@ const DependencyManager: FC<DependencyManagerProps> = ({
     JSON.parse(packageJSONFileContents)?.dependencies ?? {}
   );
   const isRunning = useAppSelector(selectIsRunning);
+  const location = `${directory}/package*json`;
 
   const onDelete = (key: string) => {
     const newDependencies = { ...dependencies };
@@ -30,7 +31,7 @@ const DependencyManager: FC<DependencyManagerProps> = ({
     packageJSON["dependencies"] = newDependencies;
     dispatch(
       setChangedFields({
-        location: "package*json",
+        location,
         currentCode: JSON.stringify(packageJSON),
         previousCode: packageJSONFileContents,
       })
@@ -44,13 +45,15 @@ const DependencyManager: FC<DependencyManagerProps> = ({
     packageJSON["dependencies"] = newDependencies;
     dispatch(
       setChangedFields({
-        location: "package*json",
+        location,
         currentCode: JSON.stringify(packageJSON),
         previousCode: packageJSONFileContents,
       })
     );
     dispatch(setIsRunning(true));
-    dispatch(writeCommand(`npm install ${dependency} \r`));
+    dispatch(
+      writeCommand(`cd ~/mina/${directory} && npm install ${dependency} \r`)
+    );
   };
 
   return (
