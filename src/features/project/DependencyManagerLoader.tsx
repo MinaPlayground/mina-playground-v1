@@ -37,12 +37,16 @@ const DependencyManagerLoader: FC<DependencyManagerLoaderProps> = ({}) => {
   }
 
   if (packageJSONPaths.length) {
-    return packageJSONPaths.map(({ directory, packageJSON }) => (
-      <DependencyManager
-        directory={directory}
-        packageJSONFileContents={packageJSON}
-      />
-    ));
+    return (
+      <>
+        {packageJSONPaths.map(({ directory, packageJSON }) => (
+          <DependencyManager
+            directory={directory}
+            packageJSONFileContents={packageJSON}
+          />
+        ))}
+      </>
+    );
   }
   return (
     <div className="p-4">
