@@ -1,9 +1,6 @@
 import { FC, useState } from "react";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import {
-  selectFileSystemTree,
-  setChangedFields,
-} from "@/features/fileTree/fileTreeSlice";
+import { setChangedFields } from "@/features/fileTree/fileTreeSlice";
 import { DeleteActionIcon } from "@/icons/FileSystemActionIcons";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import {
@@ -13,12 +10,14 @@ import {
 } from "@/features/webcontainer/webcontainerSlice";
 import Spinner from "@/components/Spinner";
 
-const DependencyManager: FC<DependencyManagerProps> = ({}) => {
+const DependencyManager: FC<DependencyManagerProps> = ({
+  directory,
+  packageJSONFileContents,
+}) => {
   const dispatch = useAppDispatch();
-  const fileData = useAppSelector(selectFileSystemTree);
   const [dependency, setDependency] = useState("");
   const [dependencies, setDependencies] = useState(
-    JSON.parse(fileData["package*json"].file.contents).dependencies
+    JSON.parse(packageJSONFileContents)?.dependencies ?? {}
   );
   const isRunning = useAppSelector(selectIsRunning);
 
@@ -27,13 +26,13 @@ const DependencyManager: FC<DependencyManagerProps> = ({}) => {
     delete newDependencies[key];
     setDependencies(newDependencies);
 
-    const packageJSON = JSON.parse(fileData["package*json"].file.contents);
+    const packageJSON = JSON.parse(packageJSONFileContents);
     packageJSON["dependencies"] = newDependencies;
     dispatch(
       setChangedFields({
         location: "package*json",
         currentCode: JSON.stringify(packageJSON),
-        previousCode: fileData["package*json"].file.contents,
+        previousCode: packageJSONFileContents,
       })
     );
   };
@@ -41,13 +40,13 @@ const DependencyManager: FC<DependencyManagerProps> = ({}) => {
   const addDependency = () => {
     const newDependencies = { ...dependencies, [dependency]: "*" };
     setDependencies(newDependencies);
-    const packageJSON = JSON.parse(fileData["package*json"].file.contents);
+    const packageJSON = JSON.parse(packageJSONFileContents);
     packageJSON["dependencies"] = newDependencies;
     dispatch(
       setChangedFields({
         location: "package*json",
         currentCode: JSON.stringify(packageJSON),
-        previousCode: fileData["package*json"].file.contents,
+        previousCode: packageJSONFileContents,
       })
     );
     dispatch(setIsRunning(true));
@@ -91,6 +90,9 @@ const DependencyManager: FC<DependencyManagerProps> = ({}) => {
   );
 };
 
-interface DependencyManagerProps {}
+interface DependencyManagerProps {
+  directory: string;
+  packageJSONFileContents: string;
+}
 
 export default DependencyManager;
