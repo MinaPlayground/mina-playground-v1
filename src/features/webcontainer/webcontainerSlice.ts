@@ -44,6 +44,13 @@ const initialState: WebcontainerState = {
   base: null,
 };
 
+const jshRC: string = `
+export PNPM_HOME="/home/.pnpm"
+export PATH="/bin:/usr/bin:/usr/local/bin:/home/.pnpm"
+alias git='npx -y --package=g4c@stable -- g4c'
+alias ni='npx -y --package=@antfu/ni -- ni'
+`;
+
 export const installDependencies = createAsyncThunk(
   "installDependencies",
   async (
@@ -65,6 +72,8 @@ export const installDependencies = createAsyncThunk(
       workdirName: "mina",
     });
     dispatch(setWebcontainerInstance(webcontainer));
+    await webcontainer.fs.writeFile(".jshrc", jshRC);
+    await webcontainer.spawn("mv", [".jshrc", "/home/.jshrc"]);
 
     const baseFiles = fileSystemTree
       ? fileSystemTree
