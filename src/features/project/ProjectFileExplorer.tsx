@@ -9,6 +9,7 @@ import {
 import {
   fileTreeCreateNew,
   fileTreeOnCreate,
+  resetChangedFields,
   selectChangedFields,
   selectFileSystemTree,
   setChangedFieldStatus,
@@ -23,6 +24,7 @@ import SaveCode from "@/components/editor/SaveCode";
 import Button from "@/components/button/Button";
 import CreateProjectModal from "@/components/modal/CreateProjectModal";
 import { useRouter } from "next/router";
+import ResetCode from "@/components/editor/ResetCode";
 
 const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id, name }) => {
   const dispatch = useAppDispatch();
@@ -150,6 +152,8 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id, name }) => {
     } catch {}
   };
 
+  const resetAllFields = () => dispatch(resetChangedFields());
+
   return (
     <div className="p-2">
       <div className="mb-2">
@@ -161,7 +165,8 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id, name }) => {
           isError={isError}
           defaultText="Save all"
         />
-        <CommitButton />
+        <ResetCode disabled={!hasUnsavedField} onClick={resetAllFields} />
+        {/*<CommitButton />*/}
       </div>
       <div className="bg-gray-800 mb-2 p-2 text-gray-200">
         <div className="flex justify-between items-center">
