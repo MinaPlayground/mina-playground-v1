@@ -82,6 +82,31 @@ export const installDependencies = createAsyncThunk(
       : (await import(`@/json/${base}-base.json`)).default;
     await webcontainer.mount(baseFiles);
 
+    const watcher = await webcontainer.spawn("npx", [
+      "-y",
+      "chokidar-cli",
+      ".",
+      "-i",
+      '"(**/(node_modules|.git|_tmp_)**)"',
+    ]);
+    watcher.output.pipeTo(
+      new WritableStream({
+        async write(data) {
+          const [type, name] = data.split(":");
+          switch (type) {
+            case "change":
+              break;
+            case "add":
+            case "addDir":
+            case "unlink":
+            case "unlinkDir":
+            default:
+              console.log(name);
+          }
+        },
+      })
+    );
+
     webcontainer.on("server-ready", (port, url) => {
       dispatch(setServerUrl(url));
     });
