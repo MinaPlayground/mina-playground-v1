@@ -1,7 +1,7 @@
 import Head from "next/head";
 import Header from "@/components/Header";
 import { NextPage } from "next";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import {
   initializeTerminal,
@@ -19,6 +19,7 @@ const GitHub: NextPage<HomeProps> = ({}) => {
   const { query } = useRouter();
   const { username, repository } = query;
   const dispatch = useAppDispatch();
+  const [url, setUrl] = useState("");
   const webcontainerStarted = useAppSelector(selectWebcontainerStarted);
   const terminalInitialized = useAppSelector(selectTerminalInitialized);
   const initializingWebcontainer = useAppSelector(selectInitializingEsbuild);
@@ -46,6 +47,10 @@ const GitHub: NextPage<HomeProps> = ({}) => {
     );
   }, [terminalInitialized]);
 
+  const cloneRepository = () => {
+    dispatch(writeCommand(`git clone ${url} \r`));
+  };
+
   return (
     <>
       <Head>
@@ -56,6 +61,8 @@ const GitHub: NextPage<HomeProps> = ({}) => {
       </Head>
       <main>
         <Header />
+        <input value={url} onChange={(event) => setUrl(event.target.value)} />
+        <button onClick={cloneRepository}>Clone</button>
         <ProjectTerminal />
       </main>
     </>
