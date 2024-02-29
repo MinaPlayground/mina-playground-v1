@@ -11,6 +11,7 @@ interface WebcontainerState {
   initializingWebcontainerError: string | null;
   webcontainerStarted: boolean;
   webcontainerInstance: WebContainer | null;
+  terminalInitialized: boolean;
   shellProcess: WebContainerProcess | null;
   shellProcessInput: WritableStreamDefaultWriter | null;
   isRemovingFiles: boolean;
@@ -42,6 +43,7 @@ const initialState: WebcontainerState = {
   serverUrl: null,
   shellProcess: null,
   base: null,
+  terminalInitialized: false,
 };
 
 const jshRC: string = `
@@ -214,6 +216,7 @@ export const initializeTerminal = createAsyncThunk(
             dispatch(setIsAborting(true));
           }
           if (data.endsWith("[3G")) {
+            dispatch(setTerminalInitialized(true));
             dispatch(setIsRunning(false));
             dispatch(setIsAborting(false));
           }
@@ -354,6 +357,9 @@ export const webcontainerSlice = createSlice({
     setWebcontainerStarted: (state, action: PayloadAction<any>) => {
       state.webcontainerInstance = action.payload;
     },
+    setTerminalInitialized: (state, action: PayloadAction<boolean>) => {
+      state.terminalInitialized = action.payload;
+    },
   },
   extraReducers(builder) {
     builder
@@ -420,6 +426,9 @@ export const selectDeploymentMessage = (state: RootState) =>
 export const selectServerUrl = (state: RootState) =>
   state.webcontainer.serverUrl;
 
+export const selectTerminalInitialized = (state: RootState) =>
+  state.webcontainer.terminalInitialized;
+
 export const {
   setIsRunning,
   setIsAborting,
@@ -430,5 +439,6 @@ export const {
   setShellProcess,
   setServerUrl,
   reset,
+  setTerminalInitialized,
 } = webcontainerSlice.actions;
 export default webcontainerSlice.reducer;
