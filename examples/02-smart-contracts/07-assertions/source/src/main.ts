@@ -1,7 +1,6 @@
 import {
   SmartContract,
   PrivateKey,
-  PublicKey,
   Field,
   method,
   AccountUpdate,
@@ -16,7 +15,7 @@ class HelloWorld extends SmartContract {
 
   @method increment(xPlus1: Field) {
     const x = this.x.get();
-    this.x.assertEquals(x);
+    this.x.requireEquals(x);
     x.add(1).assertEquals(xPlus1);
     this.x.set(xPlus1);
   }

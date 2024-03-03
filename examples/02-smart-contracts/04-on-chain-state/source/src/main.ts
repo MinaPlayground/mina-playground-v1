@@ -1,7 +1,6 @@
 import {
   SmartContract,
   PrivateKey,
-  PublicKey,
   Field,
   method,
   AccountUpdate,

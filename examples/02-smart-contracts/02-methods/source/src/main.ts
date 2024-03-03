@@ -1,11 +1,4 @@
-import {
-  SmartContract,
-  PrivateKey,
-  PublicKey,
-  Field,
-  method,
-  Provable,
-} from "o1js";
+import { SmartContract, Field, method, Provable } from "o1js";
 
 class HelloWorld extends SmartContract {
   @method myMethod(x: Field) {
