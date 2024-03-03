@@ -173,6 +173,7 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id, name }) => {
           <h1 className="font-bold">{name}</h1>
           <Button
             isLoading={false}
+            disabled={true}
             onClick={() => setIsForkModalVisible(true)}
             className="btn-primary btn-sm"
           >
