@@ -1,32 +1,39 @@
 import { FC, useState } from "react";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import {
-  selectFileSystemTree,
-  setChangedFields,
-} from "@/features/fileTree/fileTreeSlice";
+import { setChangedFields } from "@/features/fileTree/fileTreeSlice";
 import { DeleteActionIcon } from "@/icons/FileSystemActionIcons";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
+import {
+  selectIsRunning,
+  setIsRunning,
+  writeCommand,
+} from "@/features/webcontainer/webcontainerSlice";
+import Spinner from "@/components/Spinner";
 
-const DependencyManager: FC<DependencyManagerProps> = ({ id, name }) => {
+const DependencyManager: FC<DependencyManagerProps> = ({
+  directory,
+  packageJSONFileContents,
+}) => {
   const dispatch = useAppDispatch();
-  const fileData = useAppSelector(selectFileSystemTree);
   const [dependency, setDependency] = useState("");
   const [dependencies, setDependencies] = useState(
-    JSON.parse(fileData["package*json"].file.contents).dependencies
+    JSON.parse(packageJSONFileContents)?.dependencies ?? {}
   );
+  const isRunning = useAppSelector(selectIsRunning);
+  const location = `${directory}/package*json`;
 
   const onDelete = (key: string) => {
     const newDependencies = { ...dependencies };
     delete newDependencies[key];
     setDependencies(newDependencies);
 
-    const packageJSON = JSON.parse(fileData["package*json"].file.contents);
+    const packageJSON = JSON.parse(packageJSONFileContents);
     packageJSON["dependencies"] = newDependencies;
     dispatch(
       setChangedFields({
-        location: "package*json",
+        location,
         currentCode: JSON.stringify(packageJSON),
-        previousCode: fileData["package*json"].file.contents,
+        previousCode: packageJSONFileContents,
       })
     );
   };
@@ -34,27 +41,38 @@ const DependencyManager: FC<DependencyManagerProps> = ({ id, name }) => {
   const addDependency = () => {
     const newDependencies = { ...dependencies, [dependency]: "*" };
     setDependencies(newDependencies);
-    const packageJSON = JSON.parse(fileData["package*json"].file.contents);
+    const packageJSON = JSON.parse(packageJSONFileContents);
     packageJSON["dependencies"] = newDependencies;
     dispatch(
       setChangedFields({
-        location: "package*json",
+        location,
         currentCode: JSON.stringify(packageJSON),
-        previousCode: fileData["package*json"].file.contents,
+        previousCode: packageJSONFileContents,
       })
+    );
+    dispatch(setIsRunning(true));
+    dispatch(
+      writeCommand(`cd ~/mina/${directory} && npm install ${dependency} \r`)
     );
   };
 
   return (
     <div className="p-2 text-gray-200">
       {Object.entries(dependencies).map(([key, value]) => (
-        <div className="flex group justify-between">
+        <div key={key} className="flex group justify-between">
           <span>{key}</span>
           <div className="flex items-center gap-2">
             <span>{value}</span>
             <div className="hidden group-hover:block">
               <DeleteActionIcon onClick={(event) => onDelete(key)} />
             </div>
+            {key === dependency && isRunning && (
+              <Spinner
+                circleColor={"text-gray-400"}
+                spinnerColor={"fill-white"}
+                size="4"
+              />
+            )}
           </div>
         </div>
       ))}
@@ -76,8 +94,8 @@ const DependencyManager: FC<DependencyManagerProps> = ({ id, name }) => {
 };
 
 interface DependencyManagerProps {
-  id: string;
-  name: string;
+  directory: string;
+  packageJSONFileContents: string;
 }
 
 export default DependencyManager;

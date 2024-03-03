@@ -5,11 +5,9 @@ import axios from "axios";
 import { FileSystemTree } from "@webcontainer/api";
 import { useEffect } from "react";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
-// import { initializeWebcontainer } from "@/features/webcontainer/webcontainerSlice";
 import DockView from "@/components/dockview/DockView";
 import { setFileSystemTree } from "@/features/fileTree/fileTreeSlice";
 import {
-  initializeShellProcess,
   initializeTerminal,
   installDependencies,
   selectInitializingEsbuild,
@@ -40,21 +38,29 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
   const dispatch = useAppDispatch();
   const webcontainerStarted = useAppSelector(selectWebcontainerStarted);
   const initializingWebcontainer = useAppSelector(selectInitializingEsbuild);
+  const hasPackageJSON = "package*json" in fileSystemTree;
+  const installDirectories =
+    "contracts" in fileSystemTree && "ui" in fileSystemTree
+      ? [
+          { directory: "contracts", build: true },
+          { directory: "ui", build: false },
+        ]
+      : [];
 
   useEffect(() => {
     if (!webcontainerStarted) {
-      dispatch(installDependencies({ fileSystemTree }));
+      dispatch(installDependencies({ fileSystemTree, hasPackageJSON }));
       return;
     }
   }, [webcontainerStarted]);
 
   useEffect(() => {
-    dispatch(initializeTerminal());
+    if (initializingWebcontainer) return;
+    dispatch(initializeTerminal({ installDirectories }));
   }, [initializingWebcontainer]);
 
   useEffect(() => {
     dispatch(setFileSystemTree(fileSystemTree));
-    // dispatch(initializeWebcontainer({ fileSystemTree }));
   }, []);
 
   return (

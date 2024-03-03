@@ -72,6 +72,17 @@ export const FileTreeSlice = createSlice({
       if (!(location in state.changedFields)) return;
       state.changedFields[location].saved = saved;
     },
+    deleteChangedField: (
+      state,
+      action: PayloadAction<{ location: string }>
+    ) => {
+      const { location } = action.payload;
+      if (!(location in state.changedFields)) return;
+      delete state.changedFields[location];
+    },
+    resetChangedFields: (state) => {
+      state.changedFields = {};
+    },
   },
   extraReducers(builder) {
     builder
@@ -117,6 +128,8 @@ export const {
   setCurrentTreeItem,
   setChangedFields,
   setChangedFieldStatus,
+  resetChangedFields,
+  deleteChangedField,
   setFileSystemTree,
   fileTreeCreateNew,
   fileTreeOnCreate,

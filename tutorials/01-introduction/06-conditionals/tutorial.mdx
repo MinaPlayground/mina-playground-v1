@@ -9,18 +9,18 @@ if (foo) {
 }
 ```
 
-Instead, use the o1js built-in Circuit.if() method, which is a ternary operator:
+Instead, use the o1js built-in Provable.if() method, which is a ternary operator:
 
 ```ts
-const x = Circuit.if(new Bool(foo), a, b); // behaves like `foo ? a : b`
+const x = Provable.if(new Bool(foo), a, b); // behaves like `foo ? a : b`
 ```
 
 ### Tutorial
 
-Add the o1js built-in Circuit.if() method:
+Add the o1js built-in Provable.if() method:
 
 ```ts
-const x = Circuit.if(new Bool(foo), a, b);
+const x = Provable.if(new Bool(foo), a, b);
 ```
 
 Log the result of the ternary operator, which should now be 1:

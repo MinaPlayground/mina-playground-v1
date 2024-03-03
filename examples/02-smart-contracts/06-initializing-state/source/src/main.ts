@@ -1,9 +1,7 @@
 import {
   SmartContract,
   PrivateKey,
-  PublicKey,
   Field,
-  method,
   AccountUpdate,
   Mina,
   state,
@@ -25,8 +23,6 @@ const Local = Mina.LocalBlockchain({ proofsEnabled: useProof });
 Mina.setActiveInstance(Local);
 const { privateKey: deployerKey, publicKey: deployerAccount } =
   Local.testAccounts[0];
-const { privateKey: senderKey, publicKey: senderAccount } =
-  Local.testAccounts[1];
 
 const zkAppPrivateKey = PrivateKey.random();
 const zkAppAddress = zkAppPrivateKey.toPublicKey();

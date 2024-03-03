@@ -9,6 +9,7 @@ import {
 import {
   fileTreeCreateNew,
   fileTreeOnCreate,
+  resetChangedFields,
   selectChangedFields,
   selectFileSystemTree,
   setChangedFieldStatus,
@@ -22,11 +23,14 @@ import CommitButton from "@/components/version-control/CommitButton";
 import SaveCode from "@/components/editor/SaveCode";
 import Button from "@/components/button/Button";
 import CreateProjectModal from "@/components/modal/CreateProjectModal";
-import { FileSystemTree } from "@webcontainer/api";
+import { useRouter } from "next/router";
+import ResetCode from "@/components/editor/ResetCode";
 
 const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id, name }) => {
   const dispatch = useAppDispatch();
   const fileData = useAppSelector(selectFileSystemTree);
+  const { query } = useRouter();
+  const { projectId } = query;
   const [updateFileTree, { isLoading, isSuccess, isError }] =
     useUpdateFileTreeMutation();
   const [deleteFileTreeItem, { isLoading: isLoadingDeletion }] =
@@ -94,7 +98,9 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id, name }) => {
         type === "directory"
           ? webcontainerInstance?.fs.mkdir(webContainerPath)
           : webcontainerInstance?.fs.writeFile(webContainerPath, "");
-      } catch {}
+      } catch (e) {
+        console.log(e);
+      }
     }
 
     if (action === "rename") {
@@ -146,6 +152,8 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id, name }) => {
     } catch {}
   };
 
+  const resetAllFields = () => dispatch(resetChangedFields());
+
   return (
     <div className="p-2">
       <div className="mb-2">
@@ -157,7 +165,8 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id, name }) => {
           isError={isError}
           defaultText="Save all"
         />
-        <CommitButton />
+        <ResetCode disabled={!hasUnsavedField} onClick={resetAllFields} />
+        {/*<CommitButton />*/}
       </div>
       <div className="bg-gray-800 mb-2 p-2 text-gray-200">
         <div className="flex justify-between items-center">
@@ -218,7 +227,7 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id, name }) => {
       <CreateProjectModal
         isVisible={isForkModalVisible}
         close={() => setIsForkModalVisible(false)}
-        fileSystemTree={fileData as FileSystemTree}
+        projectId={projectId as string}
       />
     </div>
   );

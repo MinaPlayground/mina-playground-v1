@@ -15,8 +15,8 @@ import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { setDockApi } from "@/features/dockView/dockViewSlice";
 import Section from "@/components/section/Section";
 import SectionItem from "@/components/section/SectionItem";
+import DependencyManagerLoader from "@/features/project/DependencyManagerLoader";
 import ProjectTerminal from "@/components/terminal/ProjectTerminal";
-import DependencyManager from "@/features/project/DependencyManager";
 
 const GetStarted = () => {
   return (
@@ -56,17 +56,6 @@ const DockView = ({ id, name }: { id: string; name: string }) => {
         referencePanel: "dock",
       },
     });
-    // event.api.addPanel({
-    //   id: "terminal",
-    //   component: "preview",
-    //   minimumHeight: 100,
-    //   size: 150,
-    //   position: {
-    //     direction: "below",
-    //     referencePanel: "dock",
-    //   },
-    //   params: { fileSystemTree },
-    // });
   };
 
   return (
@@ -117,7 +106,7 @@ const gridComponents: PanelCollection<IGridviewPanelProps> = {
         });
         filetree.headerVisible = false;
 
-        const dependencyManager = event.api.addPanel({
+        event.api.addPanel({
           id: "dependencyManager",
           title: "Dependency Manager",
           component: "dependencyManager",
@@ -127,14 +116,10 @@ const gridComponents: PanelCollection<IGridviewPanelProps> = {
             name: props.params.name,
           },
         });
-        // dependencyManager.headerVisible = false;
       }}
     />
   ),
-  terminal: () => <ProjectTerminal />,
-  // preview: (props: IGridviewPanelProps<{ fileSystemTree: FileSystemTree }>) => (
-  //   <Iframe />
-  // ),
+  terminal: () => <ProjectTerminal fullScreen={true} />,
 };
 
 const paneComponents: PanelCollection<
@@ -144,7 +129,7 @@ const paneComponents: PanelCollection<
     <ProjectFileExplorer id={props.params.id} name={props.params.name} />
   ),
   dependencyManager: (props: IPaneviewPanelProps) => (
-    <DependencyManager id={props.params.id} name={props.params.name} />
+    <DependencyManagerLoader />
   ),
 };
 

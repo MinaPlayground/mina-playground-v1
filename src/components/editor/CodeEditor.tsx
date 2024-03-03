@@ -1,9 +1,9 @@
-import { FC, useCallback } from "react";
+import { ChangeEvent, FC, useCallback } from "react";
 import Editor from "@monaco-editor/react";
 import Loader from "@/components/Loader";
 import dracula from "@/styles/dracula.json";
 
-const CodeEditor: FC<CodeEditorProps> = ({ code, setCodeChange }) => {
+const CodeEditor: FC<CodeEditorProps> = ({ code, setCodeChange, onBlur }) => {
   const handleEditorDidMount = useCallback((editor: any, monaco: any) => {
     monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
       noSemanticValidation: true,
@@ -32,6 +32,11 @@ const CodeEditor: FC<CodeEditorProps> = ({ code, setCodeChange }) => {
       onMount={handleEditorDidMount}
       beforeMount={setEditorTheme}
       options={editorOptions}
+      wrapperProps={{
+        onBlur: (event: ChangeEvent<HTMLInputElement>) => {
+          if (onBlur) onBlur(code);
+        },
+      }}
     />
   );
 };
@@ -47,6 +52,7 @@ const editorOptions = {
 interface CodeEditorProps {
   code: string | undefined;
   setCodeChange(value: string | undefined): void;
+  onBlur?(value: string | undefined): void;
 }
 
 export default CodeEditor;

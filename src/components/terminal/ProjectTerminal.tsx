@@ -7,13 +7,15 @@ import {
 import * as React from "react";
 import WebcontainerLoader from "@/features/webcontainer/WebcontainerLoader";
 
-const ProjectTerminal: FC = () => {
+const ProjectTerminal: FC<ProjectTerminalProps> = ({ fullScreen = false }) => {
   const webcontainerError = useAppSelector(selectInitializingWebContainerError);
   const initializingWebcontainer = useAppSelector(selectInitializingEsbuild);
 
+  const fullHeight = fullScreen ? "h-full" : "";
+
   if (initializingWebcontainer) {
     return (
-      <div className="flex flex-1 bg-black justify-center">
+      <div className={`flex flex-1 ${fullHeight} bg-black justify-center`}>
         <WebcontainerLoader />
       </div>
     );
@@ -34,7 +36,11 @@ const ProjectTerminal: FC = () => {
     );
   }
 
-  return <div className="terminal flex-1 bg-black" />;
+  return <div className={`terminal flex-1 ${fullHeight} bg-black`} />;
 };
+
+interface ProjectTerminalProps {
+  fullScreen?: boolean;
+}
 
 export default ProjectTerminal;

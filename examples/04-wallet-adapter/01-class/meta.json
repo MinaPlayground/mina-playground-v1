@@ -1,9 +1,0 @@
-{
-  "name": "Class",
-  "type": "playground-zkApp",
-  "options": {
-    "focus": ["src/App.tsx"],
-    "highlight": "src/App.tsx",
-    "command": "npm start"
-  }
-}

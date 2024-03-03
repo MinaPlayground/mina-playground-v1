@@ -11,6 +11,7 @@ interface WebcontainerState {
   initializingWebcontainerError: string | null;
   webcontainerStarted: boolean;
   webcontainerInstance: WebContainer | null;
+  terminalInitialized: boolean;
   shellProcess: WebContainerProcess | null;
   shellProcessInput: WritableStreamDefaultWriter | null;
   isRemovingFiles: boolean;
@@ -42,7 +43,15 @@ const initialState: WebcontainerState = {
   serverUrl: null,
   shellProcess: null,
   base: null,
+  terminalInitialized: false,
 };
+
+const jshRC: string = `
+export PNPM_HOME="/home/.pnpm"
+export PATH="/bin:/usr/bin:/usr/local/bin:/home/.pnpm"
+alias git='npx -y --package=g4c@stable -- g4c'
+alias ni='npx -y --package=@antfu/ni -- ni'
+`;
 
 export const installDependencies = createAsyncThunk(
   "installDependencies",
@@ -51,10 +60,12 @@ export const installDependencies = createAsyncThunk(
       base,
       fileSystemTree,
       isExamples = false,
+      hasPackageJSON = true,
     }: {
       base?: string;
       fileSystemTree?: FileSystemTree;
       isExamples?: boolean;
+      hasPackageJSON?: boolean;
     },
     { dispatch, getState, rejectWithValue }
   ) => {
@@ -63,21 +74,50 @@ export const installDependencies = createAsyncThunk(
       workdirName: "mina",
     });
     dispatch(setWebcontainerInstance(webcontainer));
+    // await webcontainer.fs.writeFile(".jshrc", jshRC);
+    // await webcontainer.spawn("mv", [".jshrc", "/home/.jshrc"]);
 
-    const baseImport = isExamples
-      ? await import(`@/examples-json/${base}-base.json`)
-      : await import(`@/json/${base}-base.json`);
-
-    const baseFiles = fileSystemTree ? fileSystemTree : baseImport.default;
+    const baseFiles = fileSystemTree
+      ? fileSystemTree
+      : isExamples
+      ? (await import(`@/examples-json/${base}-base.json`)).default
+      : (await import(`@/json/${base}-base.json`)).default;
     await webcontainer.mount(baseFiles);
+
+    // const watcher = await webcontainer.spawn("npx", [
+    //   "-y",
+    //   "chokidar-cli",
+    //   ".",
+    //   "-i",
+    //   '"**/(node_modules|.git|_tmp_)"',
+    // ]);
+    // watcher.output.pipeTo(
+    //   new WritableStream({
+    //     async write(data) {
+    //       const [type, name] = data.split(":");
+    //       switch (type) {
+    //         case "change":
+    //           break;
+    //         case "add":
+    //         case "addDir":
+    //         case "unlink":
+    //         case "unlinkDir":
+    //         default:
+    //           console.log(name);
+    //       }
+    //     },
+    //   })
+    // );
 
     webcontainer.on("server-ready", (port, url) => {
       dispatch(setServerUrl(url));
     });
 
-    const installProcess = await webcontainer.spawn("npm", ["install"]);
-    if ((await installProcess.exit) !== 0) {
-      throw new Error("Installation failed");
+    if (hasPackageJSON) {
+      const installProcess = await webcontainer.spawn("npm", ["install"]);
+      if ((await installProcess.exit) !== 0) {
+        throw new Error("Installation failed");
+      }
     }
 
     return { webcontainer };
@@ -121,8 +161,15 @@ export const stop = createAsyncThunk(
 
 export const initializeTerminal = createAsyncThunk(
   "initTerminal",
-  async (_: void, { getState, dispatch }) => {
-    const { webcontainer } = getState() as { webcontainer: WebcontainerState };
+  async (
+    {
+      installDirectories = [],
+    }: { installDirectories?: { directory: string; build: boolean }[] | [] },
+    { getState, dispatch }
+  ) => {
+    const { webcontainer } = getState() as {
+      webcontainer: WebcontainerState;
+    };
     const { FitAddon } = await import("xterm-addon-fit");
     const fitAddon = new FitAddon();
     const { Terminal } = await import("xterm");
@@ -171,13 +218,13 @@ export const initializeTerminal = createAsyncThunk(
             dispatch(setIsAborting(true));
           }
           if (data.endsWith("[3G")) {
+            dispatch(setTerminalInitialized(true));
             dispatch(setIsRunning(false));
             dispatch(setIsAborting(false));
           }
         },
       })
     );
-
     return { input };
   }
 );
@@ -301,6 +348,9 @@ export const webcontainerSlice = createSlice({
     setWebcontainerStarted: (state, action: PayloadAction<any>) => {
       state.webcontainerInstance = action.payload;
     },
+    setTerminalInitialized: (state, action: PayloadAction<boolean>) => {
+      state.terminalInitialized = action.payload;
+    },
   },
   extraReducers(builder) {
     builder
@@ -367,6 +417,9 @@ export const selectDeploymentMessage = (state: RootState) =>
 export const selectServerUrl = (state: RootState) =>
   state.webcontainer.serverUrl;
 
+export const selectTerminalInitialized = (state: RootState) =>
+  state.webcontainer.terminalInitialized;
+
 export const {
   setIsRunning,
   setIsAborting,
@@ -377,5 +430,6 @@ export const {
   setShellProcess,
   setServerUrl,
   reset,
+  setTerminalInitialized,
 } = webcontainerSlice.actions;
 export default webcontainerSlice.reducer;

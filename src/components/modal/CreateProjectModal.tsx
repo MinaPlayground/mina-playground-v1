@@ -3,25 +3,23 @@ import CTAModal from "@/components/modal/CTAModal";
 import Button from "@/components/button/Button";
 import { useRouter } from "next/router";
 import { useCreateProjectMutation } from "@/services/project";
-import { FileSystemTree } from "@webcontainer/api";
 
 const CreateProjectModal: FC<CreateProjectModalProps> = ({
   isVisible,
   close,
-  fileSystemTree,
+  projectId,
 }) => {
-  const { query, push } = useRouter();
   const [createProject, { isLoading, isError, isSuccess }] =
     useCreateProjectMutation();
   const [name, setName] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState("");
   const router = useRouter();
-  const isFork = !!fileSystemTree;
+  const isFork = !!projectId;
 
   const onCreate = async () => {
     const body = { name, type: 0, visibility: true, files_id: 1 };
     if (isFork) {
-      body["fileSystemTree"] = fileSystemTree;
+      body["forkedProject"] = projectId;
     }
     try {
       const response = await createProject({ body }).unwrap();
@@ -87,7 +85,7 @@ const CreateProjectModal: FC<CreateProjectModalProps> = ({
 
 interface CreateProjectModalProps {
   isVisible: boolean;
-  fileSystemTree?: FileSystemTree;
+  projectId?: string;
   close(): void;
 }
 
