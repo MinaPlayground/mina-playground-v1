@@ -74,8 +74,8 @@ export const installDependencies = createAsyncThunk(
       workdirName: "mina",
     });
     dispatch(setWebcontainerInstance(webcontainer));
-    await webcontainer.fs.writeFile(".jshrc", jshRC);
-    await webcontainer.spawn("mv", [".jshrc", "/home/.jshrc"]);
+    // await webcontainer.fs.writeFile(".jshrc", jshRC);
+    // await webcontainer.spawn("mv", [".jshrc", "/home/.jshrc"]);
 
     const baseFiles = fileSystemTree
       ? fileSystemTree
@@ -84,30 +84,30 @@ export const installDependencies = createAsyncThunk(
       : (await import(`@/json/${base}-base.json`)).default;
     await webcontainer.mount(baseFiles);
 
-    const watcher = await webcontainer.spawn("npx", [
-      "-y",
-      "chokidar-cli",
-      ".",
-      "-i",
-      '"(**/(node_modules|.git|_tmp_)**)"',
-    ]);
-    watcher.output.pipeTo(
-      new WritableStream({
-        async write(data) {
-          const [type, name] = data.split(":");
-          switch (type) {
-            case "change":
-              break;
-            case "add":
-            case "addDir":
-            case "unlink":
-            case "unlinkDir":
-            default:
-              console.log(name);
-          }
-        },
-      })
-    );
+    // const watcher = await webcontainer.spawn("npx", [
+    //   "-y",
+    //   "chokidar-cli",
+    //   ".",
+    //   "-i",
+    //   '"**/(node_modules|.git|_tmp_)"',
+    // ]);
+    // watcher.output.pipeTo(
+    //   new WritableStream({
+    //     async write(data) {
+    //       const [type, name] = data.split(":");
+    //       switch (type) {
+    //         case "change":
+    //           break;
+    //         case "add":
+    //         case "addDir":
+    //         case "unlink":
+    //         case "unlinkDir":
+    //         default:
+    //           console.log(name);
+    //       }
+    //     },
+    //   })
+    // );
 
     webcontainer.on("server-ready", (port, url) => {
       dispatch(setServerUrl(url));
@@ -167,7 +167,9 @@ export const initializeTerminal = createAsyncThunk(
     }: { installDirectories?: { directory: string; build: boolean }[] | [] },
     { getState, dispatch }
   ) => {
-    const { webcontainer } = getState() as { webcontainer: WebcontainerState };
+    const { webcontainer } = getState() as {
+      webcontainer: WebcontainerState;
+    };
     const { FitAddon } = await import("xterm-addon-fit");
     const fitAddon = new FitAddon();
     const { Terminal } = await import("xterm");
@@ -223,17 +225,6 @@ export const initializeTerminal = createAsyncThunk(
         },
       })
     );
-
-    const commandString = installDirectories
-      .map(({ directory, build }, index) => {
-        const buildCommand = build ? "&& npm run build" : "";
-        return `${
-          index !== 0 ? "&&" : ""
-        } cd ~/mina/${directory} && npm i ${buildCommand}`;
-      })
-      .join(" ");
-    input.write(commandString + "\r");
-
     return { input };
   }
 );
