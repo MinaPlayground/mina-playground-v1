@@ -66,9 +66,6 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
 
   useEffect(() => {
     dispatch(setCurrentTreeItem(highlightedName));
-    return () => {
-      dispatch(reset());
-    };
   }, []);
 
   // TODO create webcontainer hook
@@ -103,11 +100,7 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
 
   useEffect(() => {
     if (initializingWebcontainer) return;
-    if (initTerminal) {
-      dispatch(initializeTerminal());
-      return;
-    }
-    dispatch(initializeShellProcess());
+    dispatch(initializeTerminal({}));
   }, [initializingWebcontainer]);
 
   const onClick = (code: string) => {
@@ -121,7 +114,6 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
       `/src/${currentDirectory}`.replace(/\*/g, "."),
       code
     );
-    dispatch(setChangedFields({ location: currentDirectory, code }));
   };
 
   const abortTest = async () => {

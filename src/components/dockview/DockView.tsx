@@ -16,7 +16,7 @@ import { setDockApi } from "@/features/dockView/dockViewSlice";
 import Section from "@/components/section/Section";
 import SectionItem from "@/components/section/SectionItem";
 import DependencyManagerLoader from "@/features/project/DependencyManagerLoader";
-import TerminalPreview from "@/features/examples/TerminalPreview";
+import ProjectTerminal from "@/components/terminal/ProjectTerminal";
 
 const GetStarted = () => {
   return (
@@ -119,15 +119,7 @@ const gridComponents: PanelCollection<IGridviewPanelProps> = {
       }}
     />
   ),
-  terminal: () => (
-    <TerminalPreview
-      onRunCommand={
-        "cd contracts && npm i && npm run build && cd ../ui && npm i && npm run dev"
-      }
-      shouldShowPreview={true}
-      fullScreen={true}
-    />
-  ),
+  terminal: () => <ProjectTerminal fullScreen={true} />,
 };
 
 const paneComponents: PanelCollection<

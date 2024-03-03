@@ -3,7 +3,7 @@ import { FC } from "react";
 const Spinner: FC<SpinnerProps> = ({
   circleColor,
   spinnerColor,
-  size = "8",
+  size = "4",
 }) => {
   return (
     <svg
