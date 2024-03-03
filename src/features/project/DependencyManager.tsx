@@ -20,7 +20,7 @@ const DependencyManager: FC<DependencyManagerProps> = ({
     JSON.parse(packageJSONFileContents)?.dependencies ?? {}
   );
   const isRunning = useAppSelector(selectIsRunning);
-  const location = `${directory}/package*json`;
+  const location = `package*json`;
 
   const onDelete = (key: string) => {
     const newDependencies = { ...dependencies };
@@ -51,9 +51,7 @@ const DependencyManager: FC<DependencyManagerProps> = ({
       })
     );
     dispatch(setIsRunning(true));
-    dispatch(
-      writeCommand(`cd ~/mina/${directory} && npm install ${dependency} \r`)
-    );
+    dispatch(writeCommand(`cd ~/mina && npm install ${dependency} \r`));
   };
 
   return (

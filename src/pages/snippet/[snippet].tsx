@@ -63,7 +63,8 @@ const Home: NextPage<IHomeProps> = ({ data }) => {
 
   useEffect(() => {
     if (initializingWebcontainer) return;
-    dispatch(initializeTerminal());
+    dispatch(initializeTerminal({}));
+    onCodeChange(code);
   }, [initializingWebcontainer]);
 
   useEffect(() => {
@@ -73,7 +74,7 @@ const Home: NextPage<IHomeProps> = ({ data }) => {
 
   const onCodeChange = (value: string | undefined) => {
     setCode(value || "");
-    webcontainerInstance?.fs.writeFile(`src/main.ts`, code);
+    webcontainerInstance?.fs.writeFile(`src/main.ts`, value || "");
   };
 
   return (
