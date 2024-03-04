@@ -9,13 +9,13 @@ import {
   PaneviewReact,
 } from "dockview";
 import * as React from "react";
-import { FileSystemTree } from "@webcontainer/api";
 import ProjectFileExplorer from "@/features/project/ProjectFileExplorer";
 import CodeEditorWithSave from "@/features/project/CodeEditorWithSave";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { setDockApi } from "@/features/dockView/dockViewSlice";
 import Section from "@/components/section/Section";
 import SectionItem from "@/components/section/SectionItem";
+import DependencyManagerLoader from "@/features/project/DependencyManagerLoader";
 import ProjectTerminal from "@/components/terminal/ProjectTerminal";
 
 const GetStarted = () => {
@@ -26,13 +26,7 @@ const GetStarted = () => {
   );
 };
 
-const DockView = ({
-  fileSystemTree,
-  id,
-}: {
-  fileSystemTree: FileSystemTree;
-  id: string;
-}) => {
+const DockView = ({ id, name }: { id: string; name: string }) => {
   const onReady = (event: GridviewReadyEvent) => {
     event.api.addPanel({
       id: "dock",
@@ -49,7 +43,7 @@ const DockView = ({
         direction: "left",
         referencePanel: "dock",
       },
-      params: { fileSystemTree, id },
+      params: { id, name },
     });
 
     event.api.addPanel({
@@ -61,19 +55,7 @@ const DockView = ({
         direction: "below",
         referencePanel: "dock",
       },
-      params: { fileSystemTree },
     });
-    // event.api.addPanel({
-    //   id: "terminal",
-    //   component: "preview",
-    //   minimumHeight: 100,
-    //   size: 150,
-    //   position: {
-    //     direction: "below",
-    //     referencePanel: "dock",
-    //   },
-    //   params: { fileSystemTree },
-    // });
   };
 
   return (
@@ -108,9 +90,7 @@ const gridComponents: PanelCollection<IGridviewPanelProps> = {
       />
     );
   },
-  panes: (
-    props: IGridviewPanelProps<{ fileSystemTree: FileSystemTree; id: string }>
-  ) => (
+  panes: (props: IGridviewPanelProps<{ id: string; name: string }>) => (
     <PaneviewReact
       components={paneComponents}
       onReady={(event) => {
@@ -120,30 +100,36 @@ const gridComponents: PanelCollection<IGridviewPanelProps> = {
           component: "filetree",
           isExpanded: true,
           params: {
-            fileSystemTree: props.params.fileSystemTree,
             id: props.params.id,
+            name: props.params.name,
           },
         });
         filetree.headerVisible = false;
+
+        event.api.addPanel({
+          id: "dependencyManager",
+          title: "Dependency Manager",
+          component: "dependencyManager",
+          isExpanded: true,
+          params: {
+            id: props.params.id,
+            name: props.params.name,
+          },
+        });
       }}
     />
   ),
-  terminal: (
-    props: IGridviewPanelProps<{ fileSystemTree: FileSystemTree }>
-  ) => <ProjectTerminal />,
-  // preview: (props: IGridviewPanelProps<{ fileSystemTree: FileSystemTree }>) => (
-  //   <Iframe />
-  // ),
+  terminal: () => <ProjectTerminal fullScreen={true} />,
 };
 
 const paneComponents: PanelCollection<
-  IPaneviewPanelProps<{ fileSystemTree: FileSystemTree }>
+  IPaneviewPanelProps<{ id: string; name: string }>
 > = {
   filetree: (props: IPaneviewPanelProps) => (
-    <ProjectFileExplorer
-      fileSystemTree={props.params.fileSystemTree}
-      id={props.params.id}
-    />
+    <ProjectFileExplorer id={props.params.id} name={props.params.name} />
+  ),
+  dependencyManager: (props: IPaneviewPanelProps) => (
+    <DependencyManagerLoader />
   ),
 };
 

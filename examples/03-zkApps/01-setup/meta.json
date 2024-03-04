@@ -1,0 +1,9 @@
+{
+  "name": "Setup",
+  "type": "playground-zkApp",
+  "options": {
+    "focus": ["ui/src/pages/index.tsx"],
+    "highlight": "ui/src/pages/index.tsx",
+    "command": "npm run dev"
+  }
+}

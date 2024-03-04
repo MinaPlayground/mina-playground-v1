@@ -23,8 +23,7 @@ export const getTutorial = async (c, s) => {
     });
 };
 
-
-export const getTutorialAndFiles = async (c, s, {focus, highlight}) => {
+export const getTutorialAndFiles = async (c, s, {focus, highlight, command}) => {
     const dir = process.cwd();
     const {files, filesArray} = transformToWebcontainerFiles(`${dir}/tutorials/${c}/${s}/source/`)
     const {focusedFiles, highlightedCode} = transformFocusedFiles(`${dir}/tutorials/${c}/${s}/source/`, focus, highlight)
@@ -36,5 +35,21 @@ export const getTutorialAndFiles = async (c, s, {focus, highlight}) => {
         filesArray,
         highlightedItem: {highlightedName: path.basename(highlight.replace(/\./g, "*")), highlightedCode},
         focusedFiles,
+        command
     };
 };
+
+export const getFiles = async (c, s, {focus, highlight, command}) => {
+    const dir = process.cwd();
+    const {files, filesArray} = transformToWebcontainerFiles(`${dir}/examples/${c}/${s}/source/`)
+    const {focusedFiles, highlightedCode} = transformFocusedFiles(`${dir}/examples/${c}/${s}/source/`, focus, highlight)
+
+    return {
+        files,
+        filesArray,
+        highlightedItem: {highlightedName: path.basename(highlight.replace(/\./g, "*")), highlightedCode},
+        focusedFiles,
+        command
+    };
+};
+

@@ -1,57 +1,58 @@
 import path from 'path'
 import {existsSync, readdirSync, readFileSync, writeFileSync} from 'fs'
-import {getTutorial, getTutorialAndFiles} from "./build/tutorial.mjs";
+import {getTutorialAndFiles} from "./build/tutorial.mjs";
 import {transformToWebcontainerFiles} from "./build/webcontainer.mjs";
 import {json} from "./build/fileSystem.mjs";
 
-const excluded = ["base", "meta.json"];
+const excludedFiles = ["meta.json"];
+const excludedDirectories = ["bases"]
 
 let data = {};
 const tutorialPaths = []
 const dir = process.cwd();
 const projectDir = readdirSync(`${dir}/tutorials`);
+const baseDir = readdirSync(`${dir}/tutorials/bases`);
 
 const mapTypeToResponse = async (type, c, s, options) => {
   switch (type) {
     case "unit":
     case "playground":
       return await getTutorialAndFiles(c, s, options);
-    case "theory":
-      const tutorial = await getTutorial(c, s);
-      return {tutorial}
   }
 }
 
+for (const item of baseDir) {
+  const {files: baseFiles} = transformToWebcontainerFiles(
+      `${dir}/tutorials/bases/${item}`
+  );
+  writeFileSync(`${dir}/src/json/${item}-base.json`, JSON.stringify(baseFiles));
+}
+
 for (const item of projectDir) {
-  const name = JSON.parse(
-    readFileSync(`${dir}/tutorials/${item}/meta.json`, {
-      encoding: "utf-8",
-    })
-  ).name;
+  if (excludedDirectories.includes(item)) continue
+  const {name, base} = JSON.parse(
+      readFileSync(`${dir}/tutorials/${item}/meta.json`, {
+        encoding: "utf-8",
+      })
+  );
+
   data[item] = {
     name,
+    base,
     sections: {},
   };
 
-  const baseFolderExists = existsSync(`${dir}/tutorials/${item}/base`)
-  if (baseFolderExists) {
-    const {files: baseFiles} = transformToWebcontainerFiles(
-        `${dir}/tutorials/${item}/base`
-    );
-    writeFileSync(`${dir}/src/json/${item}-base.json`, JSON.stringify(baseFiles));
-  }
-
   const currentPath = path.join(`${dir}/tutorials/${item}`);
-  const sections = readdirSync(currentPath).filter(
-    (item) => !excluded.includes(item)
-  );
+  const sections = readdirSync(currentPath)
 
   for (const section of sections) {
+    if (excludedFiles.includes(section)) continue
     const {name, type, options} = json(`${dir}/tutorials/${item}/${section}/meta.json`)
     const response = await mapTypeToResponse(type, item, section, options)
 
     const jsonData = {
       type,
+      base,
       ...response
     }
 

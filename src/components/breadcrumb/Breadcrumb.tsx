@@ -6,10 +6,12 @@ const Breadcrumb: FC<BreadCrumbProps> = ({
   chapterIndex,
   sectionIndex,
   items,
+  isExamples = false,
 }) => {
-  const { name: chapterName, sections } = items[chapterIndex];
+  const { name: chapterName, sections, base } = items[chapterIndex];
   const { name: sectionName } = sections[sectionIndex];
   const router = useRouter();
+  const prefix = isExamples ? "playground" : "tutorial";
 
   return (
     <div className="flex flex-col md:flex-row gap-y-2 m-2">
@@ -19,8 +21,12 @@ const Breadcrumb: FC<BreadCrumbProps> = ({
         activeIndex={chapterIndex}
         items={items}
         onClick={async (key) => {
-          const firstSection = Object.keys(items[key].sections)[0];
-          await router.push(`/tutorial/${key}/${firstSection}`);
+          const { sections, base: newBase } = items[key];
+          const firstSection = Object.keys(sections)[0];
+          if (base === newBase) {
+            return await router.push(`/${prefix}/${key}/${firstSection}`);
+          }
+          window.location.href = `/${prefix}/${key}/${firstSection}`;
         }}
       />
       <BreadcrumbItem
@@ -28,7 +34,7 @@ const Breadcrumb: FC<BreadCrumbProps> = ({
         activeIndex={sectionIndex}
         items={sections}
         onClick={async (key) => {
-          await router.push(`/tutorial/${chapterIndex}/${key}`);
+          await router.push(`/${prefix}/${chapterIndex}/${key}`);
         }}
       />
     </div>
@@ -38,10 +44,12 @@ const Breadcrumb: FC<BreadCrumbProps> = ({
 interface BreadCrumbProps {
   chapterIndex: string;
   sectionIndex: string;
+  isExamples?: boolean;
   items: Record<
     string,
     {
       name: string;
+      base: string;
       sections: Record<
         string,
         {

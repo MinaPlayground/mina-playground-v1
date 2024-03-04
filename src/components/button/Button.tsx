@@ -5,9 +5,14 @@ const Button: FC<PropsWithChildren<ButtonProps>> = ({
   onClick,
   className = "",
   children,
+  disabled = false,
 }) => {
   return (
-    <button onClick={onClick} className={`btn my-1 ${className}`}>
+    <button
+      onClick={onClick}
+      className={`btn my-1 ${className}`}
+      disabled={disabled || isLoading}
+    >
       {isLoading && <span className="loading loading-spinner"></span>}
       {isLoading ? "Loading..." : children}
     </button>
@@ -17,6 +22,7 @@ const Button: FC<PropsWithChildren<ButtonProps>> = ({
 interface ButtonProps {
   isLoading?: boolean;
   className?: string;
+  disabled?: boolean;
 
   onClick?(): void;
 }

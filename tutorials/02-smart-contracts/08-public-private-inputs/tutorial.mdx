@@ -15,7 +15,7 @@ class HelloWorld extends SmartContract {
 
   @method incrementSecret(secret: Field) {
     const x = this.x.get();
-    this.x.assertEquals(x);
+    this.x.requireEquals(x);
 
     Poseidon.hash(secret).assertEquals(x);
     this.x.set(Poseidon.hash(secret.add(1)));
@@ -40,7 +40,7 @@ class HelloWorld extends SmartContract {
 
   @method incrementSecret(secret: Field) {
     const x = this.x.get();
-    this.x.assertEquals(x);
+    this.x.requireEquals(x);
 
     Poseidon.hash([secret]).assertEquals(x);
     this.x.set(Poseidon.hash([secret.add(1)]));

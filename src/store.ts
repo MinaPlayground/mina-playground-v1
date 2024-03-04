@@ -5,6 +5,8 @@ import { setupListeners } from "@reduxjs/toolkit/query";
 import webcontainerReducer from "@/features/webcontainer/webcontainerSlice";
 import fileTreeReducer from "@/features/fileTree/fileTreeSlice";
 import dockViewReducer from "@/features/dockView/dockViewSlice";
+import { versionControlApi } from "@/services/versionControl";
+import { snippetApi } from "@/services/snippet";
 
 export const store = configureStore({
   reducer: {
@@ -13,11 +15,15 @@ export const store = configureStore({
     dockView: dockViewReducer,
     [fileTreeApi.reducerPath]: fileTreeApi.reducer,
     [projectApi.reducerPath]: projectApi.reducer,
+    [versionControlApi.reducerPath]: versionControlApi.reducer,
+    [snippetApi.reducerPath]: snippetApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false }).concat(
       fileTreeApi.middleware,
-      projectApi.middleware
+      projectApi.middleware,
+      versionControlApi.middleware,
+      snippetApi.middleware
     ),
 });
 

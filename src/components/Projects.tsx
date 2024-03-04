@@ -21,12 +21,12 @@ const Projects: FC<ProjectProps> = ({ data }) => {
   return (
     <>
       <div className="flex items-center">
-        <h2 className="text-4xl font-semibold p-4">Projects</h2>
+        <h2 className="text-4xl text-gray-200 font-semibold p-4">Projects</h2>
         <div>
           <button
             data-modal-target="authentication-modal"
             data-modal-toggle="authentication-modal"
-            className="flex text-white bg-gradient-to-br from-pink-500 to-orange-400 font-medium rounded-lg text-sm px-5 py-2.5 items-center"
+            className="flex text-white font-medium rounded-lg text-sm px-5 py-2.5 items-center"
             type="button"
           >
             <svg
@@ -106,7 +106,7 @@ const Projects: FC<ProjectProps> = ({ data }) => {
       </div>
       <div className="relative overflow-x-auto shadow-md sm:rounded-lg mx-4">
         <table className="w-full text-sm text-left text-gray-500">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+          <thead className="text-xs text-gray-300 uppercase bg-gray-800">
             <tr>
               <th scope="col" className="px-6 py-3">
                 Name
@@ -127,7 +127,7 @@ const Projects: FC<ProjectProps> = ({ data }) => {
               <tr
                 onClick={() => router.push(`/project/${_id}`)}
                 key={key}
-                className="bg-white border-b hover:bg-gray-50 cursor-pointer"
+                className="bg-gray-700 border-b border-gray-800 hover:bg-gray-800 cursor-pointer"
               >
                 <th
                   scope="row"
@@ -139,13 +139,15 @@ const Projects: FC<ProjectProps> = ({ data }) => {
                     alt="react"
                   />
                   <div className="pl-3">
-                    <div className="text-base font-semibold">{name}</div>
+                    <div className="text-base text-gray-200 font-semibold">
+                      {name}
+                    </div>
                   </div>
                 </th>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 text-gray-200">
                   {type === 0 ? "zkApp" : "Smart Contract"}
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 text-gray-200">
                   <div className="flex items-center">
                     <div className="h-2.5 w-2.5 rounded-full bg-green-500 mr-2" />
                     Public

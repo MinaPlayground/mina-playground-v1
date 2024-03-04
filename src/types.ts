@@ -4,14 +4,7 @@ import { FileSystemTree } from "@webcontainer/api";
 
 export type KeyValueObj = Record<string, any>;
 export type FileSystemType = "directory" | "file";
-export type FileSystemOnChangePayload = { path: string; key?: string };
-
-export type FileSystemPayload = {
-  path: string;
-  fullPath: string;
-  key: string;
-  value: string;
-};
+type ItemType = "unit" | "playground" | "playground-zkApp";
 
 type FileSystemHandlerParam<A, P> = [
   action: A,
@@ -69,35 +62,21 @@ export type UpdateFileTree =
 
 export type FileSystemOnClickHandler = (code: string, path: string) => void;
 
-type MapFileSystemAction = {
-  action(data: KeyValueObj, payload: FileSystemOnChangePayload): void;
-};
-
-export type MapFileSystemActions = {
-  create: MapFileSystemAction;
-  delete: MapFileSystemAction;
-};
-
-export type FileSystemAction = keyof MapFileSystemActions;
-
 export interface TutorialParams extends ParsedUrlQuery {
   chapter: string;
   section: string;
 }
 
-export type TutorialResponse =
-  | {
-      type: "unit" | "playground";
-      tutorial: MDXRemoteSerializeResult;
-      filesArray: string[];
-      focusedFiles: FileSystemTree;
-      highlightedItem: {
-        highlightedName: string;
-        highlightedCode: string;
-      };
-      files: FileSystemTree;
-    }
-  | {
-      type: "theory";
-      tutorial: MDXRemoteSerializeResult;
-    };
+export type TutorialResponse = {
+  type: ItemType;
+  tutorial: MDXRemoteSerializeResult;
+  filesArray: string[];
+  focusedFiles: FileSystemTree;
+  highlightedItem: {
+    highlightedName: string;
+    highlightedCode: string;
+  };
+  files: FileSystemTree;
+  base: string;
+  command: string;
+};

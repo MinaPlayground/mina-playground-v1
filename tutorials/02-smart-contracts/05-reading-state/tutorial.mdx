@@ -8,7 +8,7 @@ class HelloWorld extends SmartContract {
   @method increment() {
     // read state
     const x = this.x.get();
-    this.x.assertEquals(x);
+    this.x.requireEquals(x);
 
     // write state
     this.x.set(x.add(1));
@@ -30,7 +30,7 @@ For sure, when we use an on-chain value, we have to prove that this is the on-ch
 
 To prevent that, we link "***x*** at proving time" to be the same as "***x*** at verification time". We call this a precondition – a condition that is checked by the verifier (a Mina node) when it receives the proof in a transaction. This is what ***this.x.assertEquals(x)*** does: it adds the precondition that ***this.x*** – the on-chain state at verification time – has to equal ***x*** – the value we fetched from the chain on the client-side. In zkSNARK language, ***x*** becomes part of the public input.
 
-Why didn't we just make ***this.x.get()*** add the precondition, automatically, so that you didn't have to write ***this.x.assertEquals(x)***? Well, we like to keep things explicit. The assertion reminds us that we add logic which can make the proof fail: If ***x*** isn't the same at verification time, the transaction will be rejected. So, reading on-chain values has to be done with care if many users are supposed to read and update state concurrently. It is applicable in some situations, but might cause races, and call for workarounds, in other situations. One such workaround is the use of actions.
+Why didn't we just make ***this.x.get()*** add the precondition, automatically, so that you didn't have to write ***this.x.requireEquals(x)***? Well, we like to keep things explicit. The assertion reminds us that we add logic which can make the proof fail: If ***x*** isn't the same at verification time, the transaction will be rejected. So, reading on-chain values has to be done with care if many users are supposed to read and update state concurrently. It is applicable in some situations, but might cause races, and call for workarounds, in other situations. One such workaround is the use of actions.
 
 ### Tutorial
 
@@ -41,7 +41,7 @@ class HelloWorld extends SmartContract {
 
   @method increment() {
     const x = this.x.get();
-    this.x.assertEquals(x);
+    this.x.requireEquals(x);
     this.x.set(x.add(1));
   }
 }
@@ -84,9 +84,9 @@ Provable.log(transaction)
 ```
 Which will let you know that the transaction is successful.
 
-Our state ***x*** starts with the value 0, change the ***assertEquals*** in the ***HelloWorld*** class to a different value:
+Our state ***x*** starts with the value 0, change the ***requireEquals*** in the ***HelloWorld*** class to a different value:
 ```ts
-this.x.assertEquals(Field(123));
+this.x.requireEquals(Field(123));
 ```
 Our assertion now fails because our current state value ***x*** is not equal to our defined value:
 ```ts

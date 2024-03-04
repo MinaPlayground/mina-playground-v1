@@ -13,15 +13,15 @@ import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { isEmpty } from "lodash";
 import { Deploy } from "@/components/deploy/Deploy";
 import { findSmartContractMatches } from "@/utils/deploy";
+import { normalizePath, pathToWebContainerPath } from "@/utils/fileSystemWeb";
 
 const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({
   id,
   value,
   directory,
 }) => {
-  const { webcontainerPath, path } = directory;
   const changedField = useAppSelector((state) =>
-    selectChangedField(state, webcontainerPath)
+    selectChangedField(state, directory)
   );
   const dispatch = useAppDispatch();
   const [code, setCode] = useState<string | undefined>("");
@@ -31,31 +31,38 @@ const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({
   const setCodeChange = async (code: string | undefined) => {
     if (!code) return;
     setCode(code);
-    dispatch(setChangedFields({ location: webcontainerPath, code }));
+    dispatch(
+      setChangedFields({
+        location: directory,
+        currentCode: code,
+        previousCode: value,
+      })
+    );
   };
 
   useEffect(() => {
-    const changedStoredCode = changedField?.code;
+    const changedStoredCode = changedField?.currentCode;
     setCode(changedStoredCode || value);
   }, []);
 
   const isSaved = changedField?.saved;
   const results = findSmartContractMatches(code);
-  const formattedPath = path.replace(/\*/g, ".");
 
   const save = async () => {
+    const location = pathToWebContainerPath(directory);
+    const webContainerPath = normalizePath(directory);
     try {
       await updateFileTree({
         id: id,
-        body: { location: webcontainerPath, code },
+        body: { location: `${location}.file.contents`, code },
       }).unwrap();
       dispatch(
         setChangedFieldStatus({
-          location: webcontainerPath,
+          location: directory,
           saved: true,
         })
       );
-      webcontainerInstance?.fs.writeFile(formattedPath, code || "");
+      webcontainerInstance?.fs.writeFile(webContainerPath, code || "");
     } catch {}
   };
 
@@ -69,7 +76,7 @@ const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({
           isSaved={isSaved}
           isError={isError}
         />
-        {!isEmpty(results) && <Deploy path={formattedPath} results={results} />}
+        {!isEmpty(results) && <Deploy path={directory} results={results} />}
       </div>
       <CodeEditor code={code} setCodeChange={setCodeChange} />
     </>
@@ -78,7 +85,7 @@ const CodeEditorWithSave: FC<CodeEditorWithSaveProps> = ({
 
 interface CodeEditorWithSaveProps {
   id: string;
-  directory: { path: string; webcontainerPath: string };
+  directory: string;
   value: string;
 }
 
