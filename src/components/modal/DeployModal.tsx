@@ -13,7 +13,7 @@ import SelectList from "@/components/select/SelectList";
 import { Remote, wrap } from "comlink";
 import { normalizePath } from "@/utils/fileSystemWeb";
 
-interface SnarkyWorker {
+interface o1jsWorker {
   generateKeys(
     customKeyValue: string | undefined
   ): Promise<{ publicKey: string; privateKey: string }>;
@@ -29,11 +29,12 @@ const DeployModal: FC<DeployModalProps> = ({
   const deploymentMessage = useAppSelector(selectDeploymentMessage);
   const dispatch = useAppDispatch();
   const [keys, setKeys] = useState({ publicKey: "", privateKey: "" });
-  const snarkyWorker = useRef<any>();
-  const generate = useRef<SnarkyWorker>();
+  const [isInitializing, setIsInitializing] = useState(false);
+  const webWorker = useRef<any>();
+  const generate = useRef<o1jsWorker>();
 
   useEffect(() => {
-    return () => snarkyWorker.current?.terminate();
+    return () => webWorker.current?.terminate();
   }, []);
 
   const deployProject = async () => {
@@ -47,11 +48,12 @@ const DeployModal: FC<DeployModalProps> = ({
   };
 
   const generateKeys = async (customKeyValue?: string) => {
-    if (!snarkyWorker.current) {
-      snarkyWorker.current = new Worker(
+    if (!webWorker.current) {
+      setIsInitializing(true);
+      webWorker.current = new Worker(
         new URL("../../webworkers/worker.ts", import.meta.url)
       );
-      generate.current = wrap<SnarkyWorker>(snarkyWorker.current);
+      generate.current = wrap<o1jsWorker>(webWorker.current);
     }
     const workerFunctions = generate.current;
     if (!workerFunctions) return;
@@ -59,6 +61,7 @@ const DeployModal: FC<DeployModalProps> = ({
       customKeyValue
     );
     setKeys({ publicKey, privateKey });
+    setIsInitializing(false);
   };
 
   const onFaucetClick = () => {
@@ -117,7 +120,7 @@ const DeployModal: FC<DeployModalProps> = ({
           <label htmlFor="hs-trailing-button-add-on" className="sr-only">
             Label
           </label>
-          <div className="flex rounded-md shadow-sm">
+          <div className="flex rounded-md shadow-sm gap-2">
             <input
               value={keys.privateKey}
               onChange={(evt) => generateKeys(evt.target.value)}
@@ -127,10 +130,10 @@ const DeployModal: FC<DeployModalProps> = ({
               placeholder="Fee payer private key"
               className="py-3 px-4 block w-full bg-gray-700 shadow-sm rounded-l-md text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500"
             />
-            <button
+            <Button
+              isLoading={isInitializing}
               onClick={() => generateKeys()}
-              type="button"
-              className="py-3 px-4 inline-flex flex-shrink-0 justify-center items-center gap-2 rounded-r-md border font-semibold border-none bg-gray-500 text-white hover:bg-gray-600 focus:z-10 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm"
+              className="bg-gray-500 text-white hover:bg-gray-600"
             >
               <svg
                 className="w-4 h-4"
@@ -143,7 +146,7 @@ const DeployModal: FC<DeployModalProps> = ({
                 />
               </svg>
               Generate
-            </button>
+            </Button>
           </div>
         </div>
         <div className="modal-action">
