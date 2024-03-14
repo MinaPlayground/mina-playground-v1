@@ -1,7 +1,7 @@
 import { expose } from "comlink";
 
 const generateKeys = async (customKeyValue: string | undefined) => {
-  const { PrivateKey } = await import("snarkyjs");
+  const { PrivateKey } = await import("o1js");
   const key = customKeyValue
     ? PrivateKey.fromBase58(customKeyValue)
     : PrivateKey.random();
