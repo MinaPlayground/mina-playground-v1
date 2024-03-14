@@ -28,7 +28,15 @@ const DeployModal: FC<DeployModalProps> = ({
   const isDeploying = useAppSelector(selectIsDeploying);
   const deploymentMessage = useAppSelector(selectDeploymentMessage);
   const dispatch = useAppDispatch();
-  const [keys, setKeys] = useState({ publicKey: "", privateKey: "" });
+  const [keys, setKeys] = useState<{
+    publicKey: string;
+    privateKey: string;
+    isValid: boolean | null;
+  }>({
+    publicKey: "",
+    privateKey: "",
+    isValid: null,
+  });
   const [isInitializing, setIsInitializing] = useState(false);
   const webWorker = useRef<any>();
   const generate = useRef<o1jsWorker>();
@@ -48,6 +56,10 @@ const DeployModal: FC<DeployModalProps> = ({
   };
 
   const generateKeys = async (customKeyValue?: string) => {
+    if (customKeyValue === "") {
+      setKeys({ ...keys, privateKey: "", isValid: false });
+      return;
+    }
     if (!webWorker.current) {
       setIsInitializing(true);
       webWorker.current = new Worker(
@@ -57,10 +69,14 @@ const DeployModal: FC<DeployModalProps> = ({
     }
     const workerFunctions = generate.current;
     if (!workerFunctions) return;
-    const { publicKey, privateKey } = await workerFunctions.generateKeys(
-      customKeyValue
-    );
-    setKeys({ publicKey, privateKey });
+    try {
+      const { publicKey, privateKey } = await workerFunctions.generateKeys(
+        customKeyValue
+      );
+      setKeys({ publicKey, privateKey, isValid: true });
+    } catch (e) {
+      setKeys({ ...keys, privateKey: customKeyValue || "", isValid: false });
+    }
     setIsInitializing(false);
   };
 
@@ -87,7 +103,7 @@ const DeployModal: FC<DeployModalProps> = ({
           items={results.map((item) => item[1])}
           onChange={() => null}
         />
-        {keys.privateKey && (
+        {keys.privateKey && keys.isValid && (
           <div className="alert mb-2 bg-gray-300 text-black">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -148,6 +164,11 @@ const DeployModal: FC<DeployModalProps> = ({
               Generate
             </Button>
           </div>
+          {keys.isValid === false && (
+            <span className="text-red-500">
+              Please use a correct private key
+            </span>
+          )}
         </div>
         <div className="modal-action">
           <Button
