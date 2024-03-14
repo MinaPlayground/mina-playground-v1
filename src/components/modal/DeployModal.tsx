@@ -65,6 +65,13 @@ const DeployModal: FC<DeployModalProps> = ({
       webWorker.current = new Worker(
         new URL("../../webworkers/worker.ts", import.meta.url)
       );
+      const workerReady = () =>
+        new Promise<void>(
+          (resolve) =>
+            (webWorker.current.onmessage = (e) =>
+              e.data === "isReady" && resolve())
+        );
+      await workerReady();
       generate.current = wrap<o1jsWorker>(webWorker.current);
     }
     const workerFunctions = generate.current;

@@ -11,3 +11,4 @@ const generateKeys = async (customKeyValue: string | undefined) => {
 };
 
 expose({ generateKeys });
+postMessage("isReady");
