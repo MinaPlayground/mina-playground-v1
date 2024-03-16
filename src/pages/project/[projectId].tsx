@@ -68,70 +68,21 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
   const onDownload = async () => {
     const zip = new JSZip();
 
-    const src = {
-      src: {
-        // Because it's a directory, add the "directory" key
-        directory: {
-          // This is a file - provide its path as a key:
-          "main.js": {
-            // Because it's a file, add the "file" key
-            file: {
-              contents: `
-            console.log('Hello from WebContainers!')
-          `,
-            },
-          },
-          // This is another file inside the same folder
-          "main.css": {
-            // Because it's a file, add the "file" key
-            file: {
-              contents: `
-            body {
-              margin: 0;
-            }
-          `,
-            },
-          },
-        },
-      },
-      "package.json": {
-        file: {
-          contents: `
-        {
-          "name": "vite-starter",
-          "private": true,
-          "version": "0.0.0",
-          "type": "module",
-          "scripts": {
-            "dev": "vite",
-            "build": "vite build",
-            "preview": "vite preview"
-          },
-          "devDependencies": {
-            "vite": "^4.0.4"
-          }
-        }`,
-        },
-      },
-    };
-
-    function processObject(obj) {
+    function processObject(obj, newZip = zip) {
       for (const key in obj) {
         if ("directory" in obj[key]) {
-          zip.folder(key);
-          processObject(obj[key]);
+          const folder = newZip.folder(key.replace(/\*/g, "."));
+          processObject(obj[key].directory, folder);
         }
         if ("file" in obj[key]) {
-          zip.file(key, obj[key].file.contents);
+          newZip.file(key.replace(/\*/g, "."), obj[key].file.contents);
         }
       }
     }
-
-    processObject(src);
-
+    processObject(fileSystemTree);
     zip.generateAsync({ type: "base64" }).then(function (base64) {
+      // @ts-ignore
       window.location = "data:application/zip;base64," + base64;
-      // saveAs(content, "example.zip");
     });
   };
 
