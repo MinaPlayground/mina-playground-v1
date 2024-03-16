@@ -14,6 +14,8 @@ import {
   selectWebcontainerStarted,
 } from "@/features/webcontainer/webcontainerSlice";
 import { useAppSelector } from "@/hooks/useAppSelector";
+import JSZip from "jszip";
+
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { projectId } = query;
   try {
@@ -63,6 +65,70 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
     dispatch(setFileSystemTree(fileSystemTree));
   }, []);
 
+  const onDownload = async () => {
+    const zip = new JSZip();
+
+    const src = {
+      src: {
+        // Because it's a directory, add the "directory" key
+        directory: {
+          // This is a file - provide its path as a key:
+          "main.js": {
+            // Because it's a file, add the "file" key
+            file: {
+              contents: `
+            console.log('Hello from WebContainers!')
+          `,
+            },
+          },
+          // This is another file inside the same folder
+          "main.css": {
+            // Because it's a file, add the "file" key
+            file: {
+              contents: `
+            body {
+              margin: 0;
+            }
+          `,
+            },
+          },
+        },
+      },
+      "package.json": {
+        file: {
+          contents: `
+        {
+          "name": "vite-starter",
+          "private": true,
+          "version": "0.0.0",
+          "type": "module",
+          "scripts": {
+            "dev": "vite",
+            "build": "vite build",
+            "preview": "vite preview"
+          },
+          "devDependencies": {
+            "vite": "^4.0.4"
+          }
+        }`,
+        },
+      },
+    };
+
+    function processObject(obj) {
+      for (const key in obj) {
+        console.log(obj[key]);
+      }
+    }
+
+    processObject(src);
+
+    zip.generateAsync({ type: "base64" }).then(function (base64) {
+      window.location = "data:application/zip;base64," + base64;
+      // saveAs(content, "example.zip");
+    });
+  };
+
   return (
     <>
       <Head>
@@ -73,6 +139,7 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
       </Head>
       <main>
         <Header />
+        <button onClick={onDownload}>download</button>
         <DockView id={_id} name={name} />
       </main>
     </>
