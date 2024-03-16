@@ -117,7 +117,13 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
 
     function processObject(obj) {
       for (const key in obj) {
-        console.log(obj[key]);
+        if ("directory" in obj[key]) {
+          zip.folder(key);
+          processObject(obj[key]);
+        }
+        if ("file" in obj[key]) {
+          zip.file(key, obj[key].file.contents);
+        }
       }
     }
 
