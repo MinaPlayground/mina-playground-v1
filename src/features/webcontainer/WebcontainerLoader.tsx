@@ -1,11 +1,18 @@
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import { selectInitializingWebContainerError } from "@/features/webcontainer/webcontainerSlice";
 import Loader from "@/components/Loader";
+import { isWebContainerSupported } from "@/utils/webcontainer";
 
 const WebcontainerLoader: FC = () => {
   const webcontainerError = useAppSelector(selectInitializingWebContainerError);
-  if (webcontainerError)
+  const [isBrowserSupported, setIsBrowserSupported] = useState(true);
+
+  useEffect(() => {
+    setIsBrowserSupported(isWebContainerSupported());
+  }, []);
+
+  if (webcontainerError || !isBrowserSupported)
     return (
       <div className="flex text-white m-4">
         <h1 className="self-center bg-red-700 p-4 rounded-lg">
