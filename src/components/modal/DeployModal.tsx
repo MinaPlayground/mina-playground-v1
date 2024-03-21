@@ -12,7 +12,6 @@ import { KeyIcon } from "@/icons/DeployIcons";
 import SelectList from "@/components/select/SelectList";
 import { Remote, wrap } from "comlink";
 import { normalizePath } from "@/utils/fileSystemWeb";
-
 interface o1jsWorker {
   generateKeys(
     customKeyValue: string | undefined
