@@ -18,20 +18,21 @@ import { GetServerSideProps } from "next";
 import axios from "axios";
 import CreateSnippet from "@/features/snippet/CreateSnippet";
 import SelectList from "@/components/select/SelectList";
+import { useRouter } from "next/router";
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
-  const { snippet } = query;
+  const { snippet, type } = query;
   try {
     const response = await axios.get(
       `${process.env.NEXT_PUBLIC_API_URL}/snippet/${snippet}`
     );
     const { data } = response;
     return {
-      props: { data },
+      props: { data, type },
     };
   } catch {
     return {
-      props: { data: null },
+      props: { data: null, type: null },
     };
   }
 };
@@ -62,12 +63,14 @@ const getTypeData = (type: SnippetType, code: string) => {
   return items[type];
 };
 
-const Home: NextPage<IHomeProps> = ({ data }) => {
+const Home: NextPage<IHomeProps> = ({ data, type }) => {
   const dispatch = useAppDispatch();
+  const router = useRouter();
+  const { snippet } = router.query;
   const webcontainerInstance = useAppSelector(selectWebcontainerInstance);
   const webcontainerStarted = useAppSelector(selectWebcontainerStarted);
   const initializingWebcontainer = useAppSelector(selectInitializingEsbuild);
-  const { name, code: snippetCode, type } = data;
+  const { name, code: snippetCode, type: itemType } = data;
   const [code, setCode] = useState(snippetCode);
   const [snippetType, setSnippetType] = useState<SnippetType>(
     type || "smart-contract"
@@ -121,7 +124,10 @@ const Home: NextPage<IHomeProps> = ({ data }) => {
               title={"Choose a type"}
               items={["smart-contract", "zk-app"]}
               onChange={(event) =>
-                setSnippetType(event.target.value as SnippetType)
+                router.push({
+                  pathname: `/snippet/${snippet}`,
+                  query: { type: event.target.value },
+                })
               }
             />
             <CodeEditor code={code} setCodeChange={onCodeChange} />
@@ -138,6 +144,7 @@ const Home: NextPage<IHomeProps> = ({ data }) => {
 
 interface IHomeProps {
   data: { name: string; code: string };
+  type: SnippetType | undefined;
 }
 
 export default Home;
