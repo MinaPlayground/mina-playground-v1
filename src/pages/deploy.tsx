@@ -20,29 +20,23 @@ import { wrap } from "comlink";
 import StepBody from "@/components/step/StepBody";
 import Input from "@/components/input/Input";
 
-const mapStepRequirements = (stepIndex: number, code: string) => {
-  const items = {
-    step1: {
-      buttonDisabled: !code,
-    },
-    step2: {
-      buttonDisabled: false,
-    },
-    step3: {
-      buttonDisabled: false,
-    },
-  };
-  return items[`step${stepIndex}` as keyof typeof items];
-};
-
 interface o1jsWorker {
   generateKeys(
     customKeyValue: string | undefined
   ): Promise<{ publicKey: string; privateKey: string }>;
 }
 
-const AddContract = () => <div>Add your contract code</div>;
-const SetKeys = () => {
+const AddContract = ({ onNextClick, code }) => {
+  return (
+    <>
+      <div>Add your contract code</div>
+      <Button disabled={!code} onClick={onNextClick}>
+        Next
+      </Button>
+    </>
+  );
+};
+const SetKeys = ({ onNextClick }) => {
   const [keys, setKeys] = useState<{
     publicKey: string;
     privateKey: string;
@@ -88,33 +82,38 @@ const SetKeys = () => {
     setIsInitializing(false);
   };
   return (
-    <div className="flex rounded-md shadow-sm gap-2">
-      <Input
-        value={keys.privateKey}
-        placeholder={"Key"}
-        onChange={(value) => generateKeys(value)}
-      />
-      <Button
-        isLoading={isInitializing}
-        onClick={() => generateKeys()}
-        className="bg-gray-500 text-white hover:bg-gray-600"
-      >
-        <svg
-          className="w-4 h-4"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 512 512"
+    <>
+      <div className="flex rounded-md shadow-sm gap-2">
+        <Input
+          value={keys.privateKey}
+          placeholder={"Key"}
+          onChange={(value) => generateKeys(value)}
+        />
+        <Button
+          isLoading={isInitializing}
+          onClick={() => generateKeys()}
+          className="bg-gray-500 text-white hover:bg-gray-600"
         >
-          <path
-            fill="white"
-            d="M336 352c97.2 0 176-78.8 176-176S433.2 0 336 0S160 78.8 160 176c0 18.7 2.9 36.8 8.3 53.7L7 391c-4.5 4.5-7 10.6-7 17v80c0 13.3 10.7 24 24 24h80c13.3 0 24-10.7 24-24V448h40c13.3 0 24-10.7 24-24V384h40c6.4 0 12.5-2.5 17-7l33.3-33.3c16.9 5.4 35 8.3 53.7 8.3zM376 96a40 40 0 1 1 0 80 40 40 0 1 1 0-80z"
-          />
-        </svg>
-        Generate
+          <svg
+            className="w-4 h-4"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 512 512"
+          >
+            <path
+              fill="white"
+              d="M336 352c97.2 0 176-78.8 176-176S433.2 0 336 0S160 78.8 160 176c0 18.7 2.9 36.8 8.3 53.7L7 391c-4.5 4.5-7 10.6-7 17v80c0 13.3 10.7 24 24 24h80c13.3 0 24-10.7 24-24V448h40c13.3 0 24-10.7 24-24V384h40c6.4 0 12.5-2.5 17-7l33.3-33.3c16.9 5.4 35 8.3 53.7 8.3zM376 96a40 40 0 1 1 0 80 40 40 0 1 1 0-80z"
+            />
+          </svg>
+          Generate
+        </Button>
+        {keys.isValid === false && (
+          <span className="text-red-500">Please use a correct private key</span>
+        )}
+      </div>
+      <Button disabled={!keys.isValid} onClick={onNextClick}>
+        Next
       </Button>
-      {keys.isValid === false && (
-        <span className="text-red-500">Please use a correct private key</span>
-      )}
-    </div>
+    </>
   );
 };
 const Component3 = () => <div>Component 3</div>;
@@ -127,8 +126,6 @@ const Deploy: NextPage<DeployProps> = () => {
   const initializingWebcontainer = useAppSelector(selectInitializingEsbuild);
   const [code, setCode] = useState("");
   const [stepIndex, setStepIndex] = useState(1);
-
-  const { buttonDisabled } = mapStepRequirements(stepIndex, code);
 
   const snippetFile = {
     src: { directory: { "main.ts": { file: { contents: code } } } },
@@ -187,12 +184,12 @@ const Deploy: NextPage<DeployProps> = () => {
               stepIndex={stepIndex}
             />
             <StepBody
-              items={[AddContract, SetKeys, Component3]}
+              items={[
+                { Component: AddContract, props: { onNextClick, code } },
+                { Component: SetKeys, props: { onNextClick } },
+              ]}
               stepIndex={stepIndex}
             />
-            <Button disabled={buttonDisabled} onClick={onNextClick}>
-              Next
-            </Button>
           </div>
         </div>
       </main>
