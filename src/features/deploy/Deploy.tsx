@@ -4,6 +4,7 @@ import StepBody from "@/components/step/StepBody";
 import * as React from "react";
 import { AddContract } from "@/features/deploy/AddContract";
 import { SetKeys } from "@/features/deploy/SetKeys";
+import { DeployContract } from "@/features/deploy/DeployContract";
 
 export const Deploy: FC<DeployProps> = ({}) => {
   const [stepIndex, setStepIndex] = useState(1);
@@ -13,7 +14,7 @@ export const Deploy: FC<DeployProps> = ({}) => {
     setStepIndex((prevIndex) => prevIndex + 1);
   };
   return (
-    <div>
+    <div className="flex flex-col justify-center gap-4 p-4">
       <Steps
         items={["Add Contract", "Set keys", "Deploy"]}
         stepIndex={stepIndex}
@@ -22,6 +23,7 @@ export const Deploy: FC<DeployProps> = ({}) => {
         items={[
           { Component: AddContract, props: { onNextClick, code: "test" } },
           { Component: SetKeys, props: { onNextClick } },
+          { Component: DeployContract, props: {} },
         ]}
         stepIndex={stepIndex}
       />

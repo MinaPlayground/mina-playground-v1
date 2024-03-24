@@ -4,8 +4,11 @@ import { wrap } from "comlink";
 import Input from "@/components/input/Input";
 import * as React from "react";
 import { o1jsWorker } from "@/types";
+import { useAppDispatch } from "@/hooks/useAppDispatch";
+import { setPrivateKey } from "@/features/webcontainer/webcontainerSlice";
 
 export const SetKeys: FC<SetKeysProps> = ({ onNextClick }) => {
+  const dispatch = useAppDispatch();
   const [keys, setKeys] = useState<{
     publicKey: string;
     privateKey: string;
@@ -50,9 +53,15 @@ export const SetKeys: FC<SetKeysProps> = ({ onNextClick }) => {
     }
     setIsInitializing(false);
   };
+
+  const onClick = () => {
+    dispatch(setPrivateKey(keys.privateKey));
+    onNextClick();
+  };
+
   return (
     <>
-      <div className="flex rounded-md shadow-sm gap-2">
+      <div className="flex items-center rounded-md shadow-sm gap-2">
         <Input
           value={keys.privateKey}
           placeholder={"Key"}
@@ -79,7 +88,7 @@ export const SetKeys: FC<SetKeysProps> = ({ onNextClick }) => {
           <span className="text-red-500">Please use a correct private key</span>
         )}
       </div>
-      <Button disabled={!keys.isValid} onClick={onNextClick}>
+      <Button disabled={!keys.isValid} onClick={onClick}>
         Next
       </Button>
     </>
