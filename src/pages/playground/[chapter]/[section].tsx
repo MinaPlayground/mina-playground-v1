@@ -22,8 +22,8 @@ import Breadcrumb from "@/components/breadcrumb/Breadcrumb";
 import examplesPath from "@/examplePaths.json";
 import examples from "@/examples.json";
 import { normalizePath } from "@/utils/fileSystemWeb";
-import TerminalPreview from "@/features/examples/TerminalPreview";
 import { constructInstallCommand } from "@/utils/jsh";
+import { mapTypeToPlaygroundComponent } from "@/mappers/mapTypeToPlaygroundComponent";
 
 export const getStaticPaths: GetStaticPaths = async () => {
   return examplesPath;
@@ -55,6 +55,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
   const initializingWebcontainer = useAppSelector(selectInitializingEsbuild);
   const isRemovingFiles = useAppSelector(selectIsRemovingFiles);
   const terminalInitialized = useAppSelector(selectTerminalInitialized);
+  const Component = mapTypeToPlaygroundComponent(item);
 
   const {
     files,
@@ -181,7 +182,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
               onBlur={onBlur}
             />
           </div>
-          <TerminalPreview onRunCommand={command} shouldShowPreview={iszkApp} />
+          {Component}
         </div>
       </main>
     </>

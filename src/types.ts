@@ -4,7 +4,13 @@ import { FileSystemTree } from "@webcontainer/api";
 
 export type KeyValueObj = Record<string, any>;
 export type FileSystemType = "directory" | "file";
-type ItemType = "unit" | "playground" | "playground-zkApp";
+type ItemType = "unit" | "playground" | "playground-zkApp" | "deploy";
+
+export interface o1jsWorker {
+  generateKeys(
+    customKeyValue: string | undefined
+  ): Promise<{ publicKey: string; privateKey: string }>;
+}
 
 type FileSystemHandlerParam<A, P> = [
   action: A,
