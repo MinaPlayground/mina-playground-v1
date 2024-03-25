@@ -1,25 +1,50 @@
 import { FC } from "react";
 import Button from "@/components/button/Button";
 import { useFaucetRequestMutation } from "@/services/minaPlayground";
+import { KeyIcon } from "@/icons/DeployIcons";
 
 export const Faucet: FC<FaucetProps> = ({ publicKey }) => {
-  const [faucetRequest, { isLoading, isSuccess, isError }] =
+  const [faucetRequest, { isLoading, isSuccess, isError, data }] =
     useFaucetRequestMutation();
 
   const onFaucetClick = async () => {
-    try {
-      const response = await faucetRequest({
-        body: { address: publicKey },
-      }).unwrap();
-      console.log(response);
-    } catch {
-      console.log("error");
-    }
-    // window.open(
-    //   `https://faucet.minaprotocol.com/?address=${publicKey}`,
-    //   "_blank"
-    // );
+    faucetRequest({
+      body: { address: publicKey },
+    });
   };
+
+  if (isError) {
+    return (
+      <div className="alert alert-error">
+        <KeyIcon />
+        <span className="text-sm">
+          Something went from while requesting the faucet. Please try again or
+          use another wallet address.
+        </span>
+      </div>
+    );
+  }
+
+  if (isSuccess) {
+    return (
+      <div className="alert alert-success">
+        <KeyIcon />
+        <span className="text-sm">
+          Success. Testnet Mina will arrive at your address when the next block
+          is produced (~3 min).
+          <br />
+          <a
+            className="underline"
+            href={`https://minascan.io/berkeley/tx/${data.message.paymentID}`}
+            target="_blank"
+          >
+            View your transaction
+          </a>
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div className="alert mb-2 bg-gray-300 text-black">
       <svg
@@ -39,7 +64,9 @@ export const Faucet: FC<FaucetProps> = ({ publicKey }) => {
         Make sure to use the faucet if your address does not have any funds
       </span>
       <div>
-        <Button onClick={onFaucetClick}>Faucet</Button>
+        <Button isLoading={isLoading} onClick={onFaucetClick}>
+          Faucet
+        </Button>
       </div>
     </div>
   );
