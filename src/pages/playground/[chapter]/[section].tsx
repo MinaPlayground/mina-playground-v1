@@ -65,6 +65,7 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
     base,
     command,
     type,
+    initTerminal,
   } = item;
   const [currentFile, setCurrentFile] = useState(highlightedItem);
 
@@ -102,7 +103,9 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
 
   useEffect(() => {
     if (initializingWebcontainer) return;
-    dispatch(initializeTerminal({ installDirectories }));
+    if (initTerminal) {
+      dispatch(initializeTerminal({ installDirectories }));
+    }
     // apply changed code after WebContainer has been initialized
     onCodeChange(currentFile.highlightedCode);
     webcontainerInstance?.fs.writeFile(

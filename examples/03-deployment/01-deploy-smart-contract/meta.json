@@ -4,6 +4,7 @@
   "options": {
     "focus": ["src/main.ts"],
     "highlight": "src/main.ts",
-    "command": "npm run build && node build/src/main.js"
+    "command": "npm run build && node build/src/main.js",
+    "initTerminal": false
   }
 }

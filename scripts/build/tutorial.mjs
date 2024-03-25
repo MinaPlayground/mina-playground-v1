@@ -39,7 +39,7 @@ export const getTutorialAndFiles = async (c, s, {focus, highlight, command}) => 
     };
 };
 
-export const getFiles = async (c, s, {focus, highlight, command}) => {
+export const getFiles = async (c, s, {focus, highlight, command, initTerminal}) => {
     const dir = process.cwd();
     const {files, filesArray} = transformToWebcontainerFiles(`${dir}/examples/${c}/${s}/source/`)
     const {focusedFiles, highlightedCode} = transformFocusedFiles(`${dir}/examples/${c}/${s}/source/`, focus, highlight)
@@ -49,7 +49,8 @@ export const getFiles = async (c, s, {focus, highlight, command}) => {
         filesArray,
         highlightedItem: {highlightedName: path.basename(highlight.replace(/\./g, "*")), highlightedCode},
         focusedFiles,
-        command
+        command,
+        initTerminal
     };
 };
 
