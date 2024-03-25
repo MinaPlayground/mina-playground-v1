@@ -6,6 +6,7 @@ import * as React from "react";
 import { o1jsWorker } from "@/types";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { setPrivateKey } from "@/features/webcontainer/webcontainerSlice";
+import { Faucet } from "@/features/deploy/Faucet";
 
 export const SetKeys: FC<SetKeysProps> = ({ onNextClick }) => {
   const dispatch = useAppDispatch();
@@ -61,6 +62,7 @@ export const SetKeys: FC<SetKeysProps> = ({ onNextClick }) => {
 
   return (
     <>
+      {keys.privateKey && keys.isValid && <Faucet publicKey={keys.publicKey} />}
       <div className="flex items-center rounded-md shadow-sm gap-2">
         <Input
           value={keys.privateKey}

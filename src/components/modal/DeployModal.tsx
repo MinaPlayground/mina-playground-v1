@@ -12,6 +12,7 @@ import { KeyIcon } from "@/icons/DeployIcons";
 import SelectList from "@/components/select/SelectList";
 import { Remote, wrap } from "comlink";
 import { normalizePath } from "@/utils/fileSystemWeb";
+import { Faucet } from "@/features/deploy/Faucet";
 interface o1jsWorker {
   generateKeys(
     customKeyValue: string | undefined
@@ -86,13 +87,6 @@ const DeployModal: FC<DeployModalProps> = ({
     setIsInitializing(false);
   };
 
-  const onFaucetClick = () => {
-    window.open(
-      `https://faucet.minaprotocol.com/?address=${keys.publicKey}`,
-      "_blank"
-    );
-  };
-
   return (
     <CTAModal id="deployModal" isVisible={isVisible} close={close}>
       <div className="text-gray-200">
@@ -110,33 +104,7 @@ const DeployModal: FC<DeployModalProps> = ({
           onChange={() => null}
         />
         {keys.privateKey && keys.isValid && (
-          <div className="alert mb-2 bg-gray-300 text-black">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              className="stroke-current shrink-0 w-6 h-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <span className="text-sm">
-              Make sure to use the faucet if your address does not have any
-              funds
-            </span>
-            <div>
-              <button
-                onClick={onFaucetClick}
-                className="btn btn-sm btn-primary"
-              >
-                Faucet
-              </button>
-            </div>
-          </div>
+          <Faucet publicKey={keys.publicKey} />
         )}
         <div>
           <label htmlFor="hs-trailing-button-add-on" className="sr-only">
