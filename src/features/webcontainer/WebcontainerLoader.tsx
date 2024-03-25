@@ -4,7 +4,9 @@ import { selectInitializingWebContainerError } from "@/features/webcontainer/web
 import Loader from "@/components/Loader";
 import { isWebContainerSupported } from "@/utils/webcontainer";
 
-const WebcontainerLoader: FC = () => {
+const WebcontainerLoader: FC<WebcontainerLoaderProps> = ({
+  message = "Installing packages",
+}) => {
   const webcontainerError = useAppSelector(selectInitializingWebContainerError);
   const [isBrowserSupported, setIsBrowserSupported] = useState(true);
 
@@ -30,11 +32,15 @@ const WebcontainerLoader: FC = () => {
 
   return (
     <Loader
-      text="Installing packages"
+      text={message}
       circleColor={"text-gray-400"}
       spinnerColor={"fill-white"}
     />
   );
 };
+
+interface WebcontainerLoaderProps {
+  message?: string;
+}
 
 export default WebcontainerLoader;
