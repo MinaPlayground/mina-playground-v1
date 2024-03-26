@@ -156,7 +156,7 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
             <div className="terminal h-[150px] md:h-[180px] max-w-[100vw] bg-black" />
           </>
         )}
-        {mapTypeToCustomComponent(type)}
+        {mapTypeToCustomComponent(type, code)}
       </div>
     </>
   );

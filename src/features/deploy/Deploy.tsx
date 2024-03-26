@@ -9,7 +9,7 @@ import { useAppSelector } from "@/hooks/useAppSelector";
 import { selectInitializingEsbuild } from "@/features/webcontainer/webcontainerSlice";
 import WebcontainerLoader from "@/features/webcontainer/WebcontainerLoader";
 
-export const Deploy: FC<DeployProps> = ({}) => {
+export const Deploy: FC<DeployProps> = ({ code }) => {
   const [stepIndex, setStepIndex] = useState(1);
   const initializingWebcontainer = useAppSelector(selectInitializingEsbuild);
 
@@ -33,7 +33,7 @@ export const Deploy: FC<DeployProps> = ({}) => {
       />
       <StepBody
         items={[
-          { Component: AddContract, props: { onNextClick, code: "test" } },
+          { Component: AddContract, props: { onNextClick, code } },
           { Component: SetKeys, props: { onNextClick } },
           { Component: DeployContract, props: {} },
         ]}
@@ -43,4 +43,6 @@ export const Deploy: FC<DeployProps> = ({}) => {
   );
 };
 
-interface DeployProps {}
+interface DeployProps {
+  code?: string;
+}

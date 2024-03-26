@@ -68,8 +68,8 @@ const Home: NextPage<IHomeProps> = ({ c, s, item }) => {
     initTerminal,
   } = item;
 
-  const Component = mapTypeToCustomComponent(type);
   const [currentFile, setCurrentFile] = useState(highlightedItem);
+  const Component = mapTypeToCustomComponent(type, currentFile.highlightedCode);
 
   const iszkApp = type === "playground-zkApp";
   const hasPackageJSON = !iszkApp;

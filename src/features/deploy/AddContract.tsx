@@ -2,10 +2,11 @@ import { FC } from "react";
 import Button from "@/components/button/Button";
 
 export const AddContract: FC<AddContractProps> = ({ code, onNextClick }) => {
+  const disabled = code !== undefined && !code;
   return (
     <>
       <h1>Add/change your contract code</h1>
-      <Button disabled={!code} onClick={onNextClick}>
+      <Button disabled={disabled} onClick={onNextClick}>
         Next
       </Button>
     </>
@@ -13,6 +14,6 @@ export const AddContract: FC<AddContractProps> = ({ code, onNextClick }) => {
 };
 
 interface AddContractProps {
-  code: string;
+  code?: string;
   onNextClick(): void;
 }
