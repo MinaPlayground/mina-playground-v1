@@ -29,7 +29,7 @@ import WebcontainerLoader from "@/features/webcontainer/WebcontainerLoader";
 import { useRouter } from "next/router";
 import { event } from "nextjs-google-analytics";
 import { ItemType } from "@/types";
-import { mapTypeToPlaygroundComponent } from "@/mappers/mapTypeToPlaygroundComponent";
+import { mapTypeToCustomComponent } from "@/mappers/mapTypeToCustomComponent";
 
 const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
   type,
@@ -143,7 +143,7 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
         )}
       </div>
       <div>
-        {initTerminal ? (
+        {initTerminal && (
           <>
             <div className="p-2">
               <RunScriptButton
@@ -155,9 +155,8 @@ const InteractiveTutorial: FC<InteractiveTutorialProps> = ({
             </div>
             <div className="terminal h-[150px] md:h-[180px] max-w-[100vw] bg-black" />
           </>
-        ) : (
-          mapTypeToPlaygroundComponent({ type, command: "" })
         )}
+        {mapTypeToCustomComponent(type)}
       </div>
     </>
   );
