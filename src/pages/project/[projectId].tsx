@@ -15,6 +15,7 @@ import {
 } from "@/features/webcontainer/webcontainerSlice";
 import { useAppSelector } from "@/hooks/useAppSelector";
 import JSZip from "jszip";
+import { fileSystemTreeToZip } from "@/utils/zip";
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { projectId } = query;
@@ -67,19 +68,7 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
 
   const onDownload = async () => {
     const zip = new JSZip();
-
-    function processObject(obj, newZip = zip) {
-      for (const key in obj) {
-        if ("directory" in obj[key]) {
-          const folder = newZip.folder(key.replace(/\*/g, "."));
-          processObject(obj[key].directory, folder);
-        }
-        if ("file" in obj[key]) {
-          newZip.file(key.replace(/\*/g, "."), obj[key].file.contents);
-        }
-      }
-    }
-    processObject(fileSystemTree);
+    fileSystemTreeToZip(fileSystemTree, zip);
     zip.generateAsync({ type: "base64" }).then(function (base64) {
       // @ts-ignore
       window.location = "data:application/zip;base64," + base64;
