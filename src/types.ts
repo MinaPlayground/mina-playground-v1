@@ -4,7 +4,7 @@ import { FileSystemTree } from "@webcontainer/api";
 
 export type KeyValueObj = Record<string, any>;
 export type FileSystemType = "directory" | "file";
-type ItemType = "unit" | "playground" | "playground-zkApp" | "deploy";
+export type ItemType = "unit" | "playground" | "playground-zkApp" | "deploy";
 
 export interface o1jsWorker {
   generateKeys(
@@ -85,4 +85,5 @@ export type TutorialResponse = {
   files: FileSystemTree;
   base: string;
   command: string;
+  initTerminal: boolean;
 };
