@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import Button from "@/components/button/Button";
 import {
   useCheckTransactionQuery,
@@ -6,15 +6,16 @@ import {
 } from "@/services/minaPlayground";
 import { KeyIcon } from "@/icons/DeployIcons";
 import Loader from "@/components/Loader";
-import { skipToken } from "@reduxjs/toolkit/query";
 
 export const Faucet: FC<FaucetProps> = ({ publicKey }) => {
+  const [skip, setSkip] = useState(true);
   const [faucetRequest, { isLoading, isSuccess, isError, data }] =
     useFaucetRequestMutation();
 
   const { data: transactionData } = useCheckTransactionQuery(
-    isSuccess ? data.message.paymentID : skipToken,
+    data?.message?.paymentID,
     {
+      skip,
       pollingInterval: 20000,
     }
   );
@@ -26,6 +27,16 @@ export const Faucet: FC<FaucetProps> = ({ publicKey }) => {
   };
 
   const successfulFaucetTransaction = transactionData?.isCanonical;
+
+  useEffect(() => {
+    if (!data?.message?.paymentID) return;
+    setSkip(false);
+  }, [data?.message?.paymentID]);
+
+  useEffect(() => {
+    if (!successfulFaucetTransaction) return;
+    setSkip(true);
+  }, [successfulFaucetTransaction]);
 
   if (isError) {
     return (
