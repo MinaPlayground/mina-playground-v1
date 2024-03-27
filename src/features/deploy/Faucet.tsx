@@ -1,17 +1,31 @@
 import { FC } from "react";
 import Button from "@/components/button/Button";
-import { useFaucetRequestMutation } from "@/services/minaPlayground";
+import {
+  useCheckTransactionQuery,
+  useFaucetRequestMutation,
+} from "@/services/minaPlayground";
 import { KeyIcon } from "@/icons/DeployIcons";
+import Loader from "@/components/Loader";
+import { skipToken } from "@reduxjs/toolkit/query";
 
 export const Faucet: FC<FaucetProps> = ({ publicKey }) => {
   const [faucetRequest, { isLoading, isSuccess, isError, data }] =
     useFaucetRequestMutation();
+
+  const { data: transactionData } = useCheckTransactionQuery(
+    isSuccess ? data.message.paymentID : skipToken,
+    {
+      pollingInterval: 20000,
+    }
+  );
 
   const onFaucetClick = async () => {
     faucetRequest({
       body: { address: publicKey },
     });
   };
+
+  const successfulFaucetTransaction = transactionData?.isCanonical;
 
   if (isError) {
     return (
@@ -25,22 +39,42 @@ export const Faucet: FC<FaucetProps> = ({ publicKey }) => {
     );
   }
 
+  if (successfulFaucetTransaction) {
+    return (
+      <div className="alert alert-success text-white">
+        <KeyIcon />
+        <div>
+          <span className="text-sm">Your account has now been funded.</span>
+        </div>
+      </div>
+    );
+  }
+
   if (isSuccess) {
     return (
-      <div className="alert alert-success">
+      <div className="alert alert-info text-white">
         <KeyIcon />
-        <span className="text-sm">
-          Success. Testnet Mina will arrive at your address when the next block
-          is produced (~3 min).
-          <br />
-          <a
-            className="underline"
-            href={`https://minascan.io/berkeley/tx/${data.message.paymentID}`}
-            target="_blank"
-          >
-            View your transaction
-          </a>
-        </span>
+        <div>
+          <span className="text-sm">
+            Testnet Mina will arrive at your address when the next block is
+            produced (~3 min).
+            <br />
+            <a
+              className="underline"
+              href={`https://minascan.io/berkeley/tx/${data.message.paymentID}`}
+              target="_blank"
+            >
+              View your transaction
+            </a>
+          </span>
+        </div>
+        <div className="flex flex-col">
+          <Loader
+            text="Waiting for transaction"
+            circleColor={"text-white"}
+            spinnerColor={"fill-black"}
+          />
+        </div>
       </div>
     );
   }

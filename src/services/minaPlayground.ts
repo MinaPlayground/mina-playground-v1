@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const minaPlaygroundApi = createApi({
-  reducerPath: "snippetApi",
+  reducerPath: "minaPlaygroundApi",
   baseQuery: fetchBaseQuery({ baseUrl: `/` }),
   endpoints: (builder) => ({
     faucetRequest: builder.mutation({
@@ -14,7 +14,13 @@ export const minaPlaygroundApi = createApi({
         };
       },
     }),
+    checkTransaction: builder.query<any, any>({
+      query: (transactionId) => ({
+        url: `api/check-transaction/${transactionId}`,
+      }),
+    }),
   }),
 });
 
-export const { useFaucetRequestMutation } = minaPlaygroundApi;
+export const { useFaucetRequestMutation, useCheckTransactionQuery } =
+  minaPlaygroundApi;
