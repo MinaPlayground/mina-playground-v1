@@ -10,9 +10,10 @@ import { useAppDispatch } from "@/hooks/useAppDispatch";
 import CTAModal from "@/components/modal/CTAModal";
 import { KeyIcon } from "@/icons/DeployIcons";
 import SelectList from "@/components/select/SelectList";
-import { Remote, wrap } from "comlink";
+import { wrap } from "comlink";
 import { normalizePath } from "@/utils/fileSystemWeb";
 import { Faucet } from "@/features/deploy/Faucet";
+
 interface o1jsWorker {
   generateKeys(
     customKeyValue: string | undefined
@@ -65,14 +66,14 @@ const DeployModal: FC<DeployModalProps> = ({
       webWorker.current = new Worker(
         new URL("../../webworkers/worker.ts", import.meta.url)
       );
-      const workerReady = () =>
-        new Promise<void>(
-          (resolve) =>
-            (webWorker.current.onmessage = (e) =>
-              e.data === "isReady" && resolve())
-        );
-      await workerReady();
       generate.current = wrap<o1jsWorker>(webWorker.current);
+      await new Promise<void>((resolve) => {
+        webWorker.current.onmessage = (event) => {
+          if (event.data === "ready") {
+            resolve();
+          }
+        };
+      });
     }
     const workerFunctions = generate.current;
     if (!workerFunctions) return;
@@ -95,7 +96,16 @@ const DeployModal: FC<DeployModalProps> = ({
         {deploymentMessage && (
           <div className="alert alert-success">
             <KeyIcon />
-            <span>{deploymentMessage.message}</span>
+            <span>
+              {deploymentMessage.message} <br />
+              <a
+                className="underline"
+                href={`https://minascan.io/berkeley/tx/${deploymentMessage.details}`}
+                target="_blank"
+              >
+                View your transaction
+              </a>
+            </span>
           </div>
         )}
         <SelectList
@@ -103,7 +113,7 @@ const DeployModal: FC<DeployModalProps> = ({
           items={results.map((item) => item[1])}
           onChange={() => null}
         />
-        {keys.privateKey && keys.isValid && (
+        {keys.privateKey && keys.isValid && !deploymentMessage && (
           <Faucet publicKey={keys.publicKey} />
         )}
         <div>

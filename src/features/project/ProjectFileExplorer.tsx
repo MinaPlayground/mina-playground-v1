@@ -25,6 +25,7 @@ import Button from "@/components/button/Button";
 import CreateProjectModal from "@/components/modal/CreateProjectModal";
 import { useRouter } from "next/router";
 import ResetCode from "@/components/editor/ResetCode";
+import DownloadCode from "@/components/editor/DownloadCode";
 
 const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id, name }) => {
   const dispatch = useAppDispatch();
@@ -166,6 +167,7 @@ const ProjectFileExplorer: FC<ProjectFileExplorerProps> = ({ id, name }) => {
           defaultText="Save all"
         />
         <ResetCode disabled={!hasUnsavedField} onClick={resetAllFields} />
+        <DownloadCode />
         {/*<CommitButton />*/}
       </div>
       <div className="bg-gray-800 mb-2 p-2 text-gray-200">

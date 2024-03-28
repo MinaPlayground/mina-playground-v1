@@ -2,6 +2,7 @@ import { expose } from "comlink";
 
 const MinaWorker = async () => {
   const { PrivateKey } = await import("o1js");
+  postMessage("ready");
   return {
     generateKeys: async (customKeyValue: string | undefined) => {
       const key = customKeyValue
@@ -17,4 +18,3 @@ const MinaWorker = async () => {
 // @ts-ignore
 const worker = await MinaWorker();
 expose(worker);
-postMessage("ready");

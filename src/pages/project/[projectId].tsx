@@ -14,8 +14,6 @@ import {
   selectWebcontainerStarted,
 } from "@/features/webcontainer/webcontainerSlice";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import JSZip from "jszip";
-import { fileSystemTreeToZip } from "@/utils/zip";
 
 export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const { projectId } = query;
@@ -66,15 +64,6 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
     dispatch(setFileSystemTree(fileSystemTree));
   }, []);
 
-  const onDownload = async () => {
-    const zip = new JSZip();
-    fileSystemTreeToZip(fileSystemTree, zip);
-    zip.generateAsync({ type: "base64" }).then(function (base64) {
-      // @ts-ignore
-      window.location = "data:application/zip;base64," + base64;
-    });
-  };
-
   return (
     <>
       <Head>
@@ -85,7 +74,6 @@ const Home: NextPage<HomeProps> = ({ fileSystemTree, name, _id }) => {
       </Head>
       <main>
         <Header />
-        <button onClick={onDownload}>download</button>
         <DockView id={_id} name={name} />
       </main>
     </>

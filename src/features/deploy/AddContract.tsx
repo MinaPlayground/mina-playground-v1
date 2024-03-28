@@ -5,7 +5,7 @@ export const AddContract: FC<AddContractProps> = ({ code, onNextClick }) => {
   const disabled = code !== undefined && !code;
   return (
     <>
-      <h1>Add/change your contract code</h1>
+      <span className="text-white">Add/change your contract code</span>
       <Button disabled={disabled} onClick={onNextClick}>
         Next
       </Button>

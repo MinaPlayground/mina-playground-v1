@@ -22,7 +22,7 @@ const nextConfig = {
   webpack(config) {
     config.resolve.alias = {
       ...config.resolve.alias,
-      snarkyjs: require("path").resolve("node_modules/snarkyjs"),
+      o1js: require("path").resolve("node_modules/o1js"),
     };
     config.experiments = { ...config.experiments, topLevelAwait: true };
     return config;
