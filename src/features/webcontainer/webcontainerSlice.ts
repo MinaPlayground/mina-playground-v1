@@ -5,6 +5,7 @@ import {
   WebContainer,
   WebContainerProcess,
 } from "@webcontainer/api";
+import { updateFileSystemTree } from "@/features/fileTree/fileTreeSlice";
 
 interface WebcontainerState {
   initializingWebcontainer: boolean;
@@ -76,8 +77,8 @@ export const installDependencies = createAsyncThunk(
       workdirName: "mina",
     });
     dispatch(setWebcontainerInstance(webcontainer));
-    // await webcontainer.fs.writeFile(".jshrc", jshRC);
-    // await webcontainer.spawn("mv", [".jshrc", "/home/.jshrc"]);
+    await webcontainer.fs.writeFile(".jshrc", jshRC);
+    await webcontainer.spawn("mv", [".jshrc", "/home/.jshrc"]);
 
     const baseFiles = fileSystemTree
       ? fileSystemTree
@@ -86,30 +87,54 @@ export const installDependencies = createAsyncThunk(
       : (await import(`@/json/${base}-base.json`)).default;
     await webcontainer.mount(baseFiles);
 
-    // const watcher = await webcontainer.spawn("npx", [
-    //   "-y",
-    //   "chokidar-cli",
-    //   ".",
-    //   "-i",
-    //   '"**/(node_modules|.git|_tmp_)"',
-    // ]);
-    // watcher.output.pipeTo(
-    //   new WritableStream({
-    //     async write(data) {
-    //       const [type, name] = data.split(":");
-    //       switch (type) {
-    //         case "change":
-    //           break;
-    //         case "add":
-    //         case "addDir":
-    //         case "unlink":
-    //         case "unlinkDir":
-    //         default:
-    //           console.log(name);
-    //       }
-    //     },
-    //   })
-    // );
+    const watcher = await webcontainer.spawn("npx", [
+      "-y",
+      "chokidar-cli",
+      ".",
+      "-i",
+      '"**/(node_modules|.git|_tmp_)"',
+    ]);
+
+    // TODO not supported, only in NodeJS
+    // webcontainer.fs.watch("/", { recursive: true }, (event, filename) => {
+    //   console.log(`file: ${filename} action: ${event}`);
+    // });
+
+    watcher.output.pipeTo(
+      new WritableStream({
+        async write(data) {
+          const [type, path] = data.split(":");
+          switch (type) {
+            case "change":
+              break;
+            case "add":
+            case "unlink":
+              if (path) {
+                dispatch(
+                  updateFileSystemTree({
+                    path: path.replace(/\r\n/g, ""),
+                    type: "file",
+                  })
+                );
+              }
+              break;
+            case "addDir":
+            case "unlinkDir":
+              if (path) {
+                dispatch(
+                  updateFileSystemTree({
+                    path: path.replace(/\r\n/g, ""),
+                    type: "directory",
+                  })
+                );
+              }
+              break;
+            default:
+              break;
+          }
+        },
+      })
+    );
 
     webcontainer.on("server-ready", (port, url) => {
       dispatch(setServerUrl(url));
