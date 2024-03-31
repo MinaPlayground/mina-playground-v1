@@ -5,6 +5,7 @@ import {
   WebContainer,
   WebContainerProcess,
 } from "@webcontainer/api";
+import { updateFileSystemTree } from "@/features/fileTree/fileTreeSlice";
 
 interface WebcontainerState {
   initializingWebcontainer: boolean;
@@ -26,6 +27,7 @@ interface WebcontainerState {
   } | null;
   serverUrl: string | null;
   base: string | null;
+  privateKey: string | null;
 }
 
 const initialState: WebcontainerState = {
@@ -44,6 +46,7 @@ const initialState: WebcontainerState = {
   shellProcess: null,
   base: null,
   terminalInitialized: false,
+  privateKey: null,
 };
 
 const jshRC: string = `
@@ -74,8 +77,8 @@ export const installDependencies = createAsyncThunk(
       workdirName: "mina",
     });
     dispatch(setWebcontainerInstance(webcontainer));
-    // await webcontainer.fs.writeFile(".jshrc", jshRC);
-    // await webcontainer.spawn("mv", [".jshrc", "/home/.jshrc"]);
+    await webcontainer.fs.writeFile(".jshrc", jshRC);
+    await webcontainer.spawn("mv", [".jshrc", "/home/.jshrc"]);
 
     const baseFiles = fileSystemTree
       ? fileSystemTree
@@ -84,30 +87,54 @@ export const installDependencies = createAsyncThunk(
       : (await import(`@/json/${base}-base.json`)).default;
     await webcontainer.mount(baseFiles);
 
-    // const watcher = await webcontainer.spawn("npx", [
-    //   "-y",
-    //   "chokidar-cli",
-    //   ".",
-    //   "-i",
-    //   '"**/(node_modules|.git|_tmp_)"',
-    // ]);
-    // watcher.output.pipeTo(
-    //   new WritableStream({
-    //     async write(data) {
-    //       const [type, name] = data.split(":");
-    //       switch (type) {
-    //         case "change":
-    //           break;
-    //         case "add":
-    //         case "addDir":
-    //         case "unlink":
-    //         case "unlinkDir":
-    //         default:
-    //           console.log(name);
-    //       }
-    //     },
-    //   })
-    // );
+    const watcher = await webcontainer.spawn("npx", [
+      "-y",
+      "chokidar-cli",
+      ".",
+      "-i",
+      '"**/(node_modules|.git|_tmp_)"',
+    ]);
+
+    // TODO not supported, only in NodeJS
+    // webcontainer.fs.watch("/", { recursive: true }, (event, filename) => {
+    //   console.log(`file: ${filename} action: ${event}`);
+    // });
+
+    watcher.output.pipeTo(
+      new WritableStream({
+        async write(data) {
+          const [type, path] = data.split(":");
+          switch (type) {
+            case "change":
+              break;
+            case "add":
+            case "unlink":
+              if (path) {
+                dispatch(
+                  updateFileSystemTree({
+                    path: path.replace(/\r\n/g, ""),
+                    type: "file",
+                  })
+                );
+              }
+              break;
+            case "addDir":
+            case "unlinkDir":
+              if (path) {
+                dispatch(
+                  updateFileSystemTree({
+                    path: path.replace(/\r\n/g, ""),
+                    type: "directory",
+                  })
+                );
+              }
+              break;
+            default:
+              break;
+          }
+        },
+      })
+    );
 
     webcontainer.on("server-ready", (port, url) => {
       dispatch(setServerUrl(url));
@@ -262,7 +289,7 @@ export const initializeShellProcess = createAsyncThunk(
 export const deploySmartContract = createAsyncThunk(
   "deploySmartContract",
   async (
-    { path, feePayerKey }: { path: string; feePayerKey: string },
+    { path, feePayerKey }: { path: string; feePayerKey?: string },
     { getState, dispatch }
   ) => {
     dispatch(setIsDeploying(true));
@@ -283,7 +310,7 @@ export const deploySmartContract = createAsyncThunk(
       "--className",
       "Add",
       "--feePayerKey",
-      feePayerKey,
+      feePayerKey || (webcontainer.privateKey as string),
     ]);
 
     process2?.output.pipeTo(
@@ -350,6 +377,9 @@ export const webcontainerSlice = createSlice({
     },
     setTerminalInitialized: (state, action: PayloadAction<boolean>) => {
       state.terminalInitialized = action.payload;
+    },
+    setPrivateKey: (state, action: PayloadAction<string>) => {
+      state.privateKey = action.payload;
     },
   },
   extraReducers(builder) {
@@ -431,5 +461,6 @@ export const {
   setServerUrl,
   reset,
   setTerminalInitialized,
+  setPrivateKey,
 } = webcontainerSlice.actions;
 export default webcontainerSlice.reducer;

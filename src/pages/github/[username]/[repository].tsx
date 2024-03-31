@@ -12,14 +12,13 @@ import {
   writeCommand,
 } from "@/features/webcontainer/webcontainerSlice";
 import { useAppSelector } from "@/hooks/useAppSelector";
-import ProjectTerminal from "@/components/terminal/ProjectTerminal";
 import { useRouter } from "next/router";
+import DockView from "@/components/dockview/DockView";
 
 const GitHub: NextPage<HomeProps> = ({}) => {
   const { query } = useRouter();
   const { username, repository } = query;
   const dispatch = useAppDispatch();
-  const [url, setUrl] = useState("");
   const webcontainerStarted = useAppSelector(selectWebcontainerStarted);
   const terminalInitialized = useAppSelector(selectTerminalInitialized);
   const initializingWebcontainer = useAppSelector(selectInitializingEsbuild);
@@ -42,14 +41,10 @@ const GitHub: NextPage<HomeProps> = ({}) => {
     if (!terminalInitialized) return;
     dispatch(
       writeCommand(
-        `git clone https://github.com/${username}/${repository}.git \r`
+        `git clone https://github.com/${username}/${repository}.git './' \r`
       )
     );
   }, [terminalInitialized]);
-
-  const cloneRepository = () => {
-    dispatch(writeCommand(`git clone ${url} \r`));
-  };
 
   return (
     <>
@@ -61,9 +56,7 @@ const GitHub: NextPage<HomeProps> = ({}) => {
       </Head>
       <main>
         <Header />
-        <input value={url} onChange={(event) => setUrl(event.target.value)} />
-        <button onClick={cloneRepository}>Clone</button>
-        <ProjectTerminal />
+        <DockView id={"GitHub_repo"} name={"Github Repository"} />
       </main>
     </>
   );

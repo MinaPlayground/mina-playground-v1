@@ -1,11 +1,12 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/store";
 import { FileSystemTree } from "@webcontainer/api";
 import { fileTreeApi } from "@/services/fileTree";
 import { FileSystemType } from "@/types";
 import { getFileSystemValueByType } from "@/utils/fileSystemWeb";
-import { get } from "lodash";
+import { get, merge } from "lodash";
 import { versionControlApi } from "@/services/versionControl";
+import { setIsRunning } from "@/features/webcontainer/webcontainerSlice";
 
 interface FileTreeState {
   currentTreeItem: string;
@@ -26,6 +27,42 @@ const initialState: FileTreeState = {
   fileSystemTree: null,
 };
 
+export const updateFileSystemTree = createAsyncThunk(
+  "updateFileSystemTree",
+  async (
+    { path, type }: { path: string; type: "file" | "directory" },
+    { getState, dispatch }
+  ) => {
+    const { webcontainer, fileTree } = getState();
+    const parts = path.split("/");
+    let result = {};
+    for (let i = parts.length - 1; i >= 0; i--) {
+      if (i === parts.length - 1) {
+        let temp = {};
+        let fileName = parts[i];
+        if (type === "file") {
+          const contents = await webcontainer.webcontainerInstance.fs.readFile(
+            path,
+            "utf-8"
+          );
+          temp[fileName] = {
+            file: { contents },
+          };
+        } else {
+          temp[fileName] = { directory: {} };
+        }
+        result = temp;
+      } else {
+        let temp = {};
+        temp[parts[i]] = { directory: result };
+        result = temp;
+      }
+      const newFileSystemTree = merge({}, fileTree.fileSystemTree, result);
+      dispatch(setFileSystemTree(newFileSystemTree));
+    }
+  }
+);
+
 export const FileTreeSlice = createSlice({
   name: "fileTree",
   initialState,
@@ -33,6 +70,35 @@ export const FileTreeSlice = createSlice({
     setFileSystemTree: (state, action: PayloadAction<FileSystemTree>) => {
       state.fileSystemTree = action.payload;
     },
+    // updateFileSystemTree: (
+    //   state,
+    //   action: PayloadAction<{ path: string; type: "file" | "directory" }>
+    // ) => {
+    // const { path, type } = action.payload;
+    // const parts = path.split("/");
+    // let result = {};
+    // for (let i = parts.length - 1; i >= 0; i--) {
+    //   if (i === parts.length - 1) {
+    //     let temp = {};
+    //     let fileName = parts[i];
+    //     if (type === "file") {
+    //       const contents = (state.temp[fileName] = {
+    //         file: { contents: "test" },
+    //       });
+    //     }
+    //     temp[fileName] =
+    //       type === "file"
+    //         ? { file: { contents: "test" } }
+    //         : { directory: {} };
+    //     result = temp;
+    //   } else {
+    //     let temp = {};
+    //     temp[parts[i]] = { directory: result };
+    //     result = temp;
+    //   }
+    //   }
+    //   state.fileSystemTree = merge({}, state.fileSystemTree, result);
+    // },
     fileTreeCreateNew: (state, action: PayloadAction<FileSystemType>) => {
       if (!state.fileSystemTree) return;
       state.fileSystemTree[""] = getFileSystemValueByType(action.payload);
