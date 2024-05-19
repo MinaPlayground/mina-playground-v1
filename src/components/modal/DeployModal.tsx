@@ -13,12 +13,7 @@ import SelectList from "@/components/select/SelectList";
 import { wrap } from "comlink";
 import { normalizePath } from "@/utils/fileSystemWeb";
 import { Faucet } from "@/features/deploy/Faucet";
-
-interface o1jsWorker {
-  generateKeys(
-    customKeyValue: string | undefined
-  ): Promise<{ publicKey: string; privateKey: string }>;
-}
+import { o1jsWorker } from "@/types";
 
 const DeployModal: FC<DeployModalProps> = ({
   isVisible,
@@ -68,7 +63,7 @@ const DeployModal: FC<DeployModalProps> = ({
       );
       generate.current = wrap<o1jsWorker>(webWorker.current);
       await new Promise<void>((resolve) => {
-        webWorker.current.onmessage = (event) => {
+        webWorker.current.onmessage = (event: MessageEvent) => {
           if (event.data === "ready") {
             resolve();
           }
