@@ -19,14 +19,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  webpack(config) {
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      o1js: require("path").resolve("node_modules/o1js"),
-    };
-    config.experiments = { ...config.experiments, topLevelAwait: true };
-    return config;
-  },
   experimental: {
     outputFileTracingIncludes: {
       "/api/sectionFiles": ["./tutorials/**"],
